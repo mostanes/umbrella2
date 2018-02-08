@@ -29,7 +29,7 @@ namespace Umbrella2.WCS.Projections
 		public void LoadFromTypeList(Type[] TypeArray)
 		{
 			var Results = TypeArray.Select((x) => new Tuple<Type, object>(x, x.GetCustomAttribute(typeof(ProjectionAttribute)))).Where((x) => x.Item2 != null);
-			foreach (var z in Results) ProjectionTypes.Add(((ProjectionAttribute) z.Item2).Name, z.Item1);
+			foreach (var z in Results) if (!ProjectionTypes.ContainsKey(((ProjectionAttribute) z.Item2).Name)) ProjectionTypes.Add(((ProjectionAttribute) z.Item2).Name, z.Item1);
 		}
 
 		protected WCSProjections Register(string Name)

@@ -94,14 +94,17 @@ namespace Umbrella2.IO.FITS
 
 		internal unsafe IntPtr GetView(int Position, int Length)
 		{
-			int MP = Position - Position % 65536;
-			MemoryMappedViewAccessor va = mmap.CreateViewAccessor(MP, Length + Position % 65536);
-			byte* pr = (byte*) 0;
-			va.SafeMemoryMappedViewHandle.AcquirePointer(ref pr);
-			pr += (Position % 65536); /* Working around weird Windows things... */
-			IntPtr ptr = (IntPtr) pr;
-			OpenViews.Add(ptr, va);
-			return ptr;
+			lock (OpenViews)
+			{
+				int MP = Position - Position % 65536;
+				MemoryMappedViewAccessor va = mmap.CreateViewAccessor(MP, Length + Position % 65536);
+				byte* pr = (byte*) 0;
+				va.SafeMemoryMappedViewHandle.AcquirePointer(ref pr);
+				pr += (Position % 65536); /* Working around weird Windows things... */
+				IntPtr ptr = (IntPtr) pr;
+				OpenViews.Add(ptr, va);
+				return ptr;
+			}
 		}
 
 		internal IntPtr GetDataView(int Dataset, int DSetPosition, int Length)
@@ -125,10 +128,13 @@ namespace Umbrella2.IO.FITS
 
 		internal void ReleaseView(IntPtr View)
 		{
-			OpenViews[View].SafeMemoryMappedViewHandle.ReleasePointer();
-			OpenViews[View].Flush();
-			OpenViews[View].Dispose();
-			OpenViews.Remove(View);
+			lock (OpenViews)
+			{
+				OpenViews[View].SafeMemoryMappedViewHandle.ReleasePointer();
+				OpenViews[View].Flush();
+				OpenViews[View].Dispose();
+				OpenViews.Remove(View);
+			}
 		}
 	}
 }

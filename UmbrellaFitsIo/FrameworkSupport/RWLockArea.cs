@@ -77,7 +77,7 @@ namespace UmbrellaFitsIo.FrameworkSupport
 			lock (WaitingThreads)
 				if (WaitingThreads.Contains(Thread.CurrentThread))
 					WaitingThreads.Remove(Thread.CurrentThread);
-            return new Guid();
+			throw new Exception();
         }
 
 		/// <summary>

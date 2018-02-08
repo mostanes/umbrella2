@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -40,7 +41,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="Geometry\LineIntersection.cs" />
+    <Compile Include="ImageAlgorithms\LineAnalyzer.cs" />
+    <Compile Include="ImageAlgorithms\MultiImageMedianFilter.cs" />
+    <Compile Include="ImageAlgorithms\RLHT.cs" />
+    <Compile Include="ImageAlgorithms\SegmentDetector.cs" />
+    <Compile Include="ImageAlgorithms\StandardImageMasker.cs" />
     <Compile Include="ImageAlgorithms\WeightedMedianFilter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -104,8 +104,8 @@ namespace Umbrella2.IO.FITS
 				string Nm1 = Axis1.Substring(0, 4);
 				string Nm2 = Axis2.Substring(0, 4);
 
-				if (Nm1 == "RA--" && Nm2 == "DEC-") RAFirst = true;
-				else if (Nm1 == "DEC-" && Nm2 == "RA--") RAFirst = false;
+				if (Nm1.ToUpper() == "RA--" && Nm2.ToUpper() == "DEC-") RAFirst = true;
+				else if (Nm1.ToUpper() == "DEC-" && Nm2.ToUpper() == "RA--") RAFirst = false;
 				else throw new FITSFormatException("Cannot understand axis format");
 				if (Axis2.Substring(5, 3) != Algorithm) throw new Exception("Projection Algorithm Mismatch.");
 				double RA0 = (RAFirst ? Header["CRVAL1"] : Header["CRVAL2"]).FloatingPoint;
@@ -181,63 +181,72 @@ namespace Umbrella2.IO.FITS
 			throw new FITSFormatException("BITPIX field not conforming to FITS standard");
 		}
 
-		public ImageData LockData(Rectangle Area, bool RO)
+		void CheckMargins(Rectangle Area)
 		{
 			if (Area.Bottom > Height || Area.Right > Width) throw new ArgumentOutOfRangeException("Attempted reading outside of image bounds.");
 			if (Area.X < 0 || Area.X > Width) throw new ArgumentOutOfRangeException("Attempted reading outside of image bounds.");
 			if (Area.Y < 0 || Area.Y > Height) throw new ArgumentOutOfRangeException("Attempted reading outside of image bounds.");
-
-			Guid Token = ImageLock.EnterLock(Area, !RO);
-			ImageData imData = new ImageData(Area, new double[Area.Height, Area.Width], this, RO, Token);
-
-			IntPtr Pointer;
-			var ImPos = GetPositionInFile(imData.Position);
-			if (ImageNumber == 0) Pointer = File.GetDataView(-1, ImPos.Item1, ImPos.Item2);
-			else Pointer = File.GetDataView(ImageNumber, ImPos.Item1, ImPos.Item2);
-			Reader(Pointer, imData.Data, (int) Width * BytesPerPixel);
-			File.ReleaseView(Pointer);
-
-			return imData;
 		}
 
-		public ImageData SwitchLockData(ImageData Data, int NewX, int NewY, bool RO)
+		void ReadData(ImageData imData)
 		{
-			Rectangle Area = new Rectangle(NewX, NewY, Data.Position.Width, Data.Position.Height);
-			if (Area.Bottom > Height || Area.Right > Width) throw new ArgumentOutOfRangeException("Attempted reading outside of image bounds.");
-			if (Area.X < 0 || Area.X > Width) throw new ArgumentOutOfRangeException("Attempted reading outside of image bounds.");
-			if (Area.Y < 0 || Area.Y < Height) throw new ArgumentOutOfRangeException("Attempted reading outside of image bounds.");
+			Rectangle rp = imData.Position;
+			rp.Intersect(new Rectangle(0, 0, (int) Width - 1, (int) Height - 1));
+			//if (imData.Position.Width != rp.Width) throw new NotSupportedException("Cannot fill with 0 on X axis.");
+			IntPtr Pointer;
+			var ImPos = GetPositionInFile(rp);
+			if (ImageNumber == 0) Pointer = File.GetDataView(-1, ImPos.Item1, ImPos.Item2);
+			else Pointer = File.GetDataView(ImageNumber, ImPos.Item1, ImPos.Item2);
+			Reader(Pointer, imData.Data, rp.Y - imData.Position.Y, rp.Bottom - imData.Position.Y, rp.X - imData.Position.X, rp.Right - imData.Position.X, (int) Width * BytesPerPixel);
+			File.ReleaseView(Pointer);
+			/*
+			if (rp.Y == imData.Position.Y)
+				for (int i = rp.Height; i < imData.Position.Height; i++) for (int j = 0; j < rp.Width; j++) imData.Data[i, j] = 0;
+			else
+				for (int i = 0; i < imData.Position.Height - rp.Height; i++) for (int j = 0; j < rp.Width; j++) imData.Data[i, j] = 0;
+			*/
+		}
 
+		void WriteData(ImageData Data)
+		{
 			IntPtr Pointer;
 			var ImPos = GetPositionInFile(Data.Position);
 			if (ImageNumber == 0) Pointer = File.GetDataView(-1, ImPos.Item1, ImPos.Item2);
 			else Pointer = File.GetDataView(ImageNumber, ImPos.Item1, ImPos.Item2);
-			if(!Data.ReadOnly) { Writer(Pointer, Data.Data, (int) Width * BytesPerPixel); }
+			if (!Data.ReadOnly) { Writer(Pointer, Data.Data, (int) Width * BytesPerPixel); }
 			File.ReleaseView(Pointer);
+		}
+
+		public ImageData LockData(Rectangle Area, bool FillZero, bool RO = true)
+		{
+			FillZero &= RO;
+			if (!FillZero) CheckMargins(Area);
+
+			Guid Token = ImageLock.EnterLock(Area, !RO);
+			ImageData imData = new ImageData(Area, new double[Area.Height, Area.Width], this, RO, Token);
+			ReadData(imData);
+			return imData;
+		}
+
+		public ImageData SwitchLockData(ImageData Data, int NewX, int NewY, bool FillZero, bool RO = true)
+		{
+			Rectangle Area = new Rectangle(NewX, NewY, Data.Position.Width, Data.Position.Height);
+			FillZero &= RO;
+			if (!FillZero) CheckMargins(Area);
+
+			if (!Data.ReadOnly) WriteData(Data);
 
 			ImageLock.ExitLock(Data.FDGuid);
 			Guid Token = ImageLock.EnterLock(Area, !RO);
 			ImageData imData = new ImageData(Area, Data.Data, this, RO, Token);
-
-			ImPos = GetPositionInFile(imData.Position);
-			if (ImageNumber == 0) Pointer = File.GetDataView(-1, ImPos.Item1, ImPos.Item2);
-			else Pointer = File.GetDataView(ImageNumber, ImPos.Item1, ImPos.Item2);
-			Reader(Pointer, imData.Data, (int) Width * BytesPerPixel);
-			File.ReleaseView(Pointer);
-
+			ReadData(imData);
 			return imData;
 		}
 
 		public void ExitLock(ImageData Data)
 		{
 			if (!Data.ReadOnly)
-			{
-				IntPtr Pointer;
-				var ImPos = GetPositionInFile(Data.Position);
-				if (ImageNumber == 0) Pointer = File.GetDataView(-1, ImPos.Item1, ImPos.Item2);
-				else Pointer = File.GetDataView(ImageNumber, ImPos.Item1, ImPos.Item2);
-				Writer(Pointer, Data.Data, (int) Width * BytesPerPixel);
-				File.ReleaseView(Pointer);
-			}
+				WriteData(Data);
 			ImageLock.ExitLock(Data.FDGuid);
 		}
 
@@ -252,8 +261,8 @@ namespace Umbrella2.IO.FITS
 		{
 			string AlgName = Transform.ProjectionTransform.Name;
 			Transform.ProjectionTransform.GetReferencePoints(out double RA, out double Dec);
-			string T1 = "'" + (RAFirst ? "RA---" : "Dec--") + AlgName + "'";
-			string T2 = "'" + (RAFirst ? "Dec--" : "RA---") + AlgName + "'";
+			string T1 = " '" + (RAFirst ? "RA---" : "DEC--") + AlgName + "'";
+			string T2 = " '" + (RAFirst ? "DEC--" : "RA---") + AlgName + "'";
 			string V1 = "  " + ((RAFirst ? RA : Dec) * 180 / Math.PI).ToString("0.000000000000E+00");
 			string V2 = "  " + ((RAFirst ? Dec : RA) * 180 / Math.PI).ToString("0.000000000000E+00");
 			double[] Matrix = Transform.LinearTransform.Matrix;
