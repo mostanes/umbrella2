@@ -10,16 +10,17 @@ namespace Umbrella2.Algorithms.Images
 {
 	class LineAnalyzer
 	{
-		static void AnalyzeLine(double[,] Input, bool[,] AnalyzeMask, int Height, int Width, double Rho, double Theta, double HighTh, double LowTh, int MaxIgnore)
+		internal static List<LineDetection> AnalyzeLine(double[,] Input, bool[,] AnalyzeMask, int Height, int Width, double Rho, double Theta, double HighTh, double LowTh, int MaxIgnore, int PSFSize)
 		{
 			Vector LineVector = new Vector() { X = Cos(Theta), Y = Sin(Theta) };
 			Vector LineOrigin = new Vector() { X = -Rho * Sin(Theta), Y = Rho * Cos(Theta) };
+			Vector LONormal = new Vector() { X = -Sin(Theta), Y = Cos(Theta) };
 			var r = LineIntersection.IntersectLeft(LineOrigin, LineVector, Width, Height);
-			if (r == null) { return; }
+			if (r == null) { return null; }
 			Vector LeftIntersect = r.Item1;
 			double LDist = r.Item2;
 			r = LineIntersection.IntersectRight(LineOrigin, LineVector, Width, Height);
-			if (r == null) { return; }
+			if (r == null) { return null; }
 			Vector RightIntersect = r.Item1;
 			double RDist = r.Item2;
 
@@ -35,33 +36,107 @@ namespace Umbrella2.Algorithms.Images
 			int N = (int) (End - Start);
 			Vector pt = StVec;
 
-			List<RLHT.Segment> SegmentsFound = new List<RLHT.Segment>();
-			RLHT.Segment cseg = default(RLHT.Segment);
 			bool OnSegment = false;
 			int LastK = 0;
+			List<Vector> LineIntervals = new List<Vector>();
+			List<DetectionBlob> Blobs = new List<DetectionBlob>();
 
 			for (k = 0; k < N; k++, pt.Increment(LineVector))
 			{
-				int X = (int) Math.Round(pt.X);
-				int Y = (int) Math.Round(pt.Y);
-				if (AnalyzeMask[Y, X]) continue;
-				double Val = Input[Y, X];
-
-				if (Val > HighTh) BitmapFill(Input, new IntPoint() { X = X, Y = Y }, AnalyzeMask, LowTh);
-				if (Val >= LowTh)
+				int l;
+				Vector vl = pt;
+				for (l = 0; l < PSFSize; l++, vl.Increment(LONormal))
 				{
-					if (!OnSegment) { cseg.Start = pt; }
-					LastK = k;
-					cseg.End = pt;
+					int X = (int) Round(vl.X);
+					int Y = (int) Round(vl.Y);
+					if (X < 0 || X >= Width) continue;
+					if (Y < 0 || Y >= Height) continue;
+					if (AnalyzeMask[Y, X]) continue;
+					double Val = Input[Y, X];
+
+					if (Val > HighTh)
+					{
+						DetectionBlob db = BitmapFill(Input, new IntPoint() { X = X, Y = Y }, AnalyzeMask, LowTh, Theta);
+						LineIntervals.Add(new Vector() { X = db.LineStart, Y = db.LineEnd });
+						Blobs.Add(db);
+					}
 				}
-				if (Val < LowTh / 2) if (OnSegment) if (k - LastK > MaxIgnore) { OnSegment = false; SegmentsFound.Add(cseg); }
 			}
-			if (OnSegment) SegmentsFound.Add(cseg);
+
+			List<DetectionSegment> FoundSegments = new List<DetectionSegment>();
+			DetectionSegment cseg = default(DetectionSegment);
+			for (k = 0; k < LineIntervals.Count; k++)
+			{
+				if (cseg.Blobs != null)
+				{
+					if (Min(LineIntervals[k].X, LineIntervals[k].Y) < cseg.End + MaxIgnore)
+					{
+						cseg.Blobs.Add(Blobs[k]);
+						cseg.End = Max(cseg.End, Max(LineIntervals[k].Y, LineIntervals[k].X));
+						continue;
+					}
+					else { FoundSegments.Add(cseg); cseg = default(DetectionSegment); }
+				}
+					cseg.Blobs = new List<DetectionBlob>();
+					cseg.Angle = Theta;
+					cseg.Blobs.Add(Blobs[k]);
+					cseg.Start = Min(LineIntervals[k].X, LineIntervals[k].Y);
+					cseg.End = Max(LineIntervals[k].Y, LineIntervals[k].X);
+			}
+			if (cseg.Blobs != null) FoundSegments.Add(cseg);
+			List<LineDetection> Detections = FoundSegments.Select((x) => MergeBlobs(x, Input)).ToList();
+			return Detections;
 		}
 
-		struct IntPoint { internal int X, Y; }
+		struct DetectionSegment
+		{
+			internal List<DetectionBlob> Blobs;
+			internal double Angle;
+			internal double Start;
+			internal double End;
+		}
+
+		internal struct IntPoint { internal int X, Y; }
 
 		struct DetectionBlob
+		{
+			internal List<IntPoint> Points;
+			internal double LineStart, LineEnd;
+		}
+
+		static DetectionBlob BitmapFill(double[,] Input, IntPoint StartPoint, bool[,] Mask, double LowThreshold, double Angle)
+		{
+			Queue<IntPoint> PointQ = new Queue<IntPoint>();
+			PointQ.Enqueue(StartPoint);
+			List<IntPoint> DiscoveredPoints = new List<IntPoint>();
+			
+			double LineMin = double.MaxValue, LineMax = double.MinValue;
+			while (PointQ.Count > 0)
+			{
+				IntPoint pt = PointQ.Dequeue();
+				if (pt.X < 0 || pt.X >= Mask.GetLength(1)) continue;
+				if (pt.Y < 0 || pt.Y >= Mask.GetLength(0)) continue;
+				if (Mask[pt.Y, pt.X]) continue;
+				double Val = Input[pt.Y, pt.X];
+				double MinMax = pt.X * Cos(Angle) + pt.Y * Sin(Angle);
+				if (MinMax < LineMin) LineMin = MinMax;
+				if (MinMax > LineMax) LineMax = MinMax;
+				if (Val > LowThreshold)
+				{
+					Mask[pt.Y, pt.X] = true;
+					
+					DiscoveredPoints.Add(pt);
+					PointQ.Enqueue(new IntPoint() { X = pt.X - 1, Y = pt.Y });
+					PointQ.Enqueue(new IntPoint() { X = pt.X + 1, Y = pt.Y });
+					PointQ.Enqueue(new IntPoint() { X = pt.X, Y = pt.Y - 1 });
+					PointQ.Enqueue(new IntPoint() { X = pt.X, Y = pt.Y + 1 });
+				}
+			}
+			DetectionBlob db = new DetectionBlob() { Points = DiscoveredPoints, LineStart = LineMin, LineEnd = LineMax };
+			return db;
+		}
+
+		internal class LineDetection
 		{
 			internal List<IntPoint> Points;
 			internal double EigenValue1;
@@ -70,40 +145,27 @@ namespace Umbrella2.Algorithms.Images
 			internal double EigenAngle2;
 			internal PixelPoint PointsCenter;
 			internal PixelPoint Barycenter;
+			internal double Flux;
+
 		}
 
-		static void BitmapFill(double[,] Input, IntPoint StartPoint, bool[,] Mask, double LowThreshold)
+		static LineDetection MergeBlobs(DetectionSegment segment, double[,] Input)
 		{
-			Queue<IntPoint> PointQ = new Queue<IntPoint>();
-			PointQ.Enqueue(StartPoint);
-			List<IntPoint> DiscoveredPoints = new List<IntPoint>();
 			double Xmean = 0, Ymean = 0;
 			double XX = 0, XY = 0, YY = 0;
 			double Flux = 0;
 			double XBmean = 0, YBmean = 0;
-			while (PointQ.Count > 0)
+			List<IntPoint> MergedPoints = segment.Blobs.Aggregate(new List<IntPoint>(), (x, y) => { x.AddRange(y.Points); return x; });
+			foreach (IntPoint pt in MergedPoints)
 			{
-				IntPoint pt = PointQ.Dequeue();
-				if (pt.X < 0 || pt.X >= Mask.GetLength(1)) continue;
-				if (pt.Y < 0 || pt.Y >= Mask.GetLength(0)) continue;
-				if (Mask[pt.Y, pt.X]) continue;
 				double Val = Input[pt.Y, pt.X];
-				if (Val > LowThreshold)
-				{
-					Mask[pt.Y, pt.X] = true;
-					Xmean += pt.X; Ymean += pt.Y;
-					XBmean += Val * pt.X; YBmean += Val * pt.Y;
-					XX += pt.X * pt.X * Val; XY += pt.X * pt.Y * Val; YY += pt.Y * pt.Y * Val;
-					Flux += Val;
-					DiscoveredPoints.Add(pt);
-					PointQ.Enqueue(new IntPoint() { X = pt.X - 1, Y = pt.Y });
-					PointQ.Enqueue(new IntPoint() { X = pt.X + 1, Y = pt.Y });
-					PointQ.Enqueue(new IntPoint() { X = pt.X, Y = pt.Y - 1 });
-					PointQ.Enqueue(new IntPoint() { X = pt.X, Y = pt.Y + 1 });
-				}
+				Xmean += pt.X; Ymean += pt.Y;
+				XBmean += Val * pt.X; YBmean += Val * pt.Y;
+				XX += pt.X * pt.X * Val; XY += pt.X * pt.Y * Val; YY += pt.Y * pt.Y * Val;
+				Flux += Val;
 			}
-			Xmean /= DiscoveredPoints.Count;
-			Ymean /= DiscoveredPoints.Count;
+			Xmean /= MergedPoints.Count;
+			Ymean /= MergedPoints.Count;
 			XBmean /= Flux;
 			YBmean /= Flux;
 			XX /= Flux;
@@ -113,16 +175,25 @@ namespace Umbrella2.Algorithms.Images
 			XY -= XBmean * YBmean;
 			YY -= YBmean * YBmean;
 
-
-
 			double Msq = Sqrt(XX * XX + 4 * XY * XY - 2 * XX * YY + YY * YY);
 			double L1 = 1.0 / 2 * (XX + YY - Msq);
 			double L2 = 1.0 / 2 * (XX + YY + Msq);
-			double A1 = Atan2(-(-XX + YY + Msq), 2 * XY);
-			double A2 = Atan2(-(-XX + YY - Msq), 2 * XY);
+			double A1 = Atan2(2 * XY, -(-XX + YY + Msq));
+			double A2 = Atan2(2 * XY, -(-XX + YY - Msq));
 
-			DetectionBlob db = new DetectionBlob() { Points = DiscoveredPoints, EigenValue1 = L1, EigenValue2 = L2, EigenAngle1 = A1, EigenAngle2 = A2 };
-			
+			LineDetection ld = new LineDetection()
+			{
+				Points = MergedPoints,
+				EigenValue1 = L1,
+				EigenValue2 = L2,
+				EigenAngle1 = A1,
+				EigenAngle2 = A2,
+				Barycenter = new PixelPoint() { X = XBmean, Y = YBmean },
+				PointsCenter = new PixelPoint() { X = Xmean, Y = Ymean },
+				Flux = Flux
+			};
+
+			return ld;
 		}
 	}
 }

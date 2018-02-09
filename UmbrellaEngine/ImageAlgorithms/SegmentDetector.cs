@@ -19,9 +19,10 @@ namespace Umbrella2.Algorithms.Images
 		double MinIntensity = 10;
 		List<Vector> StrongLines;
 		List<RLHT.Segment> Segments;
+		List<LineAnalyzer.LineDetection> DetectedFasts;
 
 		public SegmentDetector(double IncrementThreshold, double SegmentCreateThreshold, double SegmentDropThreshold)
-		{ IncTh = IncrementThreshold; SegOnTh = SegmentCreateThreshold; SegDropTh = SegmentDropThreshold; StrongHT = 1000; }
+		{ IncTh = IncrementThreshold; SegOnTh = SegmentCreateThreshold; SegDropTh = SegmentDropThreshold; StrongHT = 1000; DetectedFasts = new List<LineAnalyzer.LineDetection>(); }
 
 		public void GetSegments(FitsImage Input)
 		{
@@ -45,11 +46,22 @@ namespace Umbrella2.Algorithms.Images
 			{
 				for (int j = 50; j + 250 < Input.Width; j+=150)
 				{
-					if (CLine < 1800 + 150 && CLine > 1600 - 150 && j < 350 + 150 && j > 250 - 150)
+					if (CLine < 1800 && CLine > 1700 - 150 && j < 350 && j > 250-150)
 						;
 					InputData = Input.SwitchLockData(InputData, j, CLine - 50, true);
-					var w = RLHT.RunRLHT(InputData.Data, IncTh, SegOnTh, SegDropTh, PSFSize, MinFlux, StrongHT);
-					lock (StrongLines)
+					var w = RLHT.RunRLHT(InputData.Data, IncTh, PSFSize, MinFlux, StrongHT);
+					bool[,] Mask = new bool[200, 200];
+					
+					if (true)
+					{
+						foreach (Vector vx in w.StrongPoints)
+						{
+							//var z = RLHT.RefineRLHT(InputData.Data, IncTh, PSFSize, MinFlux, StrongHT, vx.X, vx.Y);
+							var z = LineAnalyzer.AnalyzeLine(InputData.Data, Mask, 200, 200, vx.X, vx.Y, SegOnTh, SegDropTh, 20, 5);
+							DetectedFasts.AddRange(z);
+						}
+					}
+					/*lock (StrongLines)
 					{
 						StrongLines.AddRange(w.StrongPoints);
 						for (int i = 0; i < w.Segments.Count; i++)
@@ -59,7 +71,8 @@ namespace Umbrella2.Algorithms.Images
 							seg.Radius += CLine * Math.Cos(seg.Angle) - j * Math.Sin(seg.Angle);
 							Segments.Add(seg);
 						}
-					}
+					}*/
+					;
 				}
 			}
 			Input.ExitLock(InputData);

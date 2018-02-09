@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Detection.cs" />
     <Compile Include="Geometry\LineIntersection.cs" />
     <Compile Include="ImageAlgorithms\LineAnalyzer.cs" />
     <Compile Include="ImageAlgorithms\MultiImageMedianFilter.cs" />
