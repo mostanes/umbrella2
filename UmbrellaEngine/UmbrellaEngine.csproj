@@ -41,7 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStructures\QuadTree.cs" />
     <Compile Include="Detection.cs" />
+    <Compile Include="DetectionAlgorithms\DotDetector.cs" />
+    <Compile Include="DetectionAlgorithms\PoolMDMerger.cs" />
     <Compile Include="Geometry\LineIntersection.cs" />
     <Compile Include="ImageAlgorithms\LineAnalyzer.cs" />
     <Compile Include="ImageAlgorithms\MultiImageMedianFilter.cs" />

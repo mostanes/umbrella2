@@ -16,6 +16,9 @@ namespace Umbrella2
 	{
 		public double RA;
 		public double Dec;
+
+		public static double operator ^(EquatorialPoint a, EquatorialPoint b) { return WCS.EquatorialDistance.GetDistance(a, b); }
+		public static WCS.EquatorialDistance.GreatLine operator -(EquatorialPoint a, EquatorialPoint b) { return WCS.EquatorialDistance.GetSphericalVector(b, a); }
 	}
 
 	public struct ProjectionPoint

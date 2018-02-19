@@ -39,7 +39,7 @@ namespace Umbrella2.IO.FITS
 	/// </summary>
 	public abstract class ImageProperties
 	{
-		public ImageProperties(FitsFile File)
+		public ImageProperties(FitsImage File)
 		{ }
 
 		public abstract List<ElevatedRecord> GetRecords();

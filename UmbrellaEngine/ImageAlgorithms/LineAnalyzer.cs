@@ -10,7 +10,7 @@ namespace Umbrella2.Algorithms.Images
 {
 	class LineAnalyzer
 	{
-		internal static List<LineDetection> AnalyzeLine(double[,] Input, bool[,] AnalyzeMask, int Height, int Width, double Rho, double Theta, double HighTh, double LowTh, int MaxIgnore, int PSFSize)
+		internal static List<LineDetection> AnalyzeLine(double[,] Input, bool[,] AnalyzeMask, int Height, int Width, double Rho, double Theta, double HighTh, double LowTh, int MaxIgnore, int PSFSize, int OX, int OY)
 		{
 			Vector LineVector = new Vector() { X = Cos(Theta), Y = Sin(Theta) };
 			Vector LineOrigin = new Vector() { X = -Rho * Sin(Theta), Y = Rho * Cos(Theta) };
@@ -84,7 +84,7 @@ namespace Umbrella2.Algorithms.Images
 					cseg.End = Max(LineIntervals[k].Y, LineIntervals[k].X);
 			}
 			if (cseg.Blobs != null) FoundSegments.Add(cseg);
-			List<LineDetection> Detections = FoundSegments.Select((x) => MergeBlobs(x, Input)).ToList();
+			List<LineDetection> Detections = FoundSegments.Select((x) => MergeBlobs(x, Input, OX, OY)).ToList();
 			return Detections;
 		}
 
@@ -138,7 +138,8 @@ namespace Umbrella2.Algorithms.Images
 
 		internal class LineDetection
 		{
-			internal List<IntPoint> Points;
+			internal List<PixelPoint> Points;
+			internal List<double> PointValues;
 			internal double EigenValue1;
 			internal double EigenValue2;
 			internal double EigenAngle1;
@@ -149,12 +150,13 @@ namespace Umbrella2.Algorithms.Images
 
 		}
 
-		static LineDetection MergeBlobs(DetectionSegment segment, double[,] Input)
+		static LineDetection MergeBlobs(DetectionSegment segment, double[,] Input, int OX, int OY)
 		{
 			double Xmean = 0, Ymean = 0;
 			double XX = 0, XY = 0, YY = 0;
 			double Flux = 0;
 			double XBmean = 0, YBmean = 0;
+			List<double> PValues = new List<double>();
 			List<IntPoint> MergedPoints = segment.Blobs.Aggregate(new List<IntPoint>(), (x, y) => { x.AddRange(y.Points); return x; });
 			foreach (IntPoint pt in MergedPoints)
 			{
@@ -163,6 +165,7 @@ namespace Umbrella2.Algorithms.Images
 				XBmean += Val * pt.X; YBmean += Val * pt.Y;
 				XX += pt.X * pt.X * Val; XY += pt.X * pt.Y * Val; YY += pt.Y * pt.Y * Val;
 				Flux += Val;
+				PValues.Add(Val);
 			}
 			Xmean /= MergedPoints.Count;
 			Ymean /= MergedPoints.Count;
@@ -183,14 +186,15 @@ namespace Umbrella2.Algorithms.Images
 
 			LineDetection ld = new LineDetection()
 			{
-				Points = MergedPoints,
+				Points = MergedPoints.Select((x) => new PixelPoint() { X = x.X + OX, Y = x.Y + OY }).ToList(),
 				EigenValue1 = L1,
 				EigenValue2 = L2,
 				EigenAngle1 = A1,
 				EigenAngle2 = A2,
-				Barycenter = new PixelPoint() { X = XBmean, Y = YBmean },
-				PointsCenter = new PixelPoint() { X = Xmean, Y = Ymean },
-				Flux = Flux
+				Barycenter = new PixelPoint() { X = XBmean + OX, Y = YBmean + OY },
+				PointsCenter = new PixelPoint() { X = Xmean + OX, Y = Ymean + OY },
+				Flux = Flux,
+				PointValues = PValues
 			};
 
 			return ld;

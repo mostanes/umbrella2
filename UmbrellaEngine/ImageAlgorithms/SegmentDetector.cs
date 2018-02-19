@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Umbrella2.Algorithms.Geometry;
 using Umbrella2.IO.FITS;
+using Umbrella2.IO.FITS.KnownKeywords;
 
 namespace Umbrella2.Algorithms.Images
 {
@@ -24,7 +25,7 @@ namespace Umbrella2.Algorithms.Images
 		public SegmentDetector(double IncrementThreshold, double SegmentCreateThreshold, double SegmentDropThreshold)
 		{ IncTh = IncrementThreshold; SegOnTh = SegmentCreateThreshold; SegDropTh = SegmentDropThreshold; StrongHT = 1000; DetectedFasts = new List<LineAnalyzer.LineDetection>(); }
 
-		public void GetSegments(FitsImage Input)
+		public List<MedianDetection> GetLongTrails(FitsImage Input, ObservationTime ObservationTime)
 		{
 			const int ThreadStep = 450;
 
@@ -34,7 +35,7 @@ namespace Umbrella2.Algorithms.Images
 			Parallel.For(0, (Input.Height - 100) / ThreadStep, (x) => SingleImageBlock(Input, (int) x * ThreadStep + 50, (int) (x + 1) * ThreadStep + 50));
 			if ((Input.Height - 50) % ThreadStep > 50) SingleImageBlock(Input, (int) ((Input.Height - 100) / ThreadStep * ThreadStep), (int) Input.Height - 50);
 
-			ConsolidateSegments();
+			return GetMedetect(Input, ObservationTime);
 		}
 
 		void SingleImageBlock(FitsImage Input, int StartLine, int LEnd)
@@ -57,8 +58,9 @@ namespace Umbrella2.Algorithms.Images
 						foreach (Vector vx in w.StrongPoints)
 						{
 							//var z = RLHT.RefineRLHT(InputData.Data, IncTh, PSFSize, MinFlux, StrongHT, vx.X, vx.Y);
-							var z = LineAnalyzer.AnalyzeLine(InputData.Data, Mask, 200, 200, vx.X, vx.Y, SegOnTh, SegDropTh, 20, 5);
-							DetectedFasts.AddRange(z);
+							var z = LineAnalyzer.AnalyzeLine(InputData.Data, Mask, 200, 200, vx.X, vx.Y, SegOnTh, SegDropTh, 20, 5, j, CLine - 50);
+							lock (DetectedFasts)
+								DetectedFasts.AddRange(z);
 						}
 					}
 					/*lock (StrongLines)
@@ -78,12 +80,9 @@ namespace Umbrella2.Algorithms.Images
 			Input.ExitLock(InputData);
 		}
 
-		void ConsolidateSegments()
+		List<MedianDetection> GetMedetect(FitsImage InputImage, ObservationTime ObservationTime)
 		{
-			int i, j;
-			Comparison<RLHT.Segment> Cpx = (x, y) => x.Angle < y.Angle ? -1 : x.Angle == y.Angle ? 0 : 1;
-			Segments.Sort(Cpx);
-			;
+			return DetectedFasts.Select((x) => new MedianDetection(InputImage.Transform, ObservationTime, x.Points, x.PointValues)).ToList();
 		}
 
 		double LSDistance(RLHT.Segment A, RLHT.Segment B)
