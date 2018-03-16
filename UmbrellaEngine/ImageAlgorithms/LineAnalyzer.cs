@@ -148,6 +148,12 @@ namespace Umbrella2.Algorithms.Images
 			internal PixelPoint Barycenter;
 			internal double Flux;
 
+			public override string ToString()
+			{
+				return "[LD]:[" + Barycenter + "]:{Cnr=" + Points.Count + ", a=" + (Sqrt(EigenValue1) * 2).ToString("G6") + ", b=" + (Sqrt(EigenValue2) * 2).ToString("G6") + ", uX=" +
+					Cos(EigenAngle1).ToString("G6") + ", uY=" + Sin(EigenAngle1).ToString("G6") + "}";
+			}
+
 		}
 
 		static LineDetection MergeBlobs(DetectionSegment segment, double[,] Input, int OX, int OY)
@@ -163,7 +169,7 @@ namespace Umbrella2.Algorithms.Images
 				double Val = Input[pt.Y, pt.X];
 				Xmean += pt.X; Ymean += pt.Y;
 				XBmean += Val * pt.X; YBmean += Val * pt.Y;
-				XX += pt.X * pt.X * Val; XY += pt.X * pt.Y * Val; YY += pt.Y * pt.Y * Val;
+				XX += pt.X * pt.X; XY += pt.X * pt.Y; YY += pt.Y * pt.Y;
 				Flux += Val;
 				PValues.Add(Val);
 			}
@@ -171,12 +177,12 @@ namespace Umbrella2.Algorithms.Images
 			Ymean /= MergedPoints.Count;
 			XBmean /= Flux;
 			YBmean /= Flux;
-			XX /= Flux;
-			XY /= Flux;
-			YY /= Flux;
-			XX -= XBmean * XBmean;
-			XY -= XBmean * YBmean;
-			YY -= YBmean * YBmean;
+			XX /= MergedPoints.Count;
+			XY /= MergedPoints.Count;
+			YY /= MergedPoints.Count;
+			XX -= Xmean * Xmean;
+			XY -= Xmean * Ymean;
+			YY -= Ymean * Ymean;
 
 			double Msq = Sqrt(XX * XX + 4 * XY * XY - 2 * XX * YY + YY * YY);
 			double L1 = 1.0 / 2 * (XX + YY - Msq);

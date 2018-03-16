@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStructures\ConnectedComponentGraph.cs" />
     <Compile Include="DataStructures\QuadTree.cs" />
     <Compile Include="Detection.cs" />
     <Compile Include="DetectionAlgorithms\DotDetector.cs" />
@@ -49,6 +50,7 @@
     <Compile Include="ImageAlgorithms\LineAnalyzer.cs" />
     <Compile Include="ImageAlgorithms\MultiImageMedianFilter.cs" />
     <Compile Include="ImageAlgorithms\RLHT.cs" />
+    <Compile Include="ImageAlgorithms\RLHTCore.cs" />
     <Compile Include="ImageAlgorithms\SegmentDetector.cs" />
     <Compile Include="ImageAlgorithms\StandardImageMasker.cs" />
     <Compile Include="ImageAlgorithms\WeightedMedianFilter.cs" />

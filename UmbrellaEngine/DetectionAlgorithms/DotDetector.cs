@@ -69,6 +69,11 @@ namespace Umbrella2.Algorithms.Detection
 			internal List<double> PixelValues;
 			internal PixelPoint PixelCenter;
 			internal double Flux;
+
+			public override string ToString()
+			{
+				return "[DD]{" + Barycenter.ToString() + "}";
+			}
 		}
 
 		DotDetection BitmapFill(double[,] Input, IntPoint StartPoint, bool[,] Mask, double LowThreshold, int OX, int OY)

@@ -10,7 +10,12 @@ namespace Umbrella2
     {
 		public double X;
 		public double Y;
-    }
+		public override string ToString()
+		{
+			return "X=" + X.ToString("G6") + ", Y=" + Y.ToString("G6");
+		}
+		public static double operator ^(PixelPoint a, PixelPoint b) { return Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y)); }
+	}
 
 	public struct EquatorialPoint
 	{

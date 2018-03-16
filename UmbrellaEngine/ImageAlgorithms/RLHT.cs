@@ -8,7 +8,7 @@ using static System.Math;
 
 namespace Umbrella2.Algorithms.Images
 {
-	public static class RLHT
+	public static partial class RLHT
 	{
 		public static HTResult RunRLHT(double[,] Input, double IncTh, double MinLength, double MinFlux, double StrongHoughTh)
 		{
@@ -24,6 +24,20 @@ namespace Umbrella2.Algorithms.Images
 			int Width = Input.GetLength(1);
 			double ThetaUnit = Min(Atan2(1, Height), Atan2(1, Width));
 			return RunRLHT(Input, IncTh, MinLength, MinFlux, StrongHoughTh, 1, 1, Rho - 10, Rho + 10, Theta - 10 * ThetaUnit, Theta + 10 * ThetaUnit);
+		}
+
+		public static HTSpan RefinedRLHT(double[,] Input, double IncTh, double MinLength, double MinFlux, double StrongHoughTh, List<Vector> StrongPoints)
+		{
+			int Height = Input.GetLength(0);
+			int Width = Input.GetLength(1);
+			double ThetaUnit = Min(Atan2(1, Height), Atan2(1, Width));
+			List<Vector> Directions = new List<Vector>();
+			HTResult res = RunRLHT(Input, IncTh, MinLength, MinFlux, StrongHoughTh, 1, 1, Rho - 10, Rho + 10, Theta - 10 * ThetaUnit, Theta + 10 * ThetaUnit);
+			Directions.AddRange(res.StrongPoints);
+			Algorithms.Misc.ConnectedComponentGraph<Vector> ccg = new Misc.ConnectedComponentGraph<Vector>(res.StrongPoints, (x, y) => (Abs(x.X - y.X) + Abs(x.Y - y.Y) / ThetaUnit) < 2.1);
+			List<Vector>[] lv = ccg.GetConnectedComponents();
+			HTSpan hspan = new HTSpan() { StrongPointSpans = lv };
+			return hspan;
 		}
 
 		public static HTResult RunRLHT(double[,] Input, double IncTh,double MinLen, double MinFx, double SHTh, double SkA, double SkR, double StRad, double EndRad, double StAng, double EndAng)
@@ -57,6 +71,11 @@ namespace Umbrella2.Algorithms.Images
 			internal List<Vector> StrongPoints;
 		}
 
+		public struct HTSpan
+		{
+			internal List<Vector>[] StrongPointSpans;
+		}
+
 		public struct Segment
 		{
 			internal Vector Start, End;
@@ -70,77 +89,6 @@ namespace Umbrella2.Algorithms.Images
 			public override string ToString() { return Start.ToString() + "  ---->  " + End.ToString() + "    |  " + Intensity.ToString("E5"); }
 		}
 
-		static void Lineover(double[,] Input, int Height, int Width, double Rho, double Theta, double IncTh, out double HoughSum)
-		{
-			Vector LineVector = new Vector() { X = Cos(Theta), Y = Sin(Theta) };
-			Vector LineOrigin = new Vector() { X = -Rho * Sin(Theta), Y = Rho * Cos(Theta) };
-			var r = LineIntersection.IntersectLeft(LineOrigin, LineVector, Width, Height);
-			if (r == null) { HoughSum = 0; return; }
-			Vector LeftIntersect = r.Item1;
-			double LDist = r.Item2;
-			r = LineIntersection.IntersectRight(LineOrigin, LineVector, Width, Height);
-			if (r == null) { HoughSum = 0; return; }
-			Vector RightIntersect = r.Item1;
-			double RDist = r.Item2;
-
-			double Start = Min(LDist, RDist);
-			double End = Max(LDist, RDist);
-			Vector StVec, EVec;
-
-			if (Start == LDist && End == RDist) { StVec = LeftIntersect; EVec = RightIntersect; }
-			else if (Start == RDist && End == LDist) { StVec = RightIntersect; EVec = LeftIntersect; }
-			else throw new ApplicationException("Geometry error.");
-
-			int k;
-			int N = (int) (End - Start);
-			Vector pt;
-
-			if (N < 10) { HoughSum = 0; return; }
-
-			const int ShortLength = 5;
-			const int LongLength = 35;
-			double ShortAvg, LongAvg;
-			double[] LastVars = new double[LongLength];
-			int RollingPtr;
-			double ShortValue, LongValue;
-			double HTSum;
-
-			pt = StVec; RollingPtr = ShortLength; ShortAvg = 0;
-			for (k = 0; k < ShortLength; k++, pt.Increment(LineVector))
-			{
-				int X = (int) Round(pt.X);
-				int Y = (int) Round(pt.Y);
-				double Val = Input[Y, X];
-				ShortAvg += Val / ShortLength;
-				LastVars[k] = Input[Y, X];
-			}
-			LongAvg = ShortAvg;
-			LongValue = ShortAvg;
-			ShortValue = ShortAvg;
-			HTSum = LongValue + ShortValue;
-			for (k = ShortLength; k < LongLength; k++) LastVars[k] = ShortAvg;
-
-			double RevIC = 1 / IncTh;
-
-			for (k = ShortLength; k < N; k++, pt.Increment(LineVector))
-			{
-				int X = (int) Round(pt.X);
-				int Y = (int) Round(pt.Y);
-				double Val = Input[Y, X];
-				int LV = (RollingPtr + LongLength - 5) % LongLength;
-				ShortAvg += (Val - LastVars[LV]) / ShortLength;
-				LongAvg += (Val - LastVars[RollingPtr]) / LongLength;
-				LastVars[RollingPtr] = Val;
-				double LgMult = Atan(LongAvg * RevIC - 1) / PI + 0.5;
-				LongValue = LongValue * LgMult + LongAvg;
-				double XLgMult = Atan(LongValue * RevIC - 1) / PI + 0.5;
-				double CVal = ShortAvg * 2 * XLgMult;
-				HTSum += CVal;
-
-				
-				RollingPtr = (RollingPtr + 1) % LongLength;
-			}
-			HoughSum = HTSum;
-		}
+		
 	}
 }

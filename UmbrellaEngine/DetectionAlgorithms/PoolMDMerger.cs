@@ -66,7 +66,7 @@ namespace Umbrella2.Algorithms.Detection
 			TimeSpan DeltaTime = b.Time.Time - a.Time.Time;
 			var Line = b.BarycenterEP - a.BarycenterEP;
 			double PairEstimatedDistance = ~Line;
-			double PairEstimatedDistanceError = a.LargestDistance + b.LargestDistance;
+			double PairEstimatedDistanceError = a.PixelEllipse.SemiaxisMajor + b.PixelEllipse.SemiaxisMajor;
 			double PairEstimatedVelocity = PairEstimatedDistance / DeltaTime.TotalSeconds;
 			double PairEstimatedVelocityError = PairEstimatedDistanceError / DeltaTime.TotalSeconds;
 			List<List<MedianDetection>> DetectedInPool = new List<List<MedianDetection>>();

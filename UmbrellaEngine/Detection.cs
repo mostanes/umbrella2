@@ -77,6 +77,12 @@ namespace Umbrella2
 			BarycentricEllipse = new SourceEllipse(XXB, XYB, YYB);
 			PixelEllipse = new SourceEllipse(XXP, XYP, YYP);
 		}
+
+		public override string ToString()
+		{
+			return "[" + BarycenterPP.ToString() + "]:{" + "Cnt=" + PixelPoints.Count + ", a=" + PixelEllipse.SemiaxisMajor.ToString("G6") + ", b=" + PixelEllipse.SemiaxisMinor.ToString("G6") +
+				", uX=" + Cos(PixelEllipse.SemiaxisMajorAngle).ToString("G6") + ", uY=" + Sin(PixelEllipse.SemiaxisMajorAngle).ToString("G6") + "}";
+		}
 	}
 
 	struct SourceEllipse
@@ -92,8 +98,8 @@ namespace Umbrella2
 			double L2 = 1.0 / 2 * (XX + YY + Msq);
 			double A1 = Atan2(2 * XY, -(-XX + YY + Msq));
 			double A2 = Atan2(2 * XY, -(-XX + YY - Msq));
-			if (L1 > L2) { SemiaxisMajorAngle = A1; SemiaxisMajor = L1; SemiaxisMinor = L2; }
-			else { SemiaxisMajorAngle = A2; SemiaxisMajor = L2; SemiaxisMinor = L1; }
+			if (L1 > L2) { SemiaxisMajorAngle = A1; SemiaxisMajor = 2 * Sqrt(L1); SemiaxisMinor = 2 * Sqrt(L2); }
+			else { SemiaxisMajorAngle = A2; SemiaxisMajor = 2 * Sqrt(L2); SemiaxisMinor = 2 * Sqrt(L1); }
 		}
 	}
 }
