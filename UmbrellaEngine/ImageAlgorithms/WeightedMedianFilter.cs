@@ -9,6 +9,12 @@ namespace Umbrella2.Algorithms.Images
 {
 	public class WeightedMedianFilter
 	{
+		/// <summary>
+		/// Runs a semi-median filtering using a weighted method on a single image.
+		/// </summary>
+		/// <param name="Input">Input image.</param>
+		/// <param name="Output">Output image.</param>
+		/// <param name="PSF">PSF weights.</param>
 		public static void RunMedian(FitsImage Input, FitsImage Output, double[,] PSF)
 		{
 			double[] PSFLinear = new double[PSF.Length];
@@ -38,7 +44,8 @@ namespace Umbrella2.Algorithms.Images
 					Buffer.BlockCopy(PSF, 0, DPSF, 0, 8 * PSF.Length);
 					Array.Sort(MedValues, DPSF);
 					for (k = 0, s = 0; s < 0.5; k++) s += DPSF[k];
-					Output[i, j] = MedValues[k];
+					Output[i, j] = 0.5 * (MedValues[k - 1] + MedValues[k + 1]) + MedValues[k];
+					Output[i, j] /= 2;
 				}
 		}
 

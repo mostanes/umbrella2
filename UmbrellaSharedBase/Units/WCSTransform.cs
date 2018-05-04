@@ -31,6 +31,9 @@ namespace Umbrella2.WCS
 
 		public List<PixelPoint> GetPixelPoints(IEnumerable<EquatorialPoint> Points)
 		{ return LinearTransform.GetPixelPoints(ProjectionTransform.GetProjectionPoints(Points)); }
+
+		public double GetEstimatedWCSChainDerivative()
+		{ return LinearTransform.WCSChainDerivative * ProjectionTransform.GetEstimatedWCSChainDerivative(); }
 	}
 
 	public abstract class WCSProjectionTransform
@@ -45,6 +48,7 @@ namespace Umbrella2.WCS
 		public abstract ProjectionPoint GetProjectionPoint(EquatorialPoint Point);
 		public abstract ProjectionPoint[] GetProjectionPoints(EquatorialPoint[] Points);
 		public abstract List<ProjectionPoint> GetProjectionPoints(IEnumerable<EquatorialPoint> Points);
+		public abstract double GetEstimatedWCSChainDerivative();
 		public abstract void GetReferencePoints(out double RA, out double Dec);
 		public abstract string Name { get; }
 		public abstract string Description { get; }

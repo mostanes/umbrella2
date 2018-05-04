@@ -88,6 +88,7 @@ namespace Umbrella2.IO.FITS
 			mmap = MemoryMappedFile.CreateFromFile(Path, FileMode.Create, Guid.NewGuid().ToString(), FLength, MemoryMappedFileAccess.ReadWrite);
 			Stream s = mmap.CreateViewStream();
 			foreach (var w in Headers) { PrimaryTable.Add(w.Key, w.Value); s.Write(w.Value.ToRawRecord(), 0, 80); }
+			s.Write(Encoding.UTF8.GetBytes("END".PadRight(80)), 0, 80);
 			PrimaryDataPointer = HLength;
 			s.Dispose();
 		}

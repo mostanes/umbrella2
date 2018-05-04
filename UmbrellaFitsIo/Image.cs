@@ -131,6 +131,9 @@ namespace Umbrella2.IO.FITS
 				
 				Reader = RW.Item1;
 				Writer = RW.Item2;
+
+				try { GetProperty<KnownKeywords.SWarpScaling>(); }
+				catch { }
 			}
 			catch (Exception ex) { throw new FITSFormatException("Cannot understand FITS file.", ex); }
 			this.File = File;
@@ -148,10 +151,10 @@ namespace Umbrella2.IO.FITS
 			Reader = RW.Item1;
 			Writer = RW.Item2;
 			RAFirst = !ReverseAxis;
-			HeaderTable table = GetHeader(BitPix);
+			Header = GetHeader(BitPix);
 			if (ExtraProperties != null)
-				foreach (ImageProperties prop in ExtraProperties) foreach (ElevatedRecord er in prop.GetRecords()) table.Add(er.Name, er);
-			File.SetPrimaryHeaders(table);
+				foreach (ImageProperties prop in ExtraProperties) foreach (ElevatedRecord er in prop.GetRecords()) Header.Add(er.Name, er);
+			File.SetPrimaryHeaders(Header);
 		}
 
 		public T GetProperty<T>() where T : ImageProperties
@@ -205,6 +208,8 @@ namespace Umbrella2.IO.FITS
 			else
 				for (int i = 0; i < imData.Position.Height - rp.Height; i++) for (int j = 0; j < rp.Width; j++) imData.Data[i, j] = 0;
 			*/
+			if (PropertiesDictionary.ContainsKey(typeof(KnownKeywords.SWarpScaling)))
+				(PropertiesDictionary[typeof(KnownKeywords.SWarpScaling)] as KnownKeywords.SWarpScaling).ScaleData(imData.Data);
 		}
 
 		void WriteData(ImageData Data)
@@ -272,8 +277,7 @@ namespace Umbrella2.IO.FITS
 				{"CTYPE1", T1 }, {"CTYPE2", T2 }, { "CUNIT1", " 'deg     '"}, {"CUNIT2", " 'deg     '"}, {"CRVAL1", V1 }, {"CRVAL2", V2 },
 				{"CRPIX1", "  "+ (RAFirst?Matrix[4]:Matrix[5]).ToString("0.000000000000E+00") }, {"CRPIX2", "  " +(RAFirst?Matrix[5]:Matrix[4]).ToString("0.000000000000E+00") },
 				{"CD1_1", "  "+ (RAFirst?Matrix[0]:Matrix[2]).ToString("0.000000000000E+00") }, {"CD1_2", "  "+ (RAFirst?Matrix[1]:Matrix[3]).ToString("0.000000000000E+00") },
-				{"CD2_1", "  "+ (RAFirst?Matrix[2]:Matrix[0]).ToString("0.000000000000E+00") }, {"CD2_2", "  "+ (RAFirst?Matrix[3]:Matrix[1]).ToString("0.000000000000E+00") },
-				{"END", "" }
+				{"CD2_1", "  "+ (RAFirst?Matrix[2]:Matrix[0]).ToString("0.000000000000E+00") }, {"CD2_2", "  "+ (RAFirst?Matrix[3]:Matrix[1]).ToString("0.000000000000E+00") }
 			};
 			HeaderTable het = records.ToDictionary((x) => x.Key, (x) => new ElevatedRecord(x.Key, x.Value));
 			return het;

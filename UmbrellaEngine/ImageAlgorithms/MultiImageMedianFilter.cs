@@ -14,8 +14,8 @@ namespace Umbrella2.Algorithms.Images
 		{
 			const int ThreadStep = 50;
 			const int LineStep = 50;
-			ParallelOptions popt = new ParallelOptions() { MaxDegreeOfParallelism = 1 };
-			Parallel.For(0, Output.Height / ThreadStep, (x) => SingleImageBlock(Input, Output, (int) x * ThreadStep, LineStep, (int) (x + 1) * ThreadStep));
+			ParallelOptions popt = new ParallelOptions();// { MaxDegreeOfParallelism = 1 };
+			Parallel.For(0, Output.Height / ThreadStep, popt, (x) => SingleImageBlock(Input, Output, (int) x * ThreadStep, LineStep, (int) (x + 1) * ThreadStep));
 			if (Output.Height % ThreadStep != 0) SingleImageBlock(Input, Output, (int) (Output.Height - Output.Height % ThreadStep), LineStep, (int) Output.Height);
 			//SingleImageBlock(Input, Output, PSFLinear, (PSF.GetLength(0) - 1) / 2, 0, 50, (int) Input.Height);
 		}

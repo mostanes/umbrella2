@@ -10,19 +10,19 @@ namespace Umbrella2.Algorithms.Images
 {
 	public class StandardImageMasker
 	{
-		double UpperThreshold;
-		double LowerThreshold;
-		double Floor;
+		double UTM;
+		double LTM;
+		//double Floor;
 		FitsImage Mask;
 		WCSViaProjection MaskTransform;
 
-		public StandardImageMasker(FitsImage Mask, double UpperThreshold, double LowerThreshold, double Floor)
+		public StandardImageMasker(FitsImage Mask, double UpperThreshold, double LowerThreshold)
 		{
 			this.Mask = Mask;
 			MaskTransform = Mask.Transform;
-			this.UpperThreshold = UpperThreshold;
-			this.LowerThreshold = LowerThreshold;
-			this.Floor = Floor;
+			this.UTM = UpperThreshold;
+			this.LTM = LowerThreshold;
+			//this.Floor = Floor;
 		}
 
 		public void MaskImage(FitsImage Input, FitsImage Output)
@@ -41,6 +41,28 @@ namespace Umbrella2.Algorithms.Images
 			int i, j, k, c;
 			bool[,] SmartMask = new bool[OH, OW];
 			PixelPoint pxp = new PixelPoint();
+
+			double Mean = 0, Var = 0;
+			double[] Means = new double[OW / OH];
+			double[] Vars = new double[OW / OH];
+			for (k = 0; k < OW - OH; k += OH)
+			{
+				Mean = 0; Var = 0;
+				for (i = 0; i < OH; i++) for (j = 0; j < OH; j++)
+					{ Mean += Mask[i, j + k]; Var += Mask[i, j + k] * Mask[i, j + k]; }
+				Mean /= (OH * OH);
+				Var /= (OH * OH);
+				Var -= Mean * Mean;
+				Means[k / OH] = Mean;
+				Vars[k / OH] = Var;
+			}
+			Array.Sort(Means, Vars);
+			Mean = Means[Means.Length / 4];
+			Var = Vars[Vars.Length / 4];
+			double StDev = Math.Sqrt(Var);
+			double UpperThreshold = UTM * StDev + Mean;
+			double LowerThreshold = LTM * StDev + Mean;
+
 			for (i = 0; i < OH; i++) for (j = 0; j < OW; j++)
 				{
 					if (SmartMask[i, j]) continue;
@@ -51,16 +73,16 @@ namespace Umbrella2.Algorithms.Images
 					if (mpt.X < 0 || mpt.X >= Mask.GetLength(1)) continue;
 					if (mpt.Y < 0 || mpt.Y >= Mask.GetLength(0)) continue;
 					if (Mask[(int) mpt.Y, (int) mpt.X] > UpperThreshold)
-						BitmapFill(Mask, Input, pxp, MaskX, MaskY, OX, OY, InputTransform, SmartMask);
+						BitmapFill(Mask, Input, pxp, LowerThreshold, Mean, MaskX, MaskY, OX, OY, InputTransform, SmartMask);
 				}
 			for (i = 0; i < OH; i++) for (j = 0; j < OW; j++)
 				{
-					if (SmartMask[i, j] || Input[i, j] < Floor) Output[i, j] = 0;
-					else Output[i, j] = Input[i, j] - Floor;
+					if (SmartMask[i, j]) Output[i, j] = -UTM * StDev;
+					else Output[i, j] = Input[i, j] - Mean;
 				}
 		}
 
-		void BitmapFill(double[,] Mask, double[,] Input, PixelPoint DPoint, int MaskX, int MaskY, int OX, int OY, WCSViaProjection InputTransform, bool[,] SmartMask)
+		void BitmapFill(double[,] Mask, double[,] Input, PixelPoint DPoint, double LowerThreshold, double Floor, int MaskX, int MaskY, int OX, int OY, WCSViaProjection InputTransform, bool[,] SmartMask)
 		{
 			Queue<PixelPoint> PointQ = new Queue<PixelPoint>();
 			PointQ.Enqueue(DPoint);
@@ -78,7 +100,7 @@ namespace Umbrella2.Algorithms.Images
 				if (mpt.Y < 0 || mpt.Y >= Mask.GetLength(0)) continue;
 				bool Do = false;
 				if (Mask[(int) mpt.Y, (int) mpt.X] > LowerThreshold) Do = true;
-				if (!Do && Mask[(int) mpt.Y, (int) mpt.X] > XLow) if (Input[(int) pt.Y - OY, (int) pt.X - OX] > LowerThreshold) Do = true;
+				if (!Do && Mask[(int) mpt.Y, (int) mpt.X] > XLow) if (Input[(int) pt.Y - OY, (int) pt.X - OX] > LTM) Do = true;
 				if (Do)
 				{
 					SmartMask[(int) pt.Y - OY, (int) pt.X - OX] = true;

@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="DataFormatTranslations\FPDataset.cs" />
     <Compile Include="ExtraKeywordReaders\ObservationTime.cs" />
+    <Compile Include="ExtraKeywordReaders\SWarpScaling.cs" />
     <Compile Include="FitsFileBuilder.cs" />
     <Compile Include="FitsRecords.cs" />
     <Compile Include="FrameworkSupport\RWLockArea.cs" />

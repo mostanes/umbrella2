@@ -45,7 +45,7 @@ namespace Umbrella2.Algorithms.Images
 			{
 				int l;
 				Vector vl = pt;
-				for (l = 0; l < PSFSize; l++, vl.Increment(LONormal))
+				for (l = -PSFSize; l < PSFSize; l++, vl.Increment(LONormal))
 				{
 					int X = (int) Round(vl.X);
 					int Y = (int) Round(vl.Y);

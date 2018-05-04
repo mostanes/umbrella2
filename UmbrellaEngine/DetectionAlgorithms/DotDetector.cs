@@ -10,8 +10,8 @@ namespace Umbrella2.Algorithms.Detection
 {
 	public class DotDetector
 	{
-		public double HighThreshold;
-		public double LowThreshold;
+		public double HighThresholdMultiplier;
+		public double LowThresholdMultiplier;
 		public double MinPix;
 		List<DotDetection> Detections;
 
@@ -23,7 +23,7 @@ namespace Umbrella2.Algorithms.Detection
 			Parallel.For(0, Input.Height / ThreadStep, (x) => SingleImageBlock(Input, (int) x * ThreadStep, LineStep, (int) (x + 1) * ThreadStep));
 			if (Input.Height % ThreadStep != 0) SingleImageBlock(Input, (int) (Input.Height - Input.Height % ThreadStep), LineStep, (int) Input.Height);
 
-			List<MedianDetection> Mdect = Detections.Select((x) => new MedianDetection(Input.Transform, ObservationTime, x.Pixels, x.PixelValues)).ToList();
+			List<MedianDetection> Mdect = Detections.Select((x) => new MedianDetection(Input.Transform, Input, x.Pixels, x.PixelValues)).ToList();
 			return Mdect;
 		}
 
@@ -34,6 +34,17 @@ namespace Umbrella2.Algorithms.Detection
 			int i, j, k, l;
 			bool[,] Mask = new bool[OH, OW];
 			List<DotDetection> ldot = new List<DotDetection>();
+
+			double Mean = 0, Var = 0;
+			for (i = 0; i < OH; i++) for (j = 0; j < OW; j++)
+				{ Mean += Input[i, j]; Var += Input[i, j] * Input[i, j]; }
+			Mean /= Input.Length;
+			Var /= Input.Length;
+			Var -= Mean;
+			double StDev = Math.Sqrt(Var);
+			double HighThreshold = HighThresholdMultiplier * StDev + Mean;
+			double LowThreshold = LowThresholdMultiplier * StDev + Mean;
+
 			for (i = 0; i < OH; i++) for (j = 0; j < OW; j++)
 				{
 					if (Mask[i, j]) continue;
@@ -76,7 +87,7 @@ namespace Umbrella2.Algorithms.Detection
 			}
 		}
 
-		DotDetection BitmapFill(double[,] Input, IntPoint StartPoint, bool[,] Mask, double LowThreshold, int OX, int OY)
+		static DotDetection BitmapFill(double[,] Input, IntPoint StartPoint, bool[,] Mask, double LowThreshold, int OX, int OY)
 		{
 			Queue<IntPoint> PointQ = new Queue<IntPoint>();
 			PointQ.Enqueue(StartPoint);

@@ -9,6 +9,9 @@ namespace Umbrella2.WCS
 {
 	public class EquatorialDistance
 	{
+		/// <summary>
+		/// Returns the spherical distance between 2 points on the sphere.
+		/// </summary>
 		public static double GetDistance(EquatorialPoint A, EquatorialPoint B)
 		{
 			double DeltaPhi = A.Dec - B.Dec;
@@ -29,15 +32,54 @@ namespace Umbrella2.WCS
 			public static double operator *(Vector3D A, Vector3D B) => A.X * B.X + A.Y * B.Y + A.Z * B.Z;
 		}
 
+		/// <summary>
+		/// Defines a spherical line segment/vector.
+		/// </summary>
 		public struct GreatLine
 		{
 			internal Vector3D A, B;
 			internal double AlphaAngle;
 
-			public static EquatorialPoint operator +(GreatLine Vector, double Distance) => GetPointOnLine(Vector, Distance);
+			public GreatLine(EquatorialPoint A, EquatorialPoint B)
+			{
+				double sA = Cos(A.Dec), sB = Cos(B.Dec);
+				this.A = new Vector3D() { X = sA * Cos(A.RA), Y = sA * Sin(A.RA), Z = Sin(A.Dec) };
+				this.B = new Vector3D() { X = sB * Cos(B.RA), Y = sB * Sin(B.RA), Z = Sin(B.Dec) };
+				AlphaAngle = GetDistance(A, B);
+			}
+
+			/// <summary>
+			/// Provides great circle navigation. Equivalent of GetPointOnLine.
+			/// </summary>
+			public static EquatorialPoint operator +(GreatLine Vector, double Distance) => Vector.GetPointOnLine(Distance);
+			
+			/// <summary>
+			/// Returns the line length / spherical distance between the points on the sphere.
+			/// </summary>
 			public static double operator ~(GreatLine Vector) => Vector.AlphaAngle;
+
+			/// <summary>
+			/// Provides great circle navigation.
+			/// </summary>
+			public EquatorialPoint GetPointOnLine(double Distance)
+			{
+				double mA = -Sin(Distance) / Sin(AlphaAngle);
+				double mB = Sin(Distance + AlphaAngle) / Sin(AlphaAngle);
+				Vector3D vCs = mA * A + mB * B;
+				double RA = Atan2(vCs.Y, vCs.X);
+				if (RA < 0) RA += 2 * PI;
+				double Dec = Atan2(vCs.Z, Sqrt(vCs.X * vCs.X + vCs.Y * vCs.Y));
+				return new EquatorialPoint() { RA = RA, Dec = Dec };
+			}
 		}
 
+		/// <summary>
+		/// Provides great circle navigation.
+		/// </summary>
+		/// <param name="A">Endpoint.</param>
+		/// <param name="B">Startpoint.</param>
+		/// <param name="Distance">Distance to navigate.</param>
+		/// <returns></returns>
 		public static EquatorialPoint GetGreatCircleWaypoint(EquatorialPoint A, EquatorialPoint B, double Distance)
 		{
 			double sA = Cos(A.Dec), sB = Cos(B.Dec);
@@ -48,26 +90,6 @@ namespace Umbrella2.WCS
 			double mB = Sin(Distance + Alpha) / Sin(Alpha);
 			Vector3D vCs = mA * vA + mB * vB;
 			double RA = Atan2(vCs.Y, vCs.X);
-			double Dec = Atan2(vCs.Z, Sqrt(vCs.X * vCs.X + vCs.Y * vCs.Y));
-			return new EquatorialPoint() { RA = RA, Dec = Dec };
-		}
-
-		public static GreatLine GetSphericalVector(EquatorialPoint A, EquatorialPoint B)
-		{
-			double sA = Cos(A.Dec), sB = Cos(B.Dec);
-			Vector3D vA = new Vector3D() { X = sA * Cos(A.RA), Y = sA * Sin(A.RA), Z = Sin(A.Dec) };
-			Vector3D vB = new Vector3D() { X = sB * Cos(B.RA), Y = sB * Sin(B.RA), Z = Sin(B.Dec) };
-			double Alpha = GetDistance(A, B);
-			return new GreatLine() { A = vA, B = vB, AlphaAngle = Alpha };
-		}
-
-		public static EquatorialPoint GetPointOnLine(GreatLine Vector, double Distance)
-		{
-			double mA = -Sin(Distance) / Sin(Vector.AlphaAngle);
-			double mB = Sin(Distance + Vector.AlphaAngle) / Sin(Vector.AlphaAngle);
-			Vector3D vCs = mA * Vector.A + mB * Vector.B;
-			double RA = Atan2(vCs.Y, vCs.X);
-			if (RA < 0) RA += 2 * PI;
 			double Dec = Atan2(vCs.Z, Sqrt(vCs.X * vCs.X + vCs.Y * vCs.Y));
 			return new EquatorialPoint() { RA = RA, Dec = Dec };
 		}

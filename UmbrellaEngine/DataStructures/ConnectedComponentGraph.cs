@@ -6,12 +6,21 @@ using System.Threading.Tasks;
 
 namespace Umbrella2.Algorithms.Misc
 {
+	/// <summary>
+	/// Graph data structure to find groupings of objects.
+	/// </summary>
+	/// <typeparam name="T">Objects to be grouped.</typeparam>
 	class ConnectedComponentGraph<T>
 	{
 		T[] Objects;
 		Func<T, T, bool> EdgeGenerator;
 		GNode[] Nodes;
 
+		/// <summary>
+		/// Creates a ConnectedComponentGraph from a given set of objects.
+		/// </summary>
+		/// <param name="ObjectList">List of objects to group.</param>
+		/// <param name="EdgeGeneratingFunction">Topological binary distance function.</param>
 		public ConnectedComponentGraph(List<T> ObjectList, Func<T, T, bool> EdgeGeneratingFunction)
 		{
 			Objects = ObjectList.ToArray();
@@ -30,6 +39,10 @@ namespace Umbrella2.Algorithms.Misc
 			internal List<GNode> ConnectedNodes;
 		}
 
+		/// <summary>
+		/// Retrieves the objects grouped.
+		/// </summary>
+		/// <returns></returns>
 		public List<T>[] GetConnectedComponents()
 		{
 			int[] ComponentsNumber = new int[Nodes.Length];
@@ -42,6 +55,12 @@ namespace Umbrella2.Algorithms.Misc
 			return Components;
 		}
 
+		/// <summary>
+		/// Marks objects from the same connected component.
+		/// </summary>
+		/// <param name="ZeroIndex">Graph node index (in Nodes).</param>
+		/// <param name="ComponentNumber">Object grouping number.</param>
+		/// <param name="Components">List of groupings.</param>
 		void FollowConnectedComponent(int ZeroIndex, int ComponentNumber, int[] Components)
 		{
 			foreach (GNode nd in Nodes[ZeroIndex].ConnectedNodes)

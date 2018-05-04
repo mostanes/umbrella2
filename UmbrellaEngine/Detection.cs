@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Umbrella2.IO.FITS.KnownKeywords;
+using Umbrella2.IO.FITS;
 using Umbrella2.WCS;
 using static System.Math;
 
@@ -12,7 +13,7 @@ namespace Umbrella2
 	public class MedianDetection
 	{
 		internal List<EquatorialPoint> EquatorialPoints;
-		internal List<PixelPoint> PixelPoints;
+		public List<PixelPoint> PixelPoints;
 		internal List<double> PixelValues;
 		internal double Flux;
 		internal SourceEllipse PixelEllipse;
@@ -21,10 +22,12 @@ namespace Umbrella2
 		internal EquatorialPoint BarycenterEP;
 		internal ObservationTime Time;
 		internal double LargestDistance;
+		internal FitsImage ParentImage;
 
-		internal MedianDetection(WCSViaProjection Transform, ObservationTime Time, List<PixelPoint> Points, List<double> PixelValues)
+		internal MedianDetection(WCSViaProjection Transform, FitsImage Image, List<PixelPoint> Points, List<double> PixelValues)
 		{
-			this.Time = Time;
+			this.Time = Image.GetProperty<ObservationTime>();
+			ParentImage = Image;
 			PixelPoints = Points;
 			EquatorialPoints = Transform.GetEquatorialPoints(PixelPoints);
 			double RAmin = double.MaxValue, RAmax = double.MinValue, Decmin = double.MaxValue, Decmax = double.MinValue;

@@ -61,6 +61,11 @@ namespace Umbrella2.WCS.Projections
 			return EqP;
 		}
 
+		public override double GetEstimatedWCSChainDerivative()
+		{
+			return 1;
+		}
+
 		public override ProjectionPoint GetProjectionPoint(EquatorialPoint Point)
 		{
 			double CC = Sin(Point.Dec) * Sin(Dec) + Cos(Point.Dec) * Cos(Dec) * Cos(Point.RA - RA);

@@ -17,6 +17,7 @@ namespace Umbrella2.Algorithms.Detection
 		double LongTrailHighThreshold = 30;
 		double LongTrailLowThreshold = 10;
 		double AngleDistanceDifferenceThreshold = 10;
+		List<MedianDetection[][]> CandidatePairings;
 
 		public PoolMDMerger()
 		{
@@ -67,9 +68,11 @@ namespace Umbrella2.Algorithms.Detection
 			var Line = b.BarycenterEP - a.BarycenterEP;
 			double PairEstimatedDistance = ~Line;
 			double PairEstimatedDistanceError = a.PixelEllipse.SemiaxisMajor + b.PixelEllipse.SemiaxisMajor;
+			PairEstimatedDistanceError *= a.ParentImage.Transform.GetEstimatedWCSChainDerivative();
 			double PairEstimatedVelocity = PairEstimatedDistance / DeltaTime.TotalSeconds;
 			double PairEstimatedVelocityError = PairEstimatedDistanceError / DeltaTime.TotalSeconds;
 			List<List<MedianDetection>> DetectedInPool = new List<List<MedianDetection>>();
+			List<MedianDetection[]> DIPAr = new List<MedianDetection[]>();
 			foreach (DateTime dt in ObsTimes)
 			{
 				TimeSpan tsp = dt - b.Time.Time;
@@ -78,13 +81,18 @@ namespace Umbrella2.Algorithms.Detection
 				EquatorialPoint EstimatedPoint = Line + EstDistance;
 				var DetectionsList = DetectionPool.Query(EstimatedPoint.Dec, EstimatedPoint.RA, EstDistError);
 				DetectionsList.RemoveAll((x) => ((x.BarycenterEP ^ EstimatedPoint) > EstDistError) || (x.Time.Time != dt));
-				DetectedInPool.Add(DetectionsList);
+				//DetectedInPool.Add(DetectionsList);
+				DIPAr.Add(DetectionsList.ToArray());
 			}
-			;
+			int i, c=0;
+			for (i = 0; i < DIPAr.Count; i++) if (DIPAr[i].Length != 0) c++;
+			if (c >= 3)
+				CandidatePairings.Add(DIPAr.ToArray());
 		}
 
-		public void Search()
+		public List<MedianDetection[][]> Search()
 		{
+			CandidatePairings = new List<MedianDetection[][]>();
 			int i, j;
 			int cnt = 1;
 			int[] DetectionPairs = new int[PoolList.Count];
@@ -93,6 +101,7 @@ namespace Umbrella2.Algorithms.Detection
 					if (!PairPossible(PoolList[i], PoolList[j])) continue;
 					else TryPair(PoolList[i], PoolList[j]);
 				}
+			return CandidatePairings;
 		}
 	}
 }
