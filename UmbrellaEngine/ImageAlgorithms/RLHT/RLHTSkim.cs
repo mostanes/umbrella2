@@ -45,7 +45,7 @@ namespace Umbrella2.Algorithms.Images
 				{
 					double Theta = j * ThetaUnit;
 					if (Theta > PI / 2) if (Theta < PI) continue;
-					Lineover(Input, Height, Width, SkimSize * i, Theta, IncTh, out HTMatrix[i, j]);
+					//Lineover(Input, Height, Width, SkimSize * i, Theta, IncTh, out HTMatrix[i, j]);
 					if (HTMatrix[i, j] > StrongHoughTh) HoughPowerul.Add(new Vector() { X = SkimSize * i, Y = Theta });
 				}
 			}

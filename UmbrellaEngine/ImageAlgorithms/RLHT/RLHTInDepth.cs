@@ -31,7 +31,7 @@ namespace Umbrella2.Algorithms.Images
 					double Theta = j * ThetaUnit;
 					if (Theta > PI / 2) if (Theta < PI) continue;
 					if (Result.StrongPoints.Any((x) => (Abs(x.X - i)) < DeltaRho && (Abs(x.Y - Theta) < DeltaTheta))) continue;
-					Lineover(Input, Height, Width, i, Theta, IncTh, out HTMatrix[i, j]);
+					//Lineover(Input, Height, Width, i, Theta, IncTh, out HTMatrix[i, j]);
 					if (HTMatrix[i, j] > StrongHoughTh) HoughPowerul.Add(new Vector() { X = i, Y = Theta });
 				}
 			}

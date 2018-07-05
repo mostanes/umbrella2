@@ -12,7 +12,8 @@ namespace Umbrella2.Algorithms.Images
 	{
 		double UTM;
 		double LTM;
-		//double Floor;
+		double Mean;
+		double StDev;
 		FitsImage Mask;
 		WCSViaProjection MaskTransform;
 
@@ -22,7 +23,9 @@ namespace Umbrella2.Algorithms.Images
 			MaskTransform = Mask.Transform;
 			this.UTM = UpperThreshold;
 			this.LTM = LowerThreshold;
-			//this.Floor = Floor;
+			ImageStatistics imstat = new ImageStatistics(Mask);
+			Mean = imstat.ZeroLevel;
+			StDev = imstat.StDev;
 		}
 
 		public void MaskImage(FitsImage Input, FitsImage Output)
@@ -42,24 +45,6 @@ namespace Umbrella2.Algorithms.Images
 			bool[,] SmartMask = new bool[OH, OW];
 			PixelPoint pxp = new PixelPoint();
 
-			double Mean = 0, Var = 0;
-			double[] Means = new double[OW / OH];
-			double[] Vars = new double[OW / OH];
-			for (k = 0; k < OW - OH; k += OH)
-			{
-				Mean = 0; Var = 0;
-				for (i = 0; i < OH; i++) for (j = 0; j < OH; j++)
-					{ Mean += Mask[i, j + k]; Var += Mask[i, j + k] * Mask[i, j + k]; }
-				Mean /= (OH * OH);
-				Var /= (OH * OH);
-				Var -= Mean * Mean;
-				Means[k / OH] = Mean;
-				Vars[k / OH] = Var;
-			}
-			Array.Sort(Means, Vars);
-			Mean = Means[Means.Length / 4];
-			Var = Vars[Vars.Length / 4];
-			double StDev = Math.Sqrt(Var);
 			double UpperThreshold = UTM * StDev + Mean;
 			double LowerThreshold = LTM * StDev + Mean;
 

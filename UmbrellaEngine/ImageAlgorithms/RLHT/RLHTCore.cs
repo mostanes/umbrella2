@@ -6,6 +6,15 @@ namespace Umbrella2.Algorithms.Images
 {
 	public static partial class RLHT
 	{
+		internal struct ImageParameters
+		{
+			internal double ZeroLevel;
+			internal double IncreasingThreshold;
+			internal double MaxMultiplier;
+			internal double MaxRatio;
+			internal double DefaultRatio;
+		}
+
 		/// <summary>
 		/// Runs the Hough Transform over a line.
 		/// </summary>
@@ -16,7 +25,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="Theta">Angular coordinate.</param>
 		/// <param name="IncTh">Increasing Threshold.</param>
 		/// <param name="HoughSum">Hough transform output for given coordinates.</param>
-		static void Lineover(double[,] Input, int Height, int Width, double Rho, double Theta, double IncTh, out double HoughSum)
+		static void Lineover(double[,] Input, int Height, int Width, double Rho, double Theta, ImageParameters DetectionParameters, out double HoughSum)
 		{
 			/* Set up geometry */
 			Vector LineVector = new Vector() { X = Cos(Theta), Y = Sin(Theta) };
@@ -71,7 +80,11 @@ namespace Umbrella2.Algorithms.Images
 			HTSum = LongValue + ShortValue;
 			for (k = ShortLength; k < LongLength; k++) LastVars[k] = ShortAvg;
 
-			float RevIC = (float) (1 / IncTh);
+			float RevIC = (float) (1 / DetectionParameters.IncreasingThreshold);
+			float LgBaseMul = (float) (DetectionParameters.DefaultRatio);
+			float LgExtraMul = (float) (DetectionParameters.MaxRatio - DetectionParameters.DefaultRatio);
+			float MaxMul = (float) DetectionParameters.MaxMultiplier;
+			float Zero = (float) DetectionParameters.ZeroLevel;
 			float RevSL = 1.0f / ShortLength;
 			float RevLL = 1.0f / LongLength;
 			//float RevPI = (float) (1 / PI);
@@ -82,16 +95,17 @@ namespace Umbrella2.Algorithms.Images
 				/* Getting the value */
 				int X = (int) Round(pt.X);
 				int Y = (int) Round(pt.Y);
-				float Val = (float) Input[Y, X];
+				float Val = (float) Input[Y, X] - Zero;
 				/* Computing the long and short averages */
 				ShortAvg += (Val - LastVars[LV]) * RevSL;
 				LongAvg += (Val - LastVars[RollingPtr]) * RevLL;
 				LastVars[RollingPtr] = Val;
 				/* Compute the weights using averages */
 				/* First is the logarithm multiplier - the ratio of exponential decay of intensity */
-				float M1 = LongAvg * RevIC;
-				if (M1 < -0.8f) M1 = -0.8f;
-				float LgMult = M1 / (1.0f + M1);
+				float M1 = 2 * LongAvg * RevIC;
+				if (M1 < 0f) M1 = 0f;
+				float LgMult = M1 / (1.0f + M1) * LgExtraMul + LgBaseMul;
+				if (LgMult > MaxMul) LgMult = MaxMul;
 				//double LgMult = Atan(LongAvg * RevIC - 1) / PI + 0.5;
 				/* The new weight is computed */
 				
@@ -101,10 +115,11 @@ namespace Umbrella2.Algorithms.Images
 				//double XLgMult = M2 / (2 + M2);
 				/* Scaling the weight on 0-1 */
 				//float dXLgMult = (float) (Atan(LongValue * RevIC - 1) * RevPI + 0.5);
-				float XLgMult = FAtanS(LongValue * RevIC);
+				float XLgMult = FAtanS(LongValue * RevIC + 0.5f);
 				/* Computing the sum */
 				float CVal = ShortAvg * 2 * XLgMult;
-				HTSum += CVal;
+				if (CVal > 0)
+					HTSum += CVal;
 
 
 				RollingPtr = (RollingPtr + 1) % LongLength;

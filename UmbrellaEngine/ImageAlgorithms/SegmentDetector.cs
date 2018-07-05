@@ -27,25 +27,28 @@ namespace Umbrella2.Algorithms.Images
 
 		public SegmentDetector(double IncrementThreshold, double SegmentCreateThreshold, double SegmentDropThreshold)
 		{
-			IncTh = IncrementThreshold; SegOnTh = SegmentCreateThreshold; SegDropTh = SegmentDropThreshold; StrongHT = 1200; DetectedFasts = new List<LineAnalyzer.LineDetection>();
+			IncTh = IncrementThreshold; SegOnTh = SegmentCreateThreshold; SegDropTh = SegmentDropThreshold; DetectedFasts = new List<LineAnalyzer.LineDetection>();
 			
 		}
 
-		public List<MedianDetection> GetLongTrails(FitsImage Input)
+		public List<MedianDetection> GetLongTrails(FitsImage Input, ImageStatistics ImStat)
 		{
 			const int ThreadStep = 450;
+			StrongHT = 200 * ImStat.StDev * Math.Sqrt(5);
 
 			StrongLines = new List<Vector>();
 			DetectedPP = new List<List<PixelPoint>>(); DetectedPV = new List<List<double>>();
 
-			Parallel.For(0, (Input.Height - 100) / ThreadStep, (x) => SingleImageBlock(Input, (int) x * ThreadStep + 50, (int) (x + 1) * ThreadStep + 50));
-			if ((Input.Height - 50) % ThreadStep > 50) SingleImageBlock(Input, (int) ((Input.Height - 100) / ThreadStep * ThreadStep), (int) Input.Height - 50);
+			Parallel.For(0, (Input.Height - 100) / ThreadStep, (x) => SingleImageBlock(Input, (int) x * ThreadStep + 50, (int) (x + 1) * ThreadStep + 50, ImStat));
+			if ((Input.Height - 50) % ThreadStep > 50) SingleImageBlock(Input, (int) ((Input.Height - 100) / ThreadStep * ThreadStep), (int) Input.Height - 50, ImStat);
 
 			return GetMedetect(Input, Input);
 		}
 
-		void SingleImageBlock(FitsImage Input, int StartLine, int LEnd)
+		void SingleImageBlock(FitsImage Input, int StartLine, int LEnd, ImageStatistics ImStats)
 		{
+			RLHT.ImageParameters imp = new RLHT.ImageParameters() { DefaultRatio = 0.9, MaxRatio = 1.08, IncreasingThreshold = ImStats.StDev / 2, MaxMultiplier = 10, ZeroLevel = ImStats.ZeroLevel };
+
 			ImageData InputData;
 			InputData = Input.LockData(new System.Drawing.Rectangle(0, StartLine - 50, 200, 200), true);
 			int CLine = StartLine;
@@ -57,7 +60,7 @@ namespace Umbrella2.Algorithms.Images
 						;
 					InputData = Input.SwitchLockData(InputData, j, CLine - 50, true);
 					//var w = RLHT.SkimRLHT(InputData.Data, IncTh, StrongHT, 4);
-					var w = RLHT.SmartSkipRLHT(InputData.Data, IncTh, StrongHT, 4);
+					var w = RLHT.SmartSkipRLHT(InputData.Data, imp, StrongHT, 4);
 					bool[,] Mask = new bool[200, 200];
 
 					if (true)

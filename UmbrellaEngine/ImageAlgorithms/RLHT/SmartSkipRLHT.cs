@@ -10,7 +10,7 @@ namespace Umbrella2.Algorithms.Images
 {
 	public static partial class RLHT
 	{
-		public static HTResult SmartSkipRLHT(double[,] Input, double IncTh, double StrongHoughTh, int Skip)
+		internal static HTResult SmartSkipRLHT(double[,] Input, ImageParameters ImP, double StrongHoughTh, int Skip)
 		{
 			int Height = Input.GetLength(0);
 			int Width = Input.GetLength(1);
@@ -31,7 +31,7 @@ namespace Umbrella2.Algorithms.Images
 				{
 					double Theta = j * ThetaUnit;
 					if (Theta > PI / 2) if (Theta < PI) continue;
-					Lineover(Input, Height, Width, i, Theta, IncTh, out HTMatrix[i, j]);
+					Lineover(Input, Height, Width, i, Theta, ImP, out HTMatrix[i, j]);
 					if (HTMatrix[i, j] > StrongHoughTh)
 					{
 						HoughPowerul.Add(new Vector() { X = i, Y = Theta });

@@ -49,6 +49,8 @@
     <Compile Include="DetectionAlgorithms\PoolMDMerger.cs" />
     <Compile Include="Filtering\MedianDetectionFilters.cs" />
     <Compile Include="Geometry\LineIntersection.cs" />
+    <Compile Include="ImageAlgorithms\Deconvolution\KernelInversion.cs" />
+    <Compile Include="ImageAlgorithms\ImageStatistics.cs" />
     <Compile Include="ImageAlgorithms\LineAnalyzer.cs" />
     <Compile Include="ImageAlgorithms\MultiImageMedianFilter.cs" />
     <Compile Include="ImageAlgorithms\RLHT.cs" />
