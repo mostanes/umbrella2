@@ -104,6 +104,15 @@ namespace Umbrella2.Algorithms.Images
 			internal double LineStart, LineEnd;
 		}
 
+		/// <summary>
+		/// Gets the connected component starting from a point on an image.
+		/// </summary>
+		/// <param name="Input">Input Image.</param>
+		/// <param name="StartPoint">Starting point.</param>
+		/// <param name="Mask">Already processed components mask.</param>
+		/// <param name="LowThreshold">Threshold for component discrimination.</param>
+		/// <param name="Angle">Angle of the line; used for distance projections.</param>
+		/// <returns>The connected component blob.</returns>
 		static DetectionBlob BitmapFill(double[,] Input, IntPoint StartPoint, bool[,] Mask, double LowThreshold, double Angle)
 		{
 			Queue<IntPoint> PointQ = new Queue<IntPoint>();
@@ -156,6 +165,14 @@ namespace Umbrella2.Algorithms.Images
 
 		}
 
+		/// <summary>
+		/// Merges related connected classes in one LineDetection.
+		/// </summary>
+		/// <param name="segment">Segment pieces holder.</param>
+		/// <param name="Input">Input image.</param>
+		/// <param name="OX">Delta between the data array and actual position, X component.</param>
+		/// <param name="OY">Delta between the data array and actual position, Y component.</param>
+		/// <returns>A LineDetection from the connected classes.</returns>
 		static LineDetection MergeBlobs(DetectionSegment segment, double[,] Input, int OX, int OY)
 		{
 			double Xmean = 0, Ymean = 0;

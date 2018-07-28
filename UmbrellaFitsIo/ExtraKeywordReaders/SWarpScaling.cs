@@ -5,6 +5,9 @@ using HeaderTable = System.Collections.Generic.Dictionary<string, Umbrella2.IO.F
 
 namespace Umbrella2.IO.FITS.KnownKeywords
 {
+	/// <summary>
+	/// Handles scaling of image data according to SWarp headers.
+	/// </summary>
 	public class SWarpScaling : ImageProperties
 	{
 		public readonly double FlxScale;
@@ -12,6 +15,11 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 		public readonly double BackSig;
 		const double Rescale = 60;
 		readonly double XScale;
+		/// <summary>
+		/// Switch for turning on/off SWarpScaling compensations.
+		/// Implemented since some processing pipelines mess up the scaling.
+		/// </summary>
+		public static bool ApplyTransform;
 
 		public SWarpScaling(FitsImage File) : base(File)
 		{
@@ -32,8 +40,9 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 
 		public void ScaleData(double[,] Input)
 		{
-			for (int i = 0; i < Input.GetLength(0); i++) for (int j = 0; j < Input.GetLength(1); j++)
-					Input[i, j] = (Input[i, j] - BackMean) * XScale;
+			if (ApplyTransform)
+				for (int i = 0; i < Input.GetLength(0); i++) for (int j = 0; j < Input.GetLength(1); j++)
+						Input[i, j] = (Input[i, j] - BackMean) * XScale;
 		}
 	}
 }

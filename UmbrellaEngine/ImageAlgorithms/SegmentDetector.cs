@@ -12,14 +12,20 @@ namespace Umbrella2.Algorithms.Images
 	public class SegmentDetector
 	{
 		double IncTh;
-		double SegOnTh;
-		double SegDropTh;
+		double SegOnM;
+		double SegDropM;
+		double OnThreshold;
+		double DropThreshold;
 		double StrongHT;
 		double PSFSize = 5;
 		double MinFlux = 50;
 		double MinIntensity = 10;
 		double LowSeparation = 12;
 		double AngleEqual = 0.3;
+		double NSigma = Math.Sqrt(5);
+		const int WorkingSize = 200;
+		const int AreaOverlap = 50;
+		int Skip = 4;
 		List<Vector> StrongLines;
 		List<LineAnalyzer.LineDetection> DetectedFasts;
 		List<List<PixelPoint>> DetectedPP;
@@ -27,20 +33,24 @@ namespace Umbrella2.Algorithms.Images
 
 		public SegmentDetector(double IncrementThreshold, double SegmentCreateThreshold, double SegmentDropThreshold)
 		{
-			IncTh = IncrementThreshold; SegOnTh = SegmentCreateThreshold; SegDropTh = SegmentDropThreshold; DetectedFasts = new List<LineAnalyzer.LineDetection>();
-			
+			IncTh = IncrementThreshold; SegOnM = SegmentCreateThreshold; SegDropM = SegmentDropThreshold;
+			DetectedFasts = new List<LineAnalyzer.LineDetection>();
 		}
 
 		public List<MedianDetection> GetLongTrails(FitsImage Input, ImageStatistics ImStat)
 		{
 			const int ThreadStep = 450;
-			StrongHT = 200 * ImStat.StDev * Math.Sqrt(5);
+			StrongHT = WorkingSize * ImStat.StDev * Math.Log10(WorkingSize);
+			OnThreshold = SegOnM * ImStat.StDev;
+			DropThreshold = SegDropM * ImStat.StDev;
 
 			StrongLines = new List<Vector>();
 			DetectedPP = new List<List<PixelPoint>>(); DetectedPV = new List<List<double>>();
 
-			Parallel.For(0, (Input.Height - 100) / ThreadStep, (x) => SingleImageBlock(Input, (int) x * ThreadStep + 50, (int) (x + 1) * ThreadStep + 50, ImStat));
-			if ((Input.Height - 50) % ThreadStep > 50) SingleImageBlock(Input, (int) ((Input.Height - 100) / ThreadStep * ThreadStep), (int) Input.Height - 50, ImStat);
+			Parallel.For(0, (Input.Height - 2 * AreaOverlap) / ThreadStep, (x) => SingleImageBlock(Input, (int) x * ThreadStep + AreaOverlap,
+				  (int) (x + 1) * ThreadStep + AreaOverlap, ImStat));
+			if ((Input.Height - AreaOverlap) % ThreadStep > AreaOverlap) SingleImageBlock(Input,
+				(int) ((Input.Height - 2 * AreaOverlap) / ThreadStep * ThreadStep), (int) Input.Height - AreaOverlap, ImStat);
 
 			return GetMedetect(Input, Input);
 		}
@@ -50,18 +60,18 @@ namespace Umbrella2.Algorithms.Images
 			RLHT.ImageParameters imp = new RLHT.ImageParameters() { DefaultRatio = 0.9, MaxRatio = 1.08, IncreasingThreshold = ImStats.StDev / 2, MaxMultiplier = 10, ZeroLevel = ImStats.ZeroLevel };
 
 			ImageData InputData;
-			InputData = Input.LockData(new System.Drawing.Rectangle(0, StartLine - 50, 200, 200), true);
+			InputData = Input.LockData(new System.Drawing.Rectangle(0, StartLine - AreaOverlap, WorkingSize, WorkingSize), true);
 			int CLine = StartLine;
-			for (CLine = StartLine; CLine < LEnd; CLine += 150)
+			for (CLine = StartLine; CLine < LEnd; CLine += WorkingSize-AreaOverlap)
 			{
-				for (int j = 50; j + 250 < Input.Width; j+=150)
+				for (int j = AreaOverlap; j + WorkingSize+AreaOverlap < Input.Width; j+=WorkingSize-AreaOverlap)
 				{
 					if (CLine < 1800 && CLine > 1700 - 150 && j < 350 && j > 250-150)
 						;
-					InputData = Input.SwitchLockData(InputData, j, CLine - 50, true);
+					InputData = Input.SwitchLockData(InputData, j, CLine - AreaOverlap, true);
 					//var w = RLHT.SkimRLHT(InputData.Data, IncTh, StrongHT, 4);
-					var w = RLHT.SmartSkipRLHT(InputData.Data, imp, StrongHT, 4);
-					bool[,] Mask = new bool[200, 200];
+					var w = RLHT.SmartSkipRLHT(InputData.Data, imp, StrongHT, Skip);
+					bool[,] Mask = new bool[WorkingSize, WorkingSize];
 
 					if (true)
 					{
@@ -73,7 +83,8 @@ namespace Umbrella2.Algorithms.Images
 							//var RefinedSP = RLHT.RefinedRLHT(InputData.Data, IncTh, PSFSize, MinFlux, StrongHT, vx.X, vx.Y);
 							if (CLine < 1800 && CLine > 1700 - 150 && j < 350 && j > 250 - 150)
 								;
-							var z = LineAnalyzer.AnalyzeLine(InputData.Data, Mask, 200, 200, vx.X, vx.Y, SegOnTh, SegDropTh, 40, 10, j, CLine - 50);
+							var z = LineAnalyzer.AnalyzeLine(InputData.Data, Mask, WorkingSize, WorkingSize, vx.X, vx.Y, OnThreshold,
+								DropThreshold, 40, 10, j, CLine - AreaOverlap);
 							IntermediateList.AddRange(z);
 						}
 						if (CLine < 1800 && CLine > 1700 - 150 && j < 350 && j > 250 - 150)
@@ -131,7 +142,7 @@ namespace Umbrella2.Algorithms.Images
 		{
 			//return DetectedFasts.Select((x) => new MedianDetection(InputImage.Transform, ObservationTime, x.Points, x.PointValues)).ToList();
 			var x1 = DetectedPP.Zip(DetectedPV, (x, y) => new MedianDetection(InputImage.Transform, Image, x, y));
-			return x1.Where((x) => x.PixelEllipse.SemiaxisMinor < 2.5 * PSFSize && x.PixelPoints.Count > 2 * PSFSize * PSFSize).ToList();
+			return x1.Where((x) => x.PixelEllipse.SemiaxisMinor < 2.5 * Math.Sqrt(x.PixelEllipse.SemiaxisMajor*PSFSize) && x.PixelPoints.Count > 2 * PSFSize * PSFSize).ToList();
 		}
 	}
 }

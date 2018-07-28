@@ -17,15 +17,14 @@ namespace Umbrella2.Algorithms.Images
 		FitsImage Mask;
 		WCSViaProjection MaskTransform;
 
-		public StandardImageMasker(FitsImage Mask, double UpperThreshold, double LowerThreshold)
+		public StandardImageMasker(FitsImage Mask, double UpperThreshold, double LowerThreshold, ImageStatistics imStat)
 		{
 			this.Mask = Mask;
 			MaskTransform = Mask.Transform;
 			this.UTM = UpperThreshold;
 			this.LTM = LowerThreshold;
-			ImageStatistics imstat = new ImageStatistics(Mask);
-			Mean = imstat.ZeroLevel;
-			StDev = imstat.StDev;
+			Mean = imStat.ZeroLevel;
+			StDev = imStat.StDev;
 		}
 
 		public void MaskImage(FitsImage Input, FitsImage Output)

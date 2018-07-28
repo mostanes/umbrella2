@@ -22,7 +22,8 @@ namespace Umbrella2.Algorithms.Images
 			Parallel.For(0, Input.Height / ThreadStep, (x) => SingleImageBlock(Input, (int) x * ThreadStep, LineStep, (int) (x + 1) * ThreadStep));
 			double[] M = Means.ToArray();
 			double[] V = Variances.ToArray();
-			Array.Sort(M, V);
+			Array.Sort(M);
+			Array.Sort(V);
 			ZeroLevel = M[M.Length / 2];
 			StDev = Sqrt(V[M.Length / 2]);
 		}

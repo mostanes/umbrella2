@@ -46,7 +46,9 @@ namespace Umbrella2.Algorithms.Images
 						continue;
 					
 					Array.Sort(MedValues);
-					Output[i, j] = MedValues[c / 2];
+					if (c % 2 == 1)
+						Output[i, j] = MedValues[c / 2];
+					else Output[i, j] = MedValues[c / 2 - 1];
 				}
 		}
 

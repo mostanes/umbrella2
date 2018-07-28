@@ -2,11 +2,13 @@
 
 namespace UmbrellaFitsIo.DataFormatTranslations
 {
+	/// <summary>
+	/// Module for reading from and writing to floating-point FITS data arrays.
+	/// </summary>
 	static class FPDataset
 	{
 		public static unsafe void Read32(IntPtr Pointer, double[,] Data, int Hstart, int Hend, int Wstart, int Wend, int Stride)
 		{
-			//int Height = Data.GetLength(0);
 			int Width = Wend - Wstart;
 			int i, j;
 			byte* b = (byte*) Pointer;
@@ -45,7 +47,6 @@ namespace UmbrellaFitsIo.DataFormatTranslations
 
 		public static unsafe void Read64(IntPtr Pointer, double[,] Data, int Hstart, int Hend, int Wstart, int Wend, int Stride)
 		{
-			//int Height = Data.GetLength(0);
 			int Width = Wend - Wstart;
 			int i, j;
 			byte* b = (byte*) Pointer;
