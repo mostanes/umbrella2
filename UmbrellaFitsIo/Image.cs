@@ -39,18 +39,35 @@ namespace Umbrella2.IO.FITS
 	/// </summary>
 	public abstract class ImageProperties
 	{
-		public ImageProperties(FitsImage File)
+		/// <summary>
+		/// Creates a new instance of the image properties for the given image.
+		/// </summary>
+		/// <param name="Image">The image for which the properties are extracted.</param>
+		public ImageProperties(FitsImage Image)
 		{ }
 
+		/// <summary>
+		/// Gets the list of FITS Header tags associated with the property.
+		/// </summary>
+		/// <returns>A list of FITS Header tags.</returns>
 		public abstract List<ElevatedRecord> GetRecords();
 	}
 
-
+	/// <summary>
+	/// Class representing a FITS image from a FITS file.
+	/// </summary>
 	public class FitsImage
 	{
+		/// <summary>
+		/// Readers-Writers lock for portions of the image.
+		/// </summary>
 		readonly RWLockArea ImageLock;
+
 		public readonly uint Width, Height;
 
+		/// <summary>
+		/// The number of the image in the FITS file.
+		/// </summary>
 		public readonly int ImageNumber;
 
 		/// <summary>
@@ -59,7 +76,7 @@ namespace Umbrella2.IO.FITS
 		public readonly WCSViaProjection Transform;
 
 		/// <summary>
-		/// Containing file.
+		/// File containing the image.
 		/// </summary>
 		public readonly FitsFile File;
 		
@@ -77,16 +94,21 @@ namespace Umbrella2.IO.FITS
 		readonly DataReader Reader;
 		/// <summary>Method to write/serialize from double[,] to memory.</summary>
 		readonly DataWriter Writer;
-		// <summary>Caches the image size.</summary>
-		//readonly Rectangle SelfSize;
 		/// <summary>Sanity check for image Width and Height.</summary>
 		const int MaxSize = 1000000;
+		/// <summary>The number of bytes for each pixel. Abs(BITPIX)/8.</summary>
 		readonly byte BytesPerPixel;
 
 		public readonly bool RAFirst;
 
+		/// <summary>Common constructor code.</summary>
 		protected FitsImage() { ImageLock = new RWLockArea(); PropertiesDictionary = new Dictionary<Type, ImageProperties>(); }
 
+		/// <summary>
+		/// Retrieves an image from a FITS file.
+		/// </summary>
+		/// <param name="File">Input file.</param>
+		/// <param name="Number">Image number in multi-image (MEF) FITS files.</param>
 		public FitsImage(FitsFile File, int Number = 0) : this()
 		{
 			ImageNumber = Number;
@@ -94,20 +116,24 @@ namespace Umbrella2.IO.FITS
 			else Header = File.MEFHeaderTable[Number - 1];
 			try
 			{
+				/* Parse image size */
 				Width = (uint) Header["NAXIS1"].Int;
 				Height = (uint) Header["NAXIS2"].Int;
 				if (Width > MaxSize || Height > MaxSize) throw new FITSFormatException("Image too large for Umbrella2.");
 
+				/* Parse axis types and projection algorithm */
 				string Axis1 = Header["CTYPE1"].GetFixedString;
 				string Axis2 = Header["CTYPE2"].GetFixedString;
 				string Algorithm = Axis1.Substring(5, 3);
 				string Nm1 = Axis1.Substring(0, 4);
 				string Nm2 = Axis2.Substring(0, 4);
 
+				/* Parses the order of the axes and checks consistency of projection algorithm between the axes. */
 				if (Nm1.ToUpper() == "RA--" && Nm2.ToUpper() == "DEC-") RAFirst = true;
 				else if (Nm1.ToUpper() == "DEC-" && Nm2.ToUpper() == "RA--") RAFirst = false;
 				else throw new FITSFormatException("Cannot understand axis format");
 				if (Axis2.Substring(5, 3) != Algorithm) throw new Exception("Projection Algorithm Mismatch.");
+				/* Computes the linear transformation part of the WCS projection */
 				double RA0 = (RAFirst ? Header["CRVAL1"] : Header["CRVAL2"]).FloatingPoint;
 				double Dec0 = (RAFirst ? Header["CRVAL2"] : Header["CRVAL1"]).FloatingPoint;
 				double X0 = Header["CRPIX1"].FloatingPoint;
@@ -119,19 +145,21 @@ namespace Umbrella2.IO.FITS
 
 				if (Header["CUNIT1"].GetFixedString != "deg     " || Header["CUNIT2"].GetFixedString != "deg     ") throw new FITSFormatException("Wrong unit types for axes");
 
+				/* Retrieves the projection algorithm */
 				WCSProjectionTransform ipt;
 				try { ipt = Umbrella2.WCS.Projections.WCSProjections.GetProjectionTransform(Algorithm, RA0 * Math.PI / 180, Dec0 * Math.PI / 180); }
 				catch (KeyNotFoundException ex) { throw new FITSFormatException("Cannot understand projection algorithm", ex); }
 
-				WCSViaProjection wvp = new WCSViaProjection(ipt, linpart);
-				Transform = wvp;
+				Transform = = new WCSViaProjection(ipt, linpart);
 
+				/* Computes BytesPerPixel and selects reading/writing functions */
 				BytesPerPixel = (byte) Math.Abs((Header["BITPIX"].Int / 8));
 				var RW = GetRW(Header["BITPIX"].Int);
 				
 				Reader = RW.Item1;
 				Writer = RW.Item2;
 
+				/* Loads SWarp scaling to the properties dictionary */
 				try { GetProperty<KnownKeywords.SWarpScaling>(); }
 				catch { }
 			}
@@ -139,6 +167,16 @@ namespace Umbrella2.IO.FITS
 			this.File = File;
 		}
 
+		/// <summary>
+		/// Creates a new FITS image.
+		/// </summary>
+		/// <param name="File">File backing the image.</param>
+		/// <param name="Width">Image width.</param>
+		/// <param name="Height">Image height.</param>
+		/// <param name="Transform">WCS transformation.</param>
+		/// <param name="BitPix">BITPIX value.</param>
+		/// <param name="ExtraProperties">Extra image properties to write in the header.</param>
+		/// <param name="ReverseAxis">Reverses the order of the axis in the header.</param>
 		public FitsImage(FitsFile File, uint Width, uint Height, WCSViaProjection Transform, int BitPix, List<ImageProperties> ExtraProperties = null, bool ReverseAxis = false) : this()
 		{
 			if (Width > MaxSize || Height > MaxSize) throw new FITSFormatException("Image too large for Umbrella2.");
@@ -157,6 +195,11 @@ namespace Umbrella2.IO.FITS
 			File.SetPrimaryHeaders(Header);
 		}
 
+		/// <summary>
+		/// Fetches the image properties of given type for the image. Caches the instance.
+		/// </summary>
+		/// <typeparam name="T">Type of the image properties.</typeparam>
+		/// <returns>The image properties instance associated with the image.</returns>
 		public T GetProperty<T>() where T : ImageProperties
 		{
 			Type t = typeof(T);
@@ -164,6 +207,11 @@ namespace Umbrella2.IO.FITS
 			return (T) PropertiesDictionary[t];
 		}
 
+		/// <summary>
+		/// Selects the reading/writing functions for a given BITPIX value.
+		/// </summary>
+		/// <param name="BitPix">BITPIX value.</param>
+		/// <returns>Delegates to conversion functions.</returns>
 		static Tuple<DataReader, DataWriter> GetRW(int BitPix)
 		{
 			switch (BitPix)
@@ -184,6 +232,10 @@ namespace Umbrella2.IO.FITS
 			throw new FITSFormatException("BITPIX field not conforming to FITS standard");
 		}
 
+		/// <summary>
+		/// Checks whether the area of interest is within the boundaries of the image.
+		/// </summary>
+		/// <param name="Area">Area of interest.</param>
 		void CheckMargins(Rectangle Area)
 		{
 			if (Area.Bottom > Height || Area.Right > Width) throw new ArgumentOutOfRangeException("Attempted reading outside of image bounds.");
@@ -191,27 +243,29 @@ namespace Umbrella2.IO.FITS
 			if (Area.Y < 0 || Area.Y > Height) throw new ArgumentOutOfRangeException("Attempted reading outside of image bounds.");
 		}
 
+		/// <summary>
+		/// Reads data from file.
+		/// </summary>
+		/// <param name="imData">Data container.</param>
 		void ReadData(ImageData imData)
 		{
 			Rectangle rp = imData.Position;
 			rp.Intersect(new Rectangle(0, 0, (int) Width - 1, (int) Height - 1));
-			//if (imData.Position.Width != rp.Width) throw new NotSupportedException("Cannot fill with 0 on X axis.");
 			IntPtr Pointer;
 			var ImPos = GetPositionInFile(rp);
 			if (ImageNumber == 0) Pointer = File.GetDataView(-1, ImPos.Item1, ImPos.Item2);
 			else Pointer = File.GetDataView(ImageNumber, ImPos.Item1, ImPos.Item2);
 			Reader(Pointer, imData.Data, rp.Y - imData.Position.Y, rp.Bottom - imData.Position.Y, rp.X - imData.Position.X, rp.Right - imData.Position.X, (int) Width * BytesPerPixel);
 			File.ReleaseView(Pointer);
-			/*
-			if (rp.Y == imData.Position.Y)
-				for (int i = rp.Height; i < imData.Position.Height; i++) for (int j = 0; j < rp.Width; j++) imData.Data[i, j] = 0;
-			else
-				for (int i = 0; i < imData.Position.Height - rp.Height; i++) for (int j = 0; j < rp.Width; j++) imData.Data[i, j] = 0;
-			*/
+
 			if (PropertiesDictionary.ContainsKey(typeof(KnownKeywords.SWarpScaling)))
 				(PropertiesDictionary[typeof(KnownKeywords.SWarpScaling)] as KnownKeywords.SWarpScaling).ScaleData(imData.Data);
 		}
 
+		/// <summary>
+		/// Writes data to the file.
+		/// </summary>
+		/// <param name="Data">Data to be written.</param>
 		void WriteData(ImageData Data)
 		{
 			IntPtr Pointer;
@@ -222,6 +276,13 @@ namespace Umbrella2.IO.FITS
 			File.ReleaseView(Pointer);
 		}
 
+		/// <summary>
+		/// Locks and returns the data of an image. Can be used for reading and writing.
+		/// </summary>
+		/// <param name="Area">Area of interest in the image.</param>
+		/// <param name="FillZero">True for padding out of image margins with zero. Must be false for write access.</param>
+		/// <param name="RO">Whether the data is read-only.</param>
+		/// <returns>An ImageData container.</returns>
 		public ImageData LockData(Rectangle Area, bool FillZero, bool RO = true)
 		{
 			FillZero &= RO;
@@ -233,6 +294,16 @@ namespace Umbrella2.IO.FITS
 			return imData;
 		}
 
+		/// <summary>
+		/// Replaces the data view with another at different coordinates, flushing any writable data.
+		/// Same as ExitLock followed by LockData, however does not require a new data buffer allocation.
+		/// </summary>
+		/// <param name="Data">Previous data.</param>
+		/// <param name="NewX">New X coordinate.</param>
+		/// <param name="NewY">New Y coordinate.</param>
+		/// <param name="FillZero">True for padding out of image margins with zero. Must be false for write access.</param>
+		/// <param name="RO">Whether the data is read-only.</param>
+		/// <returns>An ImageData container.</returns>
 		public ImageData SwitchLockData(ImageData Data, int NewX, int NewY, bool FillZero, bool RO = true)
 		{
 			Rectangle Area = new Rectangle(NewX, NewY, Data.Position.Width, Data.Position.Height);
@@ -248,6 +319,10 @@ namespace Umbrella2.IO.FITS
 			return imData;
 		}
 
+		/// <summary>
+		/// Exits the lock on a region of image, flushing any writable data.
+		/// </summary>
+		/// <param name="Data">The data container.</param>
 		public void ExitLock(ImageData Data)
 		{
 			if (!Data.ReadOnly)
@@ -255,6 +330,11 @@ namespace Umbrella2.IO.FITS
 			ImageLock.ExitLock(Data.FDGuid);
 		}
 
+		/// <summary>
+		/// Returns the position of relevant image data in file.
+		/// </summary>
+		/// <param name="Location">Area of interest.</param>
+		/// <returns>A tuple containing the pointer in file to the start of the data and its length.</returns>
 		Tuple<int,int> GetPositionInFile(Rectangle Location)
 		{
 			int Start = (int) (((Location.Y * Width + Location.X) * BytesPerPixel));
@@ -262,6 +342,11 @@ namespace Umbrella2.IO.FITS
 			return new Tuple<int, int>(Start, Length);
 		}
 
+		/// <summary>
+		/// Computes the headers for a new FITS image.
+		/// </summary>
+		/// <param name="Bitpix">Image BITPIX parameter.</param>
+		/// <returns>A HeaderTable instance for the new FITS image.</returns>
 		HeaderTable GetHeader(int Bitpix)
 		{
 			string AlgName = Transform.ProjectionTransform.Name;

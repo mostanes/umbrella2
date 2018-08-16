@@ -7,6 +7,9 @@ using HeaderTable = System.Collections.Generic.Dictionary<string, Umbrella2.IO.F
 
 namespace Umbrella2.IO.FITS.KnownKeywords
 {
+	/// <summary>
+	/// Records for specifying the observation time of the frame.
+	/// </summary>
 	public class ObservationTime : ImageProperties
 	{
 		public readonly DateTime Time;
@@ -15,7 +18,7 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 		public ObservationTime(FitsImage File) : base(File)
 		{
 			HeaderTable ht = File.Header;
-			if (!ht.ContainsKey("DATE-OBS")) throw new FormatException("FITS image does not implement DATE-OBS header");
+			ht.CheckRecord("DATE-OBS");
 			string ObsDString;
 			try
 			{ ObsDString = ht["DATE-OBS"].GetFixedString; }
@@ -25,6 +28,7 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 			string Year = DatePieces[0];
 			string Month = DatePieces[1];
 			string Day = DatePieces[2];
+			/* Whether the DATE-OBS includes the time or not */
 			bool UTData = DatePieces.Length > 3;
 			DateTime tm = new DateTime(int.Parse(Year), int.Parse(Month), int.Parse(Day));
 			if (UTData)
@@ -36,7 +40,8 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 			}
 			else
 			{
-				if (!ht.ContainsKey("UT")) throw new FormatException("FITS image does not implement UT header");
+				/* No time in DATE-OBS, hence the rest should be in the UT tag. */
+				ht.CheckRecord("UT");
 				TimeSpan ts;
 				try
 				{
@@ -51,7 +56,7 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 				tm += ts;
 			}
 			Time = tm;
-			if (!ht.ContainsKey("EXPTIME")) throw new FormatException("FITS image does not implement EXPTIME header");
+			ht.CheckRecord("EXPTIME");
 			double SecLen = ht["EXPTIME"].FloatingPoint;
 			Exposure = TimeSpan.FromSeconds(SecLen);
 		}

@@ -2,11 +2,14 @@
 
 namespace UmbrellaFitsIo.DataFormatTranslations
 {
-    public static class IntegerDataset
+	/// <summary>
+	/// Module for reading from and writing to floating-point FITS data arrays.
+	/// Functions provide for converting memory-mapped file data to IEEE floating point.
+	/// </summary>
+	public static class IntegerDataset
     {
         public static unsafe void Read8(IntPtr Pointer, double[,] Data, int Hstart, int Hend, int Wstart, int Wend, int Stride)
 		{
-			//int Height = Data.GetLength(0);
 			int Width = Wend-Wstart;
 			int i, j;
 			byte* b = (byte*) Pointer;
@@ -36,7 +39,6 @@ namespace UmbrellaFitsIo.DataFormatTranslations
 
 		public static unsafe void Read16(IntPtr Pointer, double[,] Data, int Hstart, int Hend, int Wstart, int Wend, int Stride)
 		{
-			//int Height = Data.GetLength(0);
 			int Width = Wend - Wstart;
 			int i, j;
 			byte* b = (byte*) Pointer;
@@ -68,7 +70,6 @@ namespace UmbrellaFitsIo.DataFormatTranslations
 
 		public static unsafe void Read32(IntPtr Pointer, double[,] Data, int Hstart, int Hend, int Wstart, int Wend, int Stride)
 		{
-			//int Height = Data.GetLength(0);
 			int Width = Wend - Wstart;
 			int i, j;
 			byte* b = (byte*) Pointer;
@@ -104,7 +105,6 @@ namespace UmbrellaFitsIo.DataFormatTranslations
 
 		public static unsafe void Read64(IntPtr Pointer, double[,] Data, int Hstart, int Hend, int Wstart, int Wend, int Stride)
 		{
-			//int Height = Data.GetLength(0);
 			int Width = Wend - Wstart;
 			int i, j;
 			byte* b = (byte*) Pointer;

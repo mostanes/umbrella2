@@ -24,9 +24,9 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 		public SWarpScaling(FitsImage File) : base(File)
 		{
 			HeaderTable ht = File.Header;
-			if (!ht.ContainsKey("FLXSCALE")) throw new FormatException("FITS image does not implement FLXSCALE header");
-			if (!ht.ContainsKey("BACKMEAN")) throw new FormatException("FITS image does not implement BACKMEAN header");
-			if (!ht.ContainsKey("BACKSIG")) throw new FormatException("FITS image does not implement BACKSIG header");
+			ht.CheckRecord("FLXSCALE");
+			ht.CheckRecord("BACKMEAN");
+			ht.CheckRecord("BACKSIG");
 			FlxScale = ht["FLXSCALE"].FloatingPoint;
 			BackMean = ht["BACKMEAN"].FloatingPoint;
 			BackSig = ht["BACKSIG"].FloatingPoint;

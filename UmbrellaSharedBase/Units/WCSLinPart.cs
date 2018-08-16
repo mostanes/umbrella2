@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Umbrella2.WCS
 {
 	/// <summary>
-	/// Computes linear the linear part of the WCS transforms
+	/// Computes linear the linear part of the WCS transforms.
 	/// </summary>
 	public class WCSLinPart
 	{

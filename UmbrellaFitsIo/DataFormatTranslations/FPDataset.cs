@@ -4,6 +4,7 @@ namespace UmbrellaFitsIo.DataFormatTranslations
 {
 	/// <summary>
 	/// Module for reading from and writing to floating-point FITS data arrays.
+	/// Functions provide for converting memory-mapped file data to IEEE floating point.
 	/// </summary>
 	static class FPDataset
 	{

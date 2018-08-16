@@ -7,7 +7,10 @@ using static System.Math;
 
 namespace Umbrella2.WCS
 {
-	public class EquatorialDistance
+	/// <summary>
+	/// Functions for computing distances on spherical coordinates.
+	/// </summary>
+	public static class EquatorialDistance
 	{
 		/// <summary>
 		/// Returns the spherical distance between 2 points on the sphere.
@@ -23,17 +26,31 @@ namespace Umbrella2.WCS
 			return Distance;
 		}
 
+		/// <summary>
+		/// Represents a 3D vector.
+		/// </summary>
 		internal struct Vector3D
 		{
 			internal double X, Y, Z;
 
+			/// <summary>
+			/// Vector sum.
+			/// </summary>
 			public static Vector3D operator +(Vector3D A, Vector3D B) => new Vector3D() { X = A.X + B.X, Y = A.Y + B.Y, Z = A.Z + B.Z };
+
+			/// <summary>
+			/// Product with a scalar.
+			/// </summary>
 			public static Vector3D operator *(double M, Vector3D B) => new Vector3D() { X = M * B.X, Y = M * B.Y, Z = M * B.Z };
+			
+			/// <summary>
+			/// Inner product.
+			/// </summary>
 			public static double operator *(Vector3D A, Vector3D B) => A.X * B.X + A.Y * B.Y + A.Z * B.Z;
 		}
 
 		/// <summary>
-		/// Defines a spherical line segment/vector.
+		/// Defines a spherical line segment / arc of a great circle.
 		/// </summary>
 		public struct GreatLine
 		{
@@ -59,7 +76,7 @@ namespace Umbrella2.WCS
 			public static double operator ~(GreatLine Vector) => Vector.AlphaAngle;
 
 			/// <summary>
-			/// Provides great circle navigation.
+			/// Returns the point a given distance away on the great circle.
 			/// </summary>
 			public EquatorialPoint GetPointOnLine(double Distance)
 			{
@@ -79,7 +96,7 @@ namespace Umbrella2.WCS
 		/// <param name="A">Endpoint.</param>
 		/// <param name="B">Startpoint.</param>
 		/// <param name="Distance">Distance to navigate.</param>
-		/// <returns></returns>
+		/// <returns>The point Distance away from B on the great circle defined by A and B.</returns>
 		public static EquatorialPoint GetGreatCircleWaypoint(EquatorialPoint A, EquatorialPoint B, double Distance)
 		{
 			double sA = Cos(A.Dec), sB = Cos(B.Dec);

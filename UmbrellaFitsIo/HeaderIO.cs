@@ -10,6 +10,9 @@ namespace Umbrella2.IO.FITS
 {
 	public partial class FitsFile
 	{
+		/// <summary>
+		/// Contains functions for reading FITS headers.
+		/// </summary>
 		static class HeaderIO
 		{
 			/// <summary>
@@ -62,7 +65,11 @@ namespace Umbrella2.IO.FITS
 				{ throw new FITSFormatException("Missing or malformed FITS header entries.", ex); }
 			}
 
-
+			/// <summary>
+			/// Reads a FITS header from a stream.
+			/// </summary>
+			/// <param name="stream">Input stream.</param>
+			/// <returns>A tuple containing a list and a dictionary of the header records.</returns>
 			internal static Tuple<List<ElevatedRecord>, HeaderTable> ReadHeaderFromStream(Stream stream)
 			{
 				/* Read the headers and create the ElevatedRecord entries. */
@@ -84,6 +91,13 @@ namespace Umbrella2.IO.FITS
 				return new Tuple<List<ElevatedRecord>, HeaderTable>(PrimaryHeader, PrimaryTable);
 			}
 
+			/// <summary>
+			/// Reads the FITS headers from a stream.
+			/// </summary>
+			/// <param name="stream">Input stream.</param>
+			/// <param name="Length">Expected stream length.</param>
+			/// <param name="numberGetter">The function which assigns image numbers to FITS images in file.</param>
+			/// <returns>A FitsFileBuilder containing the information from the headers.</returns>
 			internal static FitsFileBuilder ReadFileHeaders(Stream stream, long Length, MEFImageNumberGetter numberGetter)
 			{
 				FitsFileBuilder builder = new FitsFileBuilder();
@@ -95,6 +109,7 @@ namespace Umbrella2.IO.FITS
 				builder.PrimaryDataPointer = (int) stream.Position;
 				int ALength = ComputeDataArrayLength(builder.PrimaryTable);
 
+				/* Align to 2880 */
 				stream.Position += (ALength + 2879) / 2880 * 2880;
 
 				/* Check if file is MEF. */

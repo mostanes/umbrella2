@@ -8,7 +8,7 @@ using static System.Math;
 namespace Umbrella2.WCS.Projections
 {
 	/// <summary>
-	/// Supports gnomonic projection.
+	/// Gnomonic projection algorithm for image WCS.
 	/// </summary>
 	[Projection(AlgorithmName, AlgorithmDescription)]
 	class TAN : WCSProjectionTransform

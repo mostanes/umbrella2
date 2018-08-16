@@ -98,7 +98,7 @@ namespace UmbrellaFitsIo.FrameworkSupport
 			ExitLock(Lock, true);
 		}
 
-		public void ExitLock(Guid Lock, bool Force)
+		void ExitLock(Guid Lock, bool Force)
 		{
 			bool lockExists = false;
 			lock (Areas)

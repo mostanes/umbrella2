@@ -93,6 +93,12 @@ namespace Umbrella2.IO.FITS
 			s.Dispose();
 		}
 
+		/// <summary>
+		/// Memory-maps an area in the file.
+		/// </summary>
+		/// <param name="Position">Position in the file where the view should start.</param>
+		/// <param name="Length">Length of the mapped file view.</param>
+		/// <returns>Pointer to the memory mapped view.</returns>
 		internal unsafe IntPtr GetView(int Position, int Length)
 		{
 			lock (OpenViews)
@@ -108,6 +114,13 @@ namespace Umbrella2.IO.FITS
 			}
 		}
 
+		/// <summary>
+		/// Memory maps image data.
+		/// </summary>
+		/// <param name="Dataset">Image number.</param>
+		/// <param name="DSetPosition">Position in the data array at which the view should start.</param>
+		/// <param name="Length">Length of the area viewed.</param>
+		/// <returns>Pointer to the memory mapped view of the data.</returns>
 		internal IntPtr GetDataView(int Dataset, int DSetPosition, int Length)
 		{
 			if (OutputFile)
@@ -127,6 +140,10 @@ namespace Umbrella2.IO.FITS
 			return GetView(FilePosition, Length);
 		}
 
+		/// <summary>
+		/// Releases the memory mapped file view (and associated resources).
+		/// </summary>
+		/// <param name="View">Pointer to the memory mapped file view.</param>
 		internal void ReleaseView(IntPtr View)
 		{
 			lock (OpenViews)
