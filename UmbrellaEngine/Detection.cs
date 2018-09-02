@@ -10,6 +10,9 @@ using static System.Math;
 
 namespace Umbrella2
 {
+	/// <summary>
+	/// Represents a detection on a processed image. Volatile interface.
+	/// </summary>
 	public class MedianDetection
 	{
 		internal List<EquatorialPoint> EquatorialPoints;
@@ -88,6 +91,9 @@ namespace Umbrella2
 		}
 	}
 
+	/// <summary>
+	/// Represents an elliptical fit of a source's pixels.
+	/// </summary>
 	struct SourceEllipse
 	{
 		internal double SemiaxisMajorAngle;

@@ -7,6 +7,13 @@ using Umbrella2.Algorithms.Misc;
 
 namespace Umbrella2.Algorithms.Detection
 {
+	/// <summary>
+	/// Holds detections and performs merging of source detections in tracklets.
+	/// </summary>
+	/// <remarks>
+	/// This code is a first-fit solution to the problem of detection merging.
+	/// In particular, the search function and associates should be reimplemented with a carefully designed algorithm.
+	/// </remarks>
 	public class PoolMDMerger
 	{
 		const int PoolDepth = 10;
@@ -19,13 +26,20 @@ namespace Umbrella2.Algorithms.Detection
 		double AngleDistanceDifferenceThreshold = 10;
 		List<MedianDetection[][]> CandidatePairings;
 
+		/// <summary>
+		/// Initializes a new instance.
+		/// </summary>
 		public PoolMDMerger()
 		{
 			PoolList = new List<MedianDetection>(); ObsTimes = new List<DateTime>();
 			Topmost = double.MaxValue; Lowermost = double.MinValue; Leftmost = double.MaxValue; Rightmost = double.MinValue;
 		}
 
-		public void LoadMedians(List<MedianDetection> Detections)
+		/// <summary>
+		/// Preloads detections into the search structures.
+		/// </summary>
+		/// <param name="Detections">Detected sources.</param>
+		public void LoadDetections(List<MedianDetection> Detections)
 		{
 			if (DetectionPool != null) throw new NotSupportedException("Cannot modify the detection pool after it is generated");
 			PoolList.AddRange(Detections);
@@ -39,6 +53,9 @@ namespace Umbrella2.Algorithms.Detection
 			}
 		}
 
+		/// <summary>
+		/// Generates the search structures.
+		/// </summary>
 		public void GeneratePool()
 		{
 			DetectionPool = new QuadTree<MedianDetection>(PoolDepth, Topmost, Lowermost, Leftmost, Rightmost);
@@ -90,6 +107,10 @@ namespace Umbrella2.Algorithms.Detection
 				CandidatePairings.Add(DIPAr.ToArray());
 		}
 
+		/// <summary>
+		/// Searches for tracklets from the given sources.
+		/// </summary>
+		/// <returns></returns>
 		public List<MedianDetection[][]> Search()
 		{
 			CandidatePairings = new List<MedianDetection[][]>();

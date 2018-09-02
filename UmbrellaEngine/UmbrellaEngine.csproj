@@ -54,11 +54,10 @@
     <Compile Include="ImageAlgorithms\LineAnalyzer.cs" />
     <Compile Include="ImageAlgorithms\MultiImageMedianFilter.cs" />
     <Compile Include="ImageAlgorithms\MultimedianFilter.cs" />
+    <Compile Include="ImageAlgorithms\ParallelAlgorithmRunner.cs" />
     <Compile Include="ImageAlgorithms\RestrictedMeanFilter.cs" />
-    <Compile Include="ImageAlgorithms\RLHT.cs" />
+    <Compile Include="ImageAlgorithms\RLHT\RLHT.cs" />
     <Compile Include="ImageAlgorithms\RLHT\RLHTCore.cs" />
-    <Compile Include="ImageAlgorithms\RLHT\RLHTInDepth.cs" />
-    <Compile Include="ImageAlgorithms\RLHT\RLHTSkim.cs" />
     <Compile Include="ImageAlgorithms\RLHT\SmartSkipRLHT.cs" />
     <Compile Include="ImageAlgorithms\SegmentDetector.cs" />
     <Compile Include="ImageAlgorithms\StandardImageMasker.cs" />

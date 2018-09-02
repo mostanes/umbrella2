@@ -6,15 +6,6 @@ namespace Umbrella2.Algorithms.Images
 {
 	public static partial class RLHT
 	{
-		internal struct ImageParameters
-		{
-			internal double ZeroLevel;
-			internal double IncreasingThreshold;
-			internal double MaxMultiplier;
-			internal double MaxRatio;
-			internal double DefaultRatio;
-		}
-
 		/// <summary>
 		/// Runs the Hough Transform over a line.
 		/// </summary>
@@ -23,7 +14,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="Width">Image Width.</param>
 		/// <param name="Rho">Radial coordinate.</param>
 		/// <param name="Theta">Angular coordinate.</param>
-		/// <param name="IncTh">Increasing Threshold.</param>
+		/// <param name="DetectionParameters">Image-specific algorithm parameters.</param>
 		/// <param name="HoughSum">Hough transform output for given coordinates.</param>
 		static void Lineover(double[,] Input, int Height, int Width, double Rho, double Theta, ImageParameters DetectionParameters, out double HoughSum)
 		{
@@ -106,16 +97,14 @@ namespace Umbrella2.Algorithms.Images
 				if (M1 < 0f) M1 = 0f;
 				float LgMult = M1 / (1.0f + M1) * LgExtraMul + LgBaseMul;
 				if (LgMult > MaxMul) LgMult = MaxMul;
-				//double LgMult = Atan(LongAvg * RevIC - 1) / PI + 0.5;
-				/* The new weight is computed */
 				
+				/* The new weight is computed */
 				LongValue = LongValue * LgMult + LongAvg;
 				if (LongValue < 0) LongValue = 0;
-				//double M2 = LongValue * RevIC - 1;
-				//double XLgMult = M2 / (2 + M2);
+
 				/* Scaling the weight on 0-1 */
-				//float dXLgMult = (float) (Atan(LongValue * RevIC - 1) * RevPI + 0.5);
 				float XLgMult = FAtanS(LongValue * RevIC + 0.5f);
+
 				/* Computing the sum */
 				float CVal = ShortAvg * 2 * XLgMult;
 				if (CVal > 0)
@@ -128,9 +117,20 @@ namespace Umbrella2.Algorithms.Images
 			HoughSum = HTSum;
 		}
 
+		/// <summary>
+		/// Number of entries in approximation table.
+		/// </summary>
 		const int FAtanCount = 50;
+		/// <summary>
+		/// The approximation table.
+		/// </summary>
 		static float[] FAtanValues = FAtanGen();
-		static float RevPI100 = (float) (4 * FAtanCount / PI);
+
+		/// <summary>
+		/// Fast atan(-like) function with values scaled on 0-1.
+		/// </summary>
+		/// <param name="Tan"></param>
+		/// <returns></returns>
 		static float FAtanS(float Tan)
 		{
 			if (Tan <= 2.0f && Tan >= 0.0f)
@@ -146,6 +146,10 @@ namespace Umbrella2.Algorithms.Images
 			}
 		}
 
+		/// <summary>
+		/// Computes the <code>FAtanS</code> tables.
+		/// </summary>
+		/// <returns>A table of 32-bit floats that approximate the Atan function.</returns>
 		static float[] FAtanGen()
 		{
 			FAtanValues = new float[2 * FAtanCount + 1];

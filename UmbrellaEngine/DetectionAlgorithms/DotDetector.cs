@@ -1,20 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Umbrella2.IO.FITS;
 using Umbrella2.IO.FITS.KnownKeywords;
 
 namespace Umbrella2.Algorithms.Detection
 {
+	/// <summary>
+	/// Connected component hysteresis algorithm for light source detection.
+	/// </summary>
 	public class DotDetector
 	{
+		/// <summary>
+		/// Upper hysteresis in (local) standard deviations.
+		/// </summary>
 		public double HighThresholdMultiplier;
+		/// <summary>
+		/// Lower hysteresis in (local) standard deviations.
+		/// </summary>
 		public double LowThresholdMultiplier;
+		/// <summary>
+		/// Minimum number of pixels to consider a detection.
+		/// </summary>
 		public double MinPix;
+		/// <summary>
+		/// List of unprocessed detections.
+		/// </summary>
 		List<DotDetection> Detections;
 
+		/// <summary>
+		/// Detects trailless light sources on the input image.
+		/// </summary>
+		/// <param name="Input">Input image.</param>
+		/// <param name="ObservationTime">Input image time of observation.</param>
+		/// <returns>A list of detections.</returns>
 		public List<MedianDetection> DetectDots(FitsImage Input, ObservationTime ObservationTime)
 		{
 			const int ThreadStep = 250;
@@ -27,6 +47,12 @@ namespace Umbrella2.Algorithms.Detection
 			return Mdect;
 		}
 
+		/// <summary>
+		/// Actual detection algorithm function.
+		/// </summary>
+		/// <param name="Input">Input data.</param>
+		/// <param name="OX">X origin delta.</param>
+		/// <param name="OY">Y origin delta.</param>
 		void DotDetect(double[,] Input, int OX, int OY)
 		{
 			int OW = Input.GetLength(1);
@@ -56,6 +82,13 @@ namespace Umbrella2.Algorithms.Detection
 				Detections.AddRange(ldot);
 		}
 
+		/// <summary>
+		/// Parallel setup function for running the algorithm.
+		/// </summary>
+		/// <param name="Input">Input image.</param>
+		/// <param name="StartLine">Y coordinate where to start.</param>
+		/// <param name="LineStep">Amount of lines processed at the same time.</param>
+		/// <param name="LEnd">Y coordinate where to end.</param>
 		void SingleImageBlock(FitsImage Input, int StartLine, int LineStep, int LEnd)
 		{
 			ImageData InputData;
@@ -71,8 +104,14 @@ namespace Umbrella2.Algorithms.Detection
 			Input.ExitLock(InputData);
 		}
 
+		/// <summary>
+		/// Integer lattice point.
+		/// </summary>
 		internal struct IntPoint { internal int X, Y; }
 
+		/// <summary>
+		/// Holds the data of a light source.
+		/// </summary>
 		internal struct DotDetection
 		{
 			internal PixelPoint Barycenter;
@@ -87,6 +126,16 @@ namespace Umbrella2.Algorithms.Detection
 			}
 		}
 
+		/// <summary>
+		/// Connected component / bitmap fill function.
+		/// </summary>
+		/// <param name="Input">Image input</param>
+		/// <param name="StartPoint">Starting coordinates.</param>
+		/// <param name="Mask">Mask of visited coordinates.</param>
+		/// <param name="LowThreshold">Lower hysteresis threshold.</param>
+		/// <param name="OX">X origin delta.</param>
+		/// <param name="OY">Y origin delta.</param>
+		/// <returns></returns>
 		static DotDetection BitmapFill(double[,] Input, IntPoint StartPoint, bool[,] Mask, double LowThreshold, int OX, int OY)
 		{
 			Queue<IntPoint> PointQ = new Queue<IntPoint>();

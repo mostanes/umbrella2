@@ -150,7 +150,7 @@ namespace Umbrella2.IO.FITS
 				try { ipt = Umbrella2.WCS.Projections.WCSProjections.GetProjectionTransform(Algorithm, RA0 * Math.PI / 180, Dec0 * Math.PI / 180); }
 				catch (KeyNotFoundException ex) { throw new FITSFormatException("Cannot understand projection algorithm", ex); }
 
-				Transform = = new WCSViaProjection(ipt, linpart);
+				Transform = new WCSViaProjection(ipt, linpart);
 
 				/* Computes BytesPerPixel and selects reading/writing functions */
 				BytesPerPixel = (byte) Math.Abs((Header["BITPIX"].Int / 8));
