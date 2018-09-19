@@ -66,10 +66,7 @@ namespace Umbrella2.Algorithms.Images
 			{
 				for (int j = AreaOverlap; j + WorkingSize+AreaOverlap < Input.Width; j+=WorkingSize-AreaOverlap)
 				{
-					if (CLine < 1800 && CLine > 1700 - 150 && j < 350 && j > 250-150)
-						;
 					InputData = Input.SwitchLockData(InputData, j, CLine - AreaOverlap, true);
-					//var w = RLHT.SkimRLHT(InputData.Data, IncTh, StrongHT, 4);
 					var w = RLHT.SmartSkipRLHT(InputData.Data, imp, StrongHT, Skip);
 					bool[,] Mask = new bool[WorkingSize, WorkingSize];
 
@@ -80,15 +77,11 @@ namespace Umbrella2.Algorithms.Images
 						
 						foreach (Vector vx in w.StrongPoints)
 						{
-							//var RefinedSP = RLHT.RefinedRLHT(InputData.Data, IncTh, PSFSize, MinFlux, StrongHT, vx.X, vx.Y);
-							if (CLine < 1800 && CLine > 1700 - 150 && j < 350 && j > 250 - 150)
-								;
 							var z = LineAnalyzer.AnalyzeLine(InputData.Data, Mask, WorkingSize, WorkingSize, vx.X, vx.Y, OnThreshold,
 								DropThreshold, 40, 10, j, CLine - AreaOverlap);
 							IntermediateList.AddRange(z);
 						}
-						if (CLine < 1800 && CLine > 1700 - 150 && j < 350 && j > 250 - 150)
-							;
+
 						int[] Tags = new int[IntermediateList.Count];
 						for (int k = 0; k < IntermediateList.Count; k++) Tags[k] = k;
 						bool TagsMod = true;
@@ -113,8 +106,7 @@ namespace Umbrella2.Algorithms.Images
 									}
 								}
 						}
-						if (CLine < 1800 && CLine > 1700 - 150 && j < 350 && j > 250 - 150)
-							;
+
 						Dictionary<int, List<PixelPoint>> Pixels = new Dictionary<int, List<PixelPoint>>();
 						Dictionary<int, List<double>> Values = new Dictionary<int, List<double>>();
 						for(int k = 0; k < IntermediateList.Count; k++)
@@ -128,11 +120,7 @@ namespace Umbrella2.Algorithms.Images
 							foreach (List<double> pv in Values.Values) DetectedPV.Add(pv);
 						}
 						
-						
-						//lock (DetectedFasts)
-						//	DetectedFasts.AddRange(IntermediateList);
 					}
-					;
 				}
 			}
 			Input.ExitLock(InputData);
@@ -140,7 +128,6 @@ namespace Umbrella2.Algorithms.Images
 
 		List<MedianDetection> GetMedetect(FitsImage InputImage, FitsImage Image)
 		{
-			//return DetectedFasts.Select((x) => new MedianDetection(InputImage.Transform, ObservationTime, x.Points, x.PointValues)).ToList();
 			var x1 = DetectedPP.Zip(DetectedPV, (x, y) => new MedianDetection(InputImage.Transform, Image, x, y));
 			return x1.Where((x) => x.PixelEllipse.SemiaxisMinor < 2.5 * Math.Sqrt(x.PixelEllipse.SemiaxisMajor*PSFSize) && x.PixelPoints.Count > 2 * PSFSize * PSFSize).ToList();
 		}
