@@ -51,6 +51,7 @@
     <Compile Include="Geometry\LineIntersection.cs" />
     <Compile Include="ImageAlgorithms\ImageStatistics.cs" />
     <Compile Include="ImageAlgorithms\LineAnalyzer.cs" />
+    <Compile Include="ImageAlgorithms\MaskByMedian.cs" />
     <Compile Include="ImageAlgorithms\NoiseReduction\HardMedians.cs" />
     <Compile Include="ImageAlgorithms\NoiseReduction\RestrictedMean.cs" />
     <Compile Include="ImageAlgorithms\ParallelAlgorithmRunner.cs" />

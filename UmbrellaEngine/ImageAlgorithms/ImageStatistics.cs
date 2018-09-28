@@ -6,20 +6,34 @@ using Umbrella2.IO.FITS;
 
 namespace Umbrella2.Algorithms.Images
 {
+	/// <summary>
+	/// Contains a set of information about the image.
+	/// </summary>
 	public class ImageStatistics
 	{
-		public double ZeroLevel;
-		public double StDev;
+		/// <summary>
+		/// Background level.
+		/// </summary>
+		public readonly double ZeroLevel;
+		/// <summary>
+		/// Noise standard deviations.
+		/// </summary>
+		public readonly double StDev;
+
 		List<double> Means;
 		List<double> Variances;
 
+		/// <summary>
+		/// Computes the ImageStatistics for a given image.
+		/// </summary>
+		/// <param name="Input">Input image.</param>
 		public ImageStatistics(FitsImage Input)
 		{
-			const int ThreadStep = 250;
-			const int LineStep = 50;
 			Means = new List<double>();
 			Variances = new List<double>();
-			Parallel.For(0, Input.Height / ThreadStep, (x) => SingleImageBlock(Input, (int) x * ThreadStep, LineStep, (int) (x + 1) * ThreadStep));
+
+			StatAlgorithm.Run(this, Input, new ParallelAlgorithmRunner.AlgorithmRunParameters() { FillZero = false, InputMargins = 0, Xstep = 0, Ystep = 50 });
+
 			double[] M = Means.ToArray();
 			double[] V = Variances.ToArray();
 			Array.Sort(M);
@@ -28,43 +42,43 @@ namespace Umbrella2.Algorithms.Images
 			StDev = Sqrt(V[M.Length / 2]);
 		}
 
+		/// <summary>
+		/// Accessible form of the computation function.
+		/// </summary>
+		static ParallelAlgorithmRunner.Extractor<ImageStatistics> StatAlgorithm = RunStatistics;
 
-		void RunStats(double[,] Input)
-		{
+		/// <summary>
+		/// Computation function.
+		/// </summary>
+		/// <param name="Input">Input data.</param>
+		/// <param name="Stats">Result collector.</param>
+		static void RunStatistics(double[,] Input, ImageStatistics Stats)
+		{ 
 			int OW = Input.GetLength(1);
 			int OH = Input.GetLength(0);
-			int i, j, k, c;
+			int i, j, k;
 			
 			double Mean = 0, Var = 0;
+			/* Scan the image on block-by-block basis */
 			for (k = 0; k < OW - OH; k += OH)
 			{
+				/* Scan block */
 				Mean = 0; Var = 0;
 				for (i = 0; i < OH; i++) for (j = 0; j < OH; j++)
 					{ Mean += Input[i, j + k]; Var += Input[i, j + k] * Input[i, j + k]; }
+				
+				/* Compute mean and variance */
 				Mean /= (OH * OH);
 				Var /= (OH * OH);
 				Var -= Mean * Mean;
-				lock (Means)
+
+				/* Update results */
+				lock (Stats.Means)
 				{
-					Means.Add(Mean);
-					Variances.Add(Var);
+					Stats.Means.Add(Mean);
+					Stats.Variances.Add(Var);
 				}
 			}			
-		}
-
-		void SingleImageBlock(FitsImage Input, int StartLine, int LineStep, int LEnd)
-		{
-			ImageData InputData;
-			System.Drawing.Rectangle Area = new System.Drawing.Rectangle(0, StartLine, (int) Input.Width, LineStep);
-			InputData = Input.LockData(new System.Drawing.Rectangle(0, StartLine, (int) Input.Width, LineStep), true);
-			int CLine = StartLine;
-			for (CLine = StartLine; CLine < LEnd; CLine += LineStep)
-			{
-				InputData = Input.SwitchLockData(InputData, 0, CLine, true);
-
-				RunStats(InputData.Data);
-			}
-			Input.ExitLock(InputData);
 		}
 	}
 }

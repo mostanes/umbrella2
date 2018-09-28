@@ -26,12 +26,12 @@ namespace Umbrella2.Algorithms.Images
 		/// <summary>
 		/// Filters the input using a restricted mean filter. The argument given is the PSF importance distribution.
 		/// </summary>
-		public static ParallelAlgorithmRunner.Algorithm1to1<double[]> RestrictedMeanFilter => RestrictedMeanAlgorithm;
+		public static ParallelAlgorithmRunner.SimpleMap<double[]> RestrictedMeanFilter => RestrictedMeanAlgorithm;
 
 		/// <summary>
 		/// Filters the input using a median filter that also considers the closest neighbor pixel values.
 		/// </summary>
-		public static ParallelAlgorithmRunner.Algorithm1to1<double[], ImageStatistics> MultiMedianFilter => MultiMedianAlgorithm;
+		public static ParallelAlgorithmRunner.SimpleMap<double[], ImageStatistics> MultiMedianFilter => MultiMedianAlgorithm;
 
 		/// <summary>
 		/// Computes a weighted mean using a subset of the data.
@@ -56,10 +56,10 @@ namespace Umbrella2.Algorithms.Images
 					cnt = 0;
 					for (k = 0; k < Size; k++) for (l = 0; l < Size; l++)
 						{ MedValues[cnt] = Input[i + k, j + l]; cnt++; }
-					Buffer.BlockCopy(PSF, 0, DPSF, 0, 8 * PSF.Length);
+					Buffer.BlockCopy(PSF, 0, DPSF, 0, sizeof(double) * PSF.Length);
 					Array.Sort(MedValues, DPSF);
 					double w;
-					for (s = 0, w = 0, k = Size; k < PSF.Length - 2 * Size; k++)
+					for (s = 0, w = 0, k = Size; k <= PSF.Length - Size; k++)
 					{ s += MedValues[k] * DPSF[k]; w += DPSF[k]; }
 					Output[i, j] = s / w;
 				}
@@ -93,7 +93,7 @@ namespace Umbrella2.Algorithms.Images
 					cnt = 0;
 					for (k = i + SzD - 1; k < i + SzD + 2; k++) for (l = j + SzD - 1; l < j + SzD + 2; l++)
 							MCentral[cnt++] = Input[k, l];
-					Buffer.BlockCopy(PSF, 0, DPSF, 0, 8 * PSF.Length);
+					Buffer.BlockCopy(PSF, 0, DPSF, 0, sizeof(double) * PSF.Length);
 					Array.Sort(MedValues, DPSF);
 					Array.Sort(MCentral);
 					for (k = 0, s = 0; s < 0.5; k++) s += DPSF[k];

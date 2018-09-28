@@ -12,11 +12,13 @@ namespace Umbrella2.Algorithms.Images
 		/// </summary>
 		enum AlgorithmType
 		{
-			A1t1_T,
-			A1t1_TU,
-			A1t1_TUV,
-			ANt1,
-			A1t0_T
+			SimpleMap_T,
+			SimpleMap_TU,
+			SimpleMap_TUV,
+			PositionMap,
+			Combiner,
+			Extractor,
+			PositionExtractor
 		}
 
 		/// <summary>
@@ -58,7 +60,11 @@ namespace Umbrella2.Algorithms.Images
 			Details.FillZero = Details.OriginalP.FillZero;
 			Details.Xstep = Details.OriginalP.Xstep;
 			if (Details.Xstep == 0)
-				Details.Xstep = (int) Details.OutputImage.Width;
+			{
+				if (Details.OutputImage != null)
+					Details.Xstep = (int) Details.OutputImage.Width;
+				else Details.Xstep = (int) Details.InputImages[0].Width;
+			}
 			Details.Ystep = Details.OriginalP.Ystep;
 			Details.InputMargins = Details.OriginalP.InputMargins;
 
@@ -118,6 +124,9 @@ namespace Umbrella2.Algorithms.Images
 		/// </summary>
 		static void ReadImageBlock(RunDetails RD, FitsImage Selected, ref ImageData Data, ref ThreadDetails TD)
 		{
+			if (!RD.FillZero)
+			{ LockDataNofill(RD, TD, Selected, ref Data, true); return; }
+
 			if (TD.CurrentPositionY == TD.StartPosition && TD.CurrentPositionX == 0)
 				Data = Selected.LockData(new System.Drawing.Rectangle(
 					TD.CurrentPositionX - RD.InputMargins, TD.CurrentPositionY - RD.InputMargins,
@@ -132,17 +141,32 @@ namespace Umbrella2.Algorithms.Images
 		/// </summary>
 		static void ProcessOutput(RunDetails RunDetails, ThreadDetails ThDetails, ref ImageData OutputData)
 		{
-			if (ThDetails.CurrentPositionY == ThDetails.StartPosition && ThDetails.CurrentPositionX == 0)
-				OutputData = RunDetails.OutputImage.LockData(new System.Drawing.Rectangle(ThDetails.CurrentPositionX, ThDetails.CurrentPositionY, RunDetails.Xstep, RunDetails.Ystep), false, false);
-			else if (ThDetails.CurrentPositionX + RunDetails.Xstep > RunDetails.OutputImage.Width)
-				throw new NotImplementedException();
-			else if (ThDetails.CurrentPositionY + RunDetails.Ystep > ThDetails.EndPosition)
+			LockDataNofill(RunDetails, ThDetails, RunDetails.OutputImage, ref OutputData, false);
+		}
+
+		static void LockDataNofill(RunDetails RD, ThreadDetails TD, FitsImage Image, ref ImageData Data, bool Readonly)
+		{
+			/* Not initialized */
+			if (TD.CurrentPositionY == TD.StartPosition && TD.CurrentPositionX == 0)
+				Data = Image.LockData(new System.Drawing.Rectangle(TD.CurrentPositionX, TD.CurrentPositionY, RD.Xstep, RD.Ystep), false, Readonly);
+
+			/* Compute required height and width */
+			int NWidth = RD.Xstep;
+			int NHeight = RD.Ystep;
+			if (TD.CurrentPositionX + RD.Xstep > Image.Width)
+				NWidth = (int) Image.Width - TD.CurrentPositionX;
+			if (TD.CurrentPositionY + RD.Ystep > TD.EndPosition)
+				NHeight = TD.EndPosition - TD.CurrentPositionY;
+
+			/* If window size must be changed */
+			if (NWidth != Data.Position.Width || NHeight != Data.Position.Height)
 			{
-				RunDetails.OutputImage.ExitLock(OutputData);
-				OutputData = RunDetails.OutputImage.LockData(new System.Drawing.Rectangle(ThDetails.CurrentPositionX, ThDetails.CurrentPositionY, RunDetails.Xstep, (int) ThDetails.EndPosition - ThDetails.CurrentPositionY), false, false);
+				Image.ExitLock(Data);
+				Data = Image.LockData(new System.Drawing.Rectangle(TD.CurrentPositionX, TD.CurrentPositionY, NWidth, NHeight), false, Readonly);
 			}
+			/* Just swap otherwise */
 			else
-				OutputData = RunDetails.OutputImage.SwitchLockData(OutputData, ThDetails.CurrentPositionX, ThDetails.CurrentPositionY, false, false);
+				Data = Image.SwitchLockData(Data, TD.CurrentPositionX, TD.CurrentPositionY, false, Readonly);
 		}
 
 		/// <summary>
@@ -152,15 +176,24 @@ namespace Umbrella2.Algorithms.Images
 		{
 			switch (Details.Type)
 			{
-				case AlgorithmType.A1t1_T: Details.Algorithm.DynamicInvoke(Inputs[0].Data, Output.Data, Details.Parameters[0]); break;
-				case AlgorithmType.A1t1_TU: Details.Algorithm.DynamicInvoke(Inputs[0].Data, Output.Data, Details.Parameters[0], Details.Parameters[1]); break;
-				case AlgorithmType.A1t1_TUV: Details.Algorithm.DynamicInvoke(Inputs[0].Data, Output.Data, Details.Parameters[0], Details.Parameters[1], Details.Parameters[2]); break;
-				case AlgorithmType.ANt1:
-					PixelPoint[] IA = Inputs.Select((x) => new PixelPoint() { X = x.Position.Location.X, Y = x.Position.Location.Y }).ToArray();
-					PixelPoint OA = new PixelPoint() { X = Output.Position.X, Y = Output.Position.Y };
-					Details.Algorithm.DynamicInvoke(Inputs.Select((x) => x.Data).ToArray(), Output.Data, IA, OA, Details.Parameters[0]); break;
-				case AlgorithmType.A1t0_T: Details.Algorithm.DynamicInvoke(Inputs[0].Data, Details.Parameters[0]); break;
+				case AlgorithmType.SimpleMap_T: Details.Algorithm.DynamicInvoke(Inputs[0].Data, Output.Data, Details.Parameters[0]); break;
+				case AlgorithmType.SimpleMap_TU: Details.Algorithm.DynamicInvoke(Inputs[0].Data, Output.Data, Details.Parameters[0], Details.Parameters[1]); break;
+				case AlgorithmType.SimpleMap_TUV: Details.Algorithm.DynamicInvoke(Inputs[0].Data, Output.Data, Details.Parameters[0], Details.Parameters[1], Details.Parameters[2]); break;
+				case AlgorithmType.PositionMap:
+					ImageSegmentPosition pmIP = GetPosition(Inputs[0]);
+					ImageSegmentPosition pmOP = GetPosition(Output);
+					Details.Algorithm.DynamicInvoke(Inputs[0].Data, Output.Data, pmIP, pmOP, Details.Parameters[0]);
+					break;
+				case AlgorithmType.Combiner:
+					ImageSegmentPosition[] cIP = Inputs.Select(GetPosition).ToArray();
+					ImageSegmentPosition cOP = GetPosition(Output);
+					Details.Algorithm.DynamicInvoke(Inputs.Select((x) => x.Data).ToArray(), Output.Data, cIP, cOP, Details.Parameters[0]); break;
+				case AlgorithmType.Extractor: Details.Algorithm.DynamicInvoke(Inputs[0].Data, Details.Parameters[0]); break;
+				case AlgorithmType.PositionExtractor: Details.Algorithm.DynamicInvoke(Inputs[0].Data, GetPosition(Inputs[0]), Details.Parameters[0]); break;
 			}
 		}
+
+		static ImageSegmentPosition GetPosition(ImageData Data) =>
+			new ImageSegmentPosition() { WCS = Data.Parent.Transform, Alignment = new PixelPoint() { X = Data.Position.X, Y = Data.Position.Y } };
 	}
 }

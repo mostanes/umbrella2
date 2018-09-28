@@ -31,10 +31,12 @@ namespace Umbrella2.Algorithms.Images
 			int NTh = HTMatrix.GetLength(1);
 			int i, j;
 			List<Vector> HoughPowerul = new List<Vector>();
-			
+
 			/* Initialize skip controlling variables */
+			int StrongHoughReset = 2 * Skip + 1; /* Counter reset value, minimum to search Skip around found value */
+			int StrongHoughInnerCounter = 0; /* Inner loop counter */
+			int StrongHoughOuterCounter = 0; /* Outer loop counter */
 			bool StrongHough = false;
-			bool HadStrongHough = false;
 
 			/* For all distances */
 			for (i = 0; i < NRd; i++)
@@ -57,16 +59,31 @@ namespace Umbrella2.Algorithms.Images
 						HoughPowerul.Add(new Vector() { X = i, Y = Theta });
 
 						/* When new interesting coordinates, jump back and analyze */
-						if (!StrongHough) { if (j > Skip) j -= Skip; else j = 0; }
+						if (StrongHoughInnerCounter == 0) { if (j > Skip) j -= Skip; else j = 0; }
+						/* Reset counter and notify outer loop */
+						StrongHoughInnerCounter = StrongHoughReset;
 						StrongHough = true;
 					}
-					/* If no interesting points, skip angles */
-					else j += Skip - 1;
+					/* If no interesting points, skip angles and decrement counter */
+					else
+					{
+						if (StrongHoughInnerCounter == 0) j += Skip - 1;
+						else StrongHoughInnerCounter--;
+					}
 				}
-
-				if (!StrongHough) i += Skip - 1;
-				else if (!HadStrongHough) { if (i > Skip) i -= Skip; else i = 0; }
-				HadStrongHough = StrongHough;
+				/* If no interesting points, skip radii and decrement counter */
+				if (!StrongHough)
+				{
+					if (StrongHoughOuterCounter == 0) i += Skip - 1;
+					else StrongHoughOuterCounter--;
+				}
+				else
+				{
+					/* New interesting coordinates, jump back and analyze */
+					if (StrongHoughOuterCounter == 0) { if (i > Skip) i -= Skip; else i = 0; }
+					/* Reset counter */
+					StrongHoughOuterCounter = StrongHoughReset;
+				}
 			}
 			return new HTResult() { StrongPoints = HoughPowerul, HTMatrix = HTMatrix };
 		}

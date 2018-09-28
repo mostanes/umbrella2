@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Umbrella2.IO.FITS;
 using Umbrella2.WCS;
 
@@ -9,7 +10,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <summary>
 		/// Filters the input using a weighted median filter. The argument is the PSF importance distribution (here it functions as the median weights).
 		/// </summary>
-		public static ParallelAlgorithmRunner.Algorithm1to1<double[]> WeightedMedian = WeightedMedianAlgorithm;
+		public static ParallelAlgorithmRunner.SimpleMap<double[]> WeightedMedian = WeightedMedianAlgorithm;
 
 		/// <summary>
 		/// Algorithm parameters for the weighted median filter.
@@ -41,7 +42,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <summary>
 		/// Computes the median image of multiple input images. WCS information must be passed to the algorithm.
 		/// </summary>
-		public static ParallelAlgorithmRunner.AlgorithmNto1<MIMData> MultiImageMedian => MultiImageMedianFilter;
+		public static ParallelAlgorithmRunner.Combiner<object> MultiImageMedian => MultiImageMedianFilter;
 
 		/// <summary>
 		/// Computes the weighted median of the input.
@@ -74,15 +75,6 @@ namespace Umbrella2.Algorithms.Images
 		}
 
 		/// <summary>
-		/// The set of WCS projections for the images.
-		/// </summary>
-		public struct MIMData
-		{
-			public WCSViaProjection[] InputImagesTransforms;
-			public WCSViaProjection OutputImageTransform;
-		}
-
-		/// <summary>
 		/// Performs a median filter between multiple data sets.
 		/// </summary>
 		/// <param name="Inputs">Input data.</param>
@@ -90,8 +82,13 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="InputAlignments">Alignments of input data.</param>
 		/// <param name="OutputAlignments">Alignment of output data.</param>
 		/// <param name="WCS">WCS projections.</param>
-		static void MultiImageMedianFilter(double[][,] Inputs, double[,] Output, PixelPoint[] InputAlignments, PixelPoint OutputAlignments, MIMData WCS)
+		static void MultiImageMedianFilter(double[][,] Inputs, double[,] Output, ParallelAlgorithmRunner.ImageSegmentPosition[] InputPositions, ParallelAlgorithmRunner.ImageSegmentPosition OutputPosition, object empty)
 		{
+			PixelPoint[] InputAlignments = InputPositions.Select((x) => x.Alignment).ToArray();
+			PixelPoint OutputAlignment = OutputPosition.Alignment;
+			WCSViaProjection[] InputImagesTransforms = InputPositions.Select((x) => x.WCS).ToArray();
+			WCSViaProjection OutputImageTransform = OutputPosition.WCS;
+
 			int OW = Output.GetLength(1);
 			int OH = Output.GetLength(0);
 			int i, j, k, c;
@@ -99,12 +96,12 @@ namespace Umbrella2.Algorithms.Images
 			PixelPoint pxp = new PixelPoint();
 			for (i = 0; i < OH; i++) for (j = 0; j < OW; j++)
 				{
-					pxp.X = j + OutputAlignments.X; pxp.Y = i + OutputAlignments.Y;
-					EquatorialPoint eqp = WCS.OutputImageTransform.GetEquatorialPoint(pxp);
+					pxp.X = j + OutputAlignment.X; pxp.Y = i + OutputAlignment.Y;
+					EquatorialPoint eqp = OutputImageTransform.GetEquatorialPoint(pxp);
 					c = 0;
 					for (k = 0; k < Inputs.Length; k++)
 					{
-						PixelPoint pyp = WCS.InputImagesTransforms[k].GetPixelPoint(eqp);
+						PixelPoint pyp = InputImagesTransforms[k].GetPixelPoint(eqp);
 						pyp.X = Math.Round(pyp.X - InputAlignments[k].X); pyp.Y = Math.Round(pyp.Y - InputAlignments[k].Y);
 						if (pyp.X < 0 || pyp.X >= Inputs[k].GetLength(1)) continue;
 						if (pyp.Y < 0 || pyp.Y >= Inputs[k].GetLength(0)) continue;
