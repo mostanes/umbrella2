@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Umbrella2.WCS
 {
+	/// <summary>
+	/// Represents a transform of FITS image coordinates to WCS via a linear map and a spherical projection.
+	/// </summary>
 	public class WCSViaProjection
 	{
 		public readonly WCSProjectionTransform ProjectionTransform;
@@ -31,11 +34,22 @@ namespace Umbrella2.WCS
 
 		public List<PixelPoint> GetPixelPoints(IEnumerable<EquatorialPoint> Points)
 		{ return LinearTransform.GetPixelPoints(ProjectionTransform.GetProjectionPoints(Points)); }
+
+		public double GetEstimatedWCSChainDerivative()
+		{ return LinearTransform.WCSChainDerivative * ProjectionTransform.GetEstimatedWCSChainDerivative(); }
 	}
 
 	public abstract class WCSProjectionTransform
 	{
-		protected readonly double RA, Dec;
+		/// <summary>
+		/// Reference point Right Ascension.
+		/// </summary>
+		protected readonly double RA;
+
+		/// <summary>
+		/// Reference point Declination.
+		/// </summary>
+		protected readonly double Dec;
 		public WCSProjectionTransform(double RA, double Dec)
 		{ this.RA = RA; this.Dec = Dec; }
 
@@ -45,8 +59,50 @@ namespace Umbrella2.WCS
 		public abstract ProjectionPoint GetProjectionPoint(EquatorialPoint Point);
 		public abstract ProjectionPoint[] GetProjectionPoints(EquatorialPoint[] Points);
 		public abstract List<ProjectionPoint> GetProjectionPoints(IEnumerable<EquatorialPoint> Points);
+		
+		/// <summary>
+		/// Estimated linear distance derivative for quick computation of image distances and velocities.
+		/// </summary>
+		/// <returns></returns>
+		public abstract double GetEstimatedWCSChainDerivative();
+
+		/// <summary>
+		/// Retrieves the coordinates of the reference point of the projection.
+		/// </summary>
+		/// <param name="RA">Reference point Right Ascension.</param>
+		/// <param name="Dec">Reference point Declination.</param>
 		public abstract void GetReferencePoints(out double RA, out double Dec);
+		
+		/// <summary>
+		/// Name of the projection algorithm (tag).
+		/// </summary>
 		public abstract string Name { get; }
+
+		/// <summary>
+		/// Description of the projection algorithm (ex. full algorithm name).
+		/// </summary>
 		public abstract string Description { get; }
+	}
+
+	/// <summary>
+	/// Attribute for recognizing WCS projection algorithms.
+	/// </summary>
+	public class ProjectionAttribute : Attribute
+	{
+		/// <summary>
+		/// Name tag of the projection.
+		/// </summary>
+		public readonly string Name;
+
+		/// <summary>
+		/// Description text of the projection.
+		/// </summary>
+		public readonly string Description;
+
+		public ProjectionAttribute(string ProjectionTag, string ProjectionDescription)
+		{
+			Name = ProjectionTag;
+			Description = ProjectionDescription;
+		}
 	}
 }

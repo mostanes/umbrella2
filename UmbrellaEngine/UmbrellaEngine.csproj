@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -40,8 +41,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
-    <Compile Include="ImageAlgorithms\WeightedMedianFilter.cs" />
+    <Compile Include="DataStructures\ConnectedComponentGraph.cs" />
+    <Compile Include="DataStructures\QuadTree.cs" />
+    <Compile Include="Detection.cs" />
+    <Compile Include="DetectionAlgorithms\CandidatePairingsRefinery.cs" />
+    <Compile Include="DetectionAlgorithms\DotDetector.cs" />
+    <Compile Include="DetectionAlgorithms\PoolMDMerger.cs" />
+    <Compile Include="Filtering\MedianDetectionFilters.cs" />
+    <Compile Include="Geometry\LineIntersection.cs" />
+    <Compile Include="ImageAlgorithms\ImageStatistics.cs" />
+    <Compile Include="ImageAlgorithms\LineAnalyzer.cs" />
+    <Compile Include="ImageAlgorithms\MaskByMedian.cs" />
+    <Compile Include="ImageAlgorithms\NoiseReduction\HardMedians.cs" />
+    <Compile Include="ImageAlgorithms\NoiseReduction\RestrictedMean.cs" />
+    <Compile Include="ImageAlgorithms\ParallelAlgorithmRunner.cs" />
+    <Compile Include="ImageAlgorithms\RLHT\RLHT.cs" />
+    <Compile Include="ImageAlgorithms\RLHT\RLHTCore.cs" />
+    <Compile Include="ImageAlgorithms\RLHT\SmartSkipRLHT.cs" />
+    <Compile Include="ImageAlgorithms\SegmentDetector.cs" />
+    <Compile Include="ImageAlgorithms\StandardImageMasker.cs" />
+    <Compile Include="ImageAlgorithms\ParallelAlgorithmBackend.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -54,5 +73,6 @@
       <Name>UmbrellaSharedBase</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

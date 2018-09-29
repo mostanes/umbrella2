@@ -80,7 +80,7 @@ namespace Umbrella2.IO.FITS
 			string s = GetValueTypedValue();
 			return long.Parse(s);
 		}
-		
+
 		public long Long
 		{ get { return GetIntegerValue(); } }
 
@@ -135,5 +135,11 @@ namespace Umbrella2.IO.FITS
 
 		public FITSFormatException(string message, Exception innerException) : base(message, innerException)
 		{ }
+	}
+
+	public static class HeaderTableUtil
+	{
+		public static void CheckRecord(this Dictionary<string, ElevatedRecord> Table, string Key)
+		{ if (!Table.ContainsKey(Key)) throw new FormatException("FITS Image does not implement " + Key + " record."); }
 	}
 }

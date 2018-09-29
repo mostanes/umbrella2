@@ -19,12 +19,12 @@ namespace UmbrellaFitsIo.FrameworkSupport
 		/// </summary>
 		/// <remarks>Thread safety in reading internal lock state is obtained by locking this list.</remarks>
 		List<Tuple<Rectangle, bool, Thread, Guid>> Areas;
-		List<Thread> WaitingThreads;
+		ManualResetEvent WaitingMechanism;
 
 		public RWLockArea()
         {
             Areas = new List<Tuple<Rectangle, bool, Thread, Guid>>();
-			WaitingThreads = new List<Thread>();
+			WaitingMechanism = new ManualResetEvent(false);
         }
 
 		/// <summary>
@@ -32,53 +32,42 @@ namespace UmbrellaFitsIo.FrameworkSupport
 		/// </summary>
 		/// <param name="zone">Image area over which to get the lock.</param>
 		/// <returns>A lock token.</returns>
-        public Guid EnterLock(Rectangle zone, bool WriteLock)
-        {
-			/* Retry until lock is acquired. */
-        retry:
+		public Guid EnterLock(Rectangle zone, bool WriteLock)
+		{
 			/* Thread-local lock sampling variable */
-            bool islocked = false;
-            lock (Areas)
-            {
-				/* Check if our area intersects with any other area and (if read lock) whether the intersecting areas are writable */
-				foreach (var rs in Areas)
+			bool islocked = false;
+
+			/* The output Guid */
+			Guid g = Guid.NewGuid();
+
+			/* Retry until lock is acquired. */
+			do
+			{
+				lock (Areas)
 				{
-					/* Cannot acquire new lock if another lock is held by the same thread. Release previous lock first. */
-					if (rs.Item3 == Thread.CurrentThread)
-						throw new LockRecursionException("Attempted to acquire an area lock when another area lock is already held");
+					/* Check if our area intersects with any other area and (if read lock) whether the intersecting areas are writable */
+					foreach (var rs in Areas)
+					{
+						/* Cannot acquire new lock if another lock is held by the same thread. Release previous lock first. */
+						if (rs.Item3 == Thread.CurrentThread)
+							throw new LockRecursionException("Attempted to acquire an area lock when another area lock is already held");
 
-					/* Check if our area is modified by someone else */
-					islocked = zone.IntersectsWith(rs.Item1) & (rs.Item2 | WriteLock);
-					if (islocked) break;
+						/* Check if our area is modified by someone else */
+						islocked = zone.IntersectsWith(rs.Item1) & (rs.Item2 | WriteLock);
+						if (islocked) break;
+					}
+					if (!islocked)
+					{
+						/* Clear to acquire lock, so acquiring. */
+						Areas.Add(new Tuple<Rectangle, bool, Thread, Guid>(zone, false, Thread.CurrentThread, g));
+						return g;
+					}
 				}
-                if (!islocked)
-                {
-					/* Clear to acquire lock, so acquiring. */
-                    Guid g = Guid.NewGuid();
-                    Areas.Add(new Tuple<Rectangle, bool, Thread, Guid>(zone, false, Thread.CurrentThread, g));
-                    return g;
-                }
-            }
-			/* We cannot lock the data, so we wait. */
-            if (islocked)
-            {
-				/* Wait for lock state to change and try again. */
-				lock (WaitingThreads)
-					if (!WaitingThreads.Contains(Thread.CurrentThread))
-						WaitingThreads.Add(Thread.CurrentThread);
-
-				try { Thread.Sleep(Timeout.Infinite); }
-				catch (ThreadInterruptedException) { }
-
-				goto retry;
-            }
-
-			/* Remove ourselves from the waiting list. */
-			lock (WaitingThreads)
-				if (WaitingThreads.Contains(Thread.CurrentThread))
-					WaitingThreads.Remove(Thread.CurrentThread);
-            return new Guid();
-        }
+				/* We cannot lock the data, so we wait for lock state to change and try again. */
+				WaitingMechanism.WaitOne();
+			} while (islocked);
+			throw new Exception("Invalid program state.");
+		}
 
 		/// <summary>
 		/// Exits an acquired lock.
@@ -98,7 +87,7 @@ namespace UmbrellaFitsIo.FrameworkSupport
 			ExitLock(Lock, true);
 		}
 
-		public void ExitLock(Guid Lock, bool Force)
+		void ExitLock(Guid Lock, bool Force)
 		{
 			bool lockExists = false;
 			lock (Areas)
@@ -122,10 +111,7 @@ namespace UmbrellaFitsIo.FrameworkSupport
 				throw new KeyNotFoundException("No lock held");
 
 			/* Wake up waiting threads */
-			foreach (Thread t in WaitingThreads)
-			{
-				t.Interrupt();
-			}
+			WaitingMechanism.Set();
 		}
 	}
 }

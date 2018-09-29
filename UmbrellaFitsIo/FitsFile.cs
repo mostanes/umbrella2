@@ -88,22 +88,39 @@ namespace Umbrella2.IO.FITS
 			mmap = MemoryMappedFile.CreateFromFile(Path, FileMode.Create, Guid.NewGuid().ToString(), FLength, MemoryMappedFileAccess.ReadWrite);
 			Stream s = mmap.CreateViewStream();
 			foreach (var w in Headers) { PrimaryTable.Add(w.Key, w.Value); s.Write(w.Value.ToRawRecord(), 0, 80); }
+			s.Write(Encoding.UTF8.GetBytes("END".PadRight(80)), 0, 80);
 			PrimaryDataPointer = HLength;
 			s.Dispose();
 		}
 
+		/// <summary>
+		/// Memory-maps an area in the file.
+		/// </summary>
+		/// <param name="Position">Position in the file where the view should start.</param>
+		/// <param name="Length">Length of the mapped file view.</param>
+		/// <returns>Pointer to the memory mapped view.</returns>
 		internal unsafe IntPtr GetView(int Position, int Length)
 		{
-			int MP = Position - Position % 65536;
-			MemoryMappedViewAccessor va = mmap.CreateViewAccessor(MP, Length + Position % 65536);
-			byte* pr = (byte*) 0;
-			va.SafeMemoryMappedViewHandle.AcquirePointer(ref pr);
-			pr += (Position % 65536); /* Working around weird Windows things... */
-			IntPtr ptr = (IntPtr) pr;
-			OpenViews.Add(ptr, va);
-			return ptr;
+			lock (OpenViews)
+			{
+				int MP = Position - Position % 65536;
+				MemoryMappedViewAccessor va = mmap.CreateViewAccessor(MP, Length + Position % 65536);
+				byte* pr = (byte*) 0;
+				va.SafeMemoryMappedViewHandle.AcquirePointer(ref pr);
+				pr += (Position % 65536); /* Working around weird Windows things... */
+				IntPtr ptr = (IntPtr) pr;
+				OpenViews.Add(ptr, va);
+				return ptr;
+			}
 		}
 
+		/// <summary>
+		/// Memory maps image data.
+		/// </summary>
+		/// <param name="Dataset">Image number.</param>
+		/// <param name="DSetPosition">Position in the data array at which the view should start.</param>
+		/// <param name="Length">Length of the area viewed.</param>
+		/// <returns>Pointer to the memory mapped view of the data.</returns>
 		internal IntPtr GetDataView(int Dataset, int DSetPosition, int Length)
 		{
 			if (OutputFile)
@@ -123,12 +140,19 @@ namespace Umbrella2.IO.FITS
 			return GetView(FilePosition, Length);
 		}
 
+		/// <summary>
+		/// Releases the memory mapped file view (and associated resources).
+		/// </summary>
+		/// <param name="View">Pointer to the memory mapped file view.</param>
 		internal void ReleaseView(IntPtr View)
 		{
-			OpenViews[View].SafeMemoryMappedViewHandle.ReleasePointer();
-			OpenViews[View].Flush();
-			OpenViews[View].Dispose();
-			OpenViews.Remove(View);
+			lock (OpenViews)
+			{
+				OpenViews[View].SafeMemoryMappedViewHandle.ReleasePointer();
+				OpenViews[View].Flush();
+				OpenViews[View].Dispose();
+				OpenViews.Remove(View);
+			}
 		}
 	}
 }

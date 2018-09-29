@@ -2,18 +2,21 @@
 
 namespace UmbrellaFitsIo.DataFormatTranslations
 {
+	/// <summary>
+	/// Module for reading from and writing to floating-point FITS data arrays.
+	/// Functions provide for converting memory-mapped file data to IEEE floating point.
+	/// </summary>
 	static class FPDataset
 	{
-		public static unsafe void Read32(IntPtr Pointer, double[,] Data, int Stride)
+		public static unsafe void Read32(IntPtr Pointer, double[,] Data, int Hstart, int Hend, int Wstart, int Wend, int Stride)
 		{
-			int Height = Data.GetLength(0);
-			int Width = Data.GetLength(1);
+			int Width = Wend - Wstart;
 			int i, j;
 			byte* b = (byte*) Pointer;
 			uint c;
-			for (i = 0; i < Height; i++)
+			for (i = Hstart; i < Hend; i++)
 			{
-				for (j = 0; j < Width; j++, b++)
+				for (j = Wstart; j < Wend; j++, b++)
 				{
 					c = ((uint)((*b * 256 + (*++b)))) * 65536;
 					c += (uint) ((*(++b) * 256 + (*++b)));
@@ -33,26 +36,25 @@ namespace UmbrellaFitsIo.DataFormatTranslations
 				{
 					float dh = (float) Data[i, j];
 					uint dd = *((uint*) &dh);
-					*b = (byte) (dd / 16777216);
+					*b++ = (byte) (dd / 16777216);
 					*b++ = (byte) (dd / 65536);
 					*b++ = (byte) (dd / 256);
-					*b++ = (byte) (dd);
+					*b = (byte) (dd);
 
 				}
 				b += Stride - Data.GetLength(1) * 4;
 			}
 		}
 
-		public static unsafe void Read64(IntPtr Pointer, double[,] Data, int Stride)
+		public static unsafe void Read64(IntPtr Pointer, double[,] Data, int Hstart, int Hend, int Wstart, int Wend, int Stride)
 		{
-			int Height = Data.GetLength(0);
-			int Width = Data.GetLength(1);
+			int Width = Wend - Wstart;
 			int i, j;
 			byte* b = (byte*) Pointer;
 			ulong c;
-			for (i = 0; i < Height; i++)
+			for (i = Hstart; i < Hend; i++)
 			{
-				for (j = 0; j < Width; j++, b++)
+				for (j = Wstart; j < Wend; j++, b++)
 				{
 					c = (ulong) ((*b * 256 + (*++b)));
 					c = c * 65536 + (ulong) ((*(++b) * 256 + (*++b)));
@@ -75,14 +77,14 @@ namespace UmbrellaFitsIo.DataFormatTranslations
 					double dh = Data[i, j];
 					ulong dd = *((ulong*) &dh);
 					const long Div = ((long) int.MaxValue) + 1;
-					*b = (byte) (dd / Div / 16777216);
+					*b++ = (byte) (dd / Div / 16777216);
 					*b++ = (byte) (dd / Div / 65536);
 					*b++ = (byte) (dd / Div / 256);
 					*b++ = (byte) (dd / Div);
 					*b++ = (byte) (dd / 16777216);
 					*b++ = (byte) (dd / 65536);
 					*b++ = (byte) (dd / 256);
-					*b++ = (byte) (dd);
+					*b = (byte) (dd);
 				}
 				b += Stride - Data.GetLength(1) * 8;
 			}
