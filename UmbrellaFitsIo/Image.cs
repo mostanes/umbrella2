@@ -203,7 +203,8 @@ namespace Umbrella2.IO.FITS
 		public T GetProperty<T>() where T : ImageProperties
 		{
 			Type t = typeof(T);
-			if (!PropertiesDictionary.ContainsKey(t)) PropertiesDictionary.Add(t, (ImageProperties) Activator.CreateInstance(t, this));
+			lock (PropertiesDictionary)
+				if (!PropertiesDictionary.ContainsKey(t)) PropertiesDictionary.Add(t, (ImageProperties) Activator.CreateInstance(t, this));
 			return (T) PropertiesDictionary[t];
 		}
 
@@ -366,6 +367,72 @@ namespace Umbrella2.IO.FITS
 			};
 			HeaderTable het = records.ToDictionary((x) => x.Key, (x) => new ElevatedRecord(x.Key, x.Value));
 			return het;
+		}
+	}
+
+	/// <summary>
+	/// Represents a serializable handle for a FitsImage, so that results of the pipeline can be saved to disk and recalled later with full access to information.
+	/// </summary>
+	[Serializable]
+	public struct FitsImageReference
+	{
+		/// <summary>
+		/// Path to the FITS file holding the image.
+		/// </summary>
+		public string Path;
+		/// <summary>
+		/// Which image in the file it refers to.
+		/// </summary>
+		public int ImageNumber;
+		/// <summary>
+		/// A list of all images opened via reference, so that they do not collide.
+		/// </summary>
+		private static Dictionary<string, Dictionary<int, FitsImage>> ImageReferences = new Dictionary<string, Dictionary<int, FitsImage>>();
+		/// <summary>
+		/// A list of all FITS files opened via reference, so that they do not collide.
+		/// </summary>
+		private static Dictionary<string, FitsFile> FileReferences = new Dictionary<string, FitsFile>();
+
+		/// <summary>
+		/// Creates a reference from a path and an image number.
+		/// </summary>
+		/// <param name="Path">Path to the file.</param>
+		/// <param name="ImageNumber">Image number.</param>
+		public FitsImageReference(string Path, int ImageNumber)
+		{
+			this.Path = Path;
+			this.ImageNumber = ImageNumber;
+		}
+
+		/// <summary>
+		/// Acquires the FitsImage associated with the reference.
+		/// </summary>
+		/// <returns>The FitsImage associated to this reference.</returns>
+		public FitsImage AcquireImage()
+		{
+			lock (ImageReferences)
+			{
+				if (!FileReferences.ContainsKey(Path))
+				{ ImageReferences.Add(Path, new Dictionary<int, FitsImage>()); FileReferences.Add(Path, new FitsFile(Path, false)); }
+				if (!ImageReferences[Path].ContainsKey(ImageNumber))
+					ImageReferences[Path].Add(ImageNumber, new FitsImage(FileReferences[Path], ImageNumber));
+				return ImageReferences[Path][ImageNumber];
+			}
+		}
+
+		/// <summary>
+		/// Creates a reference from an existing FitsImage.
+		/// </summary>
+		/// <param name="Image">Image to reference.</param>
+		public FitsImageReference(FitsImage Image) : this(Image.File.Path, Image.ImageNumber)
+		{
+			lock (ImageReferences)
+			{
+				if (!FileReferences.ContainsKey(Path))
+				{ ImageReferences.Add(Path, new Dictionary<int, FitsImage>()); FileReferences.Add(Path, Image.File); }
+				if (!ImageReferences[Path].ContainsKey(ImageNumber))
+					ImageReferences[Path].Add(ImageNumber, Image);
+			}
 		}
 	}
 }

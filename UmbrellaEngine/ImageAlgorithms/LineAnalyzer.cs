@@ -25,11 +25,11 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="HighTh">Upper hysteresis threshold.</param>
 		/// <param name="LowTh">Lower hysteresis threshold.</param>
 		/// <param name="MaxIgnore">Maximum interblob distance.</param>
-		/// <param name="PSFSize">Size of the image PSF.</param>
+		/// <param name="ScanWidth">Width of the scanned area.</param>
 		/// <param name="OX">Image data origin X coordinate.</param>
 		/// <param name="OY">Image data origin Y coordinate.</param>
 		/// <returns>A list of line segment detections.</returns>
-		internal static List<LineDetection> AnalyzeLine(double[,] Input, bool[,] AnalyzeMask, int Height, int Width, double Rho, double Theta, double HighTh, double LowTh, int MaxIgnore, int PSFSize, int OX, int OY)
+		internal static List<LineDetection> AnalyzeLine(double[,] Input, bool[,] AnalyzeMask, int Height, int Width, double Rho, double Theta, double HighTh, double LowTh, int MaxIgnore, int ScanWidth, int OX, int OY)
 		{
 			/* Unit vector in the direction of the line */
 			Vector LineVector = new Vector() { X = Cos(Theta), Y = Sin(Theta) };
@@ -69,7 +69,7 @@ namespace Umbrella2.Algorithms.Images
 			{
 				int l;
 				Vector vl = pt;
-				for (l = -PSFSize; l < PSFSize; l++, vl.Increment(LONormal))
+				for (l = -ScanWidth; l < ScanWidth; l++, vl.Increment(LONormal))
 				{
 					int X = (int) Round(vl.X);
 					int Y = (int) Round(vl.Y);

@@ -9,6 +9,7 @@ namespace Umbrella2
 	/// <summary>
 	/// Point representing a pixel coordinate.
 	/// </summary>
+	[Serializable]
     public struct PixelPoint
     {
 		public double X;
@@ -23,6 +24,7 @@ namespace Umbrella2
 	/// <summary>
 	/// Point representing a point on the equatorial coordinate system.
 	/// </summary>
+	[Serializable]
 	public struct EquatorialPoint
 	{
 		public double RA;
@@ -35,6 +37,7 @@ namespace Umbrella2
 	/// <summary>
 	/// Point representing a projection plane coordinate.
 	/// </summary>
+	[Serializable]
 	public struct ProjectionPoint
 	{
 		public double X;

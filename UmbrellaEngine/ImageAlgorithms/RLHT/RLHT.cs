@@ -24,6 +24,9 @@ namespace Umbrella2.Algorithms.Images
 			internal double MaxMultiplier;
 			internal double MaxRatio;
 			internal double DefaultRatio;
+
+			internal int ShortAvgLength;
+			internal int LongAvgLength;
 		}
 
 	}

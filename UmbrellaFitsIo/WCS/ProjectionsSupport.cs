@@ -26,8 +26,17 @@ namespace Umbrella2.WCS.Projections
 		/// <param name="TypeArray">List of types.</param>
 		public void LoadFromTypeList(Type[] TypeArray)
 		{
-			var Results = TypeArray.Select((x) => new Tuple<Type, object>(x, x.GetCustomAttribute(typeof(ProjectionAttribute)))).Where((x) => x.Item2 != null);
-			foreach (var z in Results) if (!ProjectionTypes.ContainsKey(((ProjectionAttribute) z.Item2).Name)) ProjectionTypes.Add(((ProjectionAttribute) z.Item2).Name, z.Item1);
+			foreach (Type t in TypeArray)
+			{
+				object[] Attributes = t.GetCustomAttributes(false);
+				foreach (object Attribute in Attributes)
+					if (typeof(ProjectionAttribute).IsAssignableFrom(Attribute.GetType()))
+					{
+						if (!ProjectionTypes.ContainsKey(((ProjectionAttribute) Attribute).Name))
+							ProjectionTypes.Add(((ProjectionAttribute) Attribute).Name, t);
+						break;
+					}
+			}
 		}
 
 		/// <summary>

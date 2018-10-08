@@ -27,11 +27,12 @@ namespace Umbrella2
 		internal double LargestDistance;
 		internal FitsImage ParentImage;
 
-		internal MedianDetection(WCSViaProjection Transform, FitsImage Image, List<PixelPoint> Points, List<double> PixelValues)
+		internal MedianDetection(WCSViaProjection Transform, FitsImage Image, List<PixelPoint> Points, List<double> Values)
 		{
 			this.Time = Image.GetProperty<ObservationTime>();
 			ParentImage = Image;
 			PixelPoints = Points;
+			PixelValues = Values;
 			EquatorialPoints = Transform.GetEquatorialPoints(PixelPoints);
 			double RAmin = double.MaxValue, RAmax = double.MinValue, Decmin = double.MaxValue, Decmax = double.MinValue;
 			foreach (EquatorialPoint eqp in EquatorialPoints)
@@ -54,7 +55,7 @@ namespace Umbrella2
 			for (int i = 0; i < Points.Count; i++)
 			{
 				PixelPoint pt = Points[i];
-				double Val = PixelValues[i];
+				double Val = Values[i];
 				Xmean += pt.X; Ymean += pt.Y;
 				XBmean += Val * pt.X; YBmean += Val * pt.Y;
 				XXB += pt.X * pt.X * Val; XYB += pt.X * pt.Y * Val; YYB += pt.Y * pt.Y * Val;
@@ -109,6 +110,30 @@ namespace Umbrella2
 			double A2 = Atan2(2 * XY, -(-XX + YY - Msq));
 			if (L1 > L2) { SemiaxisMajorAngle = A1; SemiaxisMajor = 2 * Sqrt(L1); SemiaxisMinor = 2 * Sqrt(L2); }
 			else { SemiaxisMajorAngle = A2; SemiaxisMajor = 2 * Sqrt(L2); SemiaxisMinor = 2 * Sqrt(L1); }
+		}
+	}
+
+	/// <summary>
+	/// Represents a serializable reference to a MedianDetection.
+	/// </summary>
+	[Serializable]
+	public struct MedianReference
+	{
+		internal FitsImageReference Image;
+		internal PixelPoint[] Pixels;
+		internal double[] Values;
+
+		public MedianReference(MedianDetection Detection)
+		{
+			Image = new FitsImageReference(Detection.ParentImage);
+			Pixels = Detection.PixelPoints.ToArray();
+			Values = Detection.PixelValues.ToArray();
+		}
+
+		public MedianDetection Acquire()
+		{
+			FitsImage Img = Image.AcquireImage();
+			return new MedianDetection(Img.Transform, Img, Pixels.ToList(), Values.ToList());
 		}
 	}
 }

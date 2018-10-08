@@ -18,7 +18,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="PSFRadius">Radius of the PSF importance distribution.</param>
 		public static ParallelAlgorithmRunner.AlgorithmRunParameters WeightedMedianParameters(int PSFRadius) => new ParallelAlgorithmRunner.AlgorithmRunParameters()
 		{
-			FillZero = false,
+			FillZero = true,
 			InputMargins = PSFRadius,
 			Ystep = 50,
 			Xstep = 0

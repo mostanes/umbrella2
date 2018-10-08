@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static System.Math;
 
 namespace Umbrella2.Algorithms.Filtering
 {
@@ -35,6 +34,33 @@ namespace Umbrella2.Algorithms.Filtering
 
 
 			public static implicit operator Predicate<MedianDetection>(BrightnessThicknessFilter f) => f.Filter;
+		}
+
+		public struct LinearityThresholdFilter
+		{
+			public double MaxLineThickness;
+
+			bool Filter(MedianDetection Input) { double Width = ComputeWidth(Input); return (Width <= MaxLineThickness); }
+
+			double ComputeWidth(MedianDetection Input)
+			{
+				double X0Angle = Input.PixelEllipse.SemiaxisMajorAngle;
+				/* Rotation matrix: { { Cos(-X0Angle), -Sin(-X0Angle) }, { Sin(-X0Angle), Cos(-X0Angle) } } */
+				double YSsum = 0, Ysum = 0;
+				foreach (PixelPoint pp in Input.PixelPoints)
+				{
+					double nY = pp.Y * Cos(X0Angle) - pp.X * Sin(X0Angle);
+					YSsum += nY * nY;
+					Ysum += nY;
+				}
+				YSsum /= Input.PixelPoints.Count;
+				Ysum /= Input.PixelPoints.Count;
+				YSsum -= Ysum * Ysum;
+
+				return 2 * Sqrt(YSsum);
+			}
+
+			public static implicit operator Predicate<MedianDetection>(LinearityThresholdFilter f) => f.Filter;
 		}
 	}
 }

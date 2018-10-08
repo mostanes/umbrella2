@@ -11,13 +11,14 @@ namespace Umbrella2.Algorithms.Images
 {
 	/// <summary>
 	/// Detects the linear asteroid trails.
+	/// Obsolete. Please use newer LongTrailDetector.
 	/// </summary>
 	/// <remarks>
 	/// This code is highly sensitive to changes. This is also why several parameters are hardcoded.
 	/// </remarks>
+	[Obsolete]
 	public class SegmentDetector
 	{
-		double IncTh;
 		double SegOnM;
 		double SegDropM;
 		double OnThreshold;
@@ -44,7 +45,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="SegmentDropThreshold"></param>
 		public SegmentDetector(double IncrementThreshold, double SegmentCreateThreshold, double SegmentDropThreshold)
 		{
-			IncTh = IncrementThreshold; SegOnM = SegmentCreateThreshold; SegDropM = SegmentDropThreshold;
+			SegOnM = SegmentCreateThreshold; SegDropM = SegmentDropThreshold;
 			DetectedFasts = new List<LineAnalyzer.LineDetection>();
 		}
 
@@ -75,7 +76,16 @@ namespace Umbrella2.Algorithms.Images
 		/// </summary>
 		void SingleImageBlock(FitsImage Input, int StartLine, int LEnd, ImageStatistics ImStats)
 		{
-			RLHT.ImageParameters imp = new RLHT.ImageParameters() { DefaultRatio = 0.9, MaxRatio = 1.08, IncreasingThreshold = ImStats.StDev, MaxMultiplier = 10, ZeroLevel = ImStats.ZeroLevel };
+			RLHT.ImageParameters imp = new RLHT.ImageParameters()
+			{
+				DefaultRatio = 0.9,
+				MaxRatio = 1.08,
+				IncreasingThreshold = 0.75 * ImStats.StDev,
+				MaxMultiplier = 10,
+				ZeroLevel = ImStats.ZeroLevel + 0.75 * ImStats.StDev,
+				ShortAvgLength = 5,
+				LongAvgLength = 35
+			};
 
 			ImageData InputData;
 			InputData = Input.LockData(new System.Drawing.Rectangle(0, StartLine - AreaOverlap, WorkingSize, WorkingSize), true);
@@ -86,7 +96,7 @@ namespace Umbrella2.Algorithms.Images
 				{
 					/* Scan lines for possible trails */
 					InputData = Input.SwitchLockData(InputData, j, CLine - AreaOverlap, true);
-					var w = RLHT.SmartSkipRLHT(InputData.Data, imp, StrongHT, Skip);
+					var w = RLHT.SmartSkipRLHT(InputData.Data, imp, StrongHT, Skip, true);
 					bool[,] Mask = new bool[WorkingSize, WorkingSize];
 
 

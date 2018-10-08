@@ -17,8 +17,10 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="ImP">Image-specific detection parameters.</param>
 		/// <param name="StrongHoughTh">Threshold for a strong response.</param>
 		/// <param name="Skip">Number of steps to skip if no strong response has been observed.</param>
+		/// <param name="SimplifiedLine">Use the simplified RLHT line scanner.</param>
+		/// <param name="StrongValueFunction">Function to compute threshold relative to length.</param>
 		/// <returns></returns>
-		internal static HTResult SmartSkipRLHT(double[,] Input, ImageParameters ImP, double StrongHoughTh, int Skip)
+		internal static HTResult SmartSkipRLHT(double[,] Input, ImageParameters ImP, double StrongHoughTh, int Skip, bool SimplifiedLine = false, Func<double, double> StrongValueFunction = null)
 		{
 			/* Compute algorithm parameters */
 			int Height = Input.GetLength(0);
@@ -51,10 +53,15 @@ namespace Umbrella2.Algorithms.Images
 					if (Theta > PI / 2) if (Theta < PI) continue;
 
 					/* Integrate along the line */
-					Lineover(Input, Height, Width, i, Theta, ImP, out HTMatrix[i, j]);
+					double Length;
+					if(SimplifiedLine) SimpleLineover(Input, Height, Width, i, Theta, ImP, out HTMatrix[i, j], out Length);
+					else Lineover(Input, Height, Width, i, Theta, ImP, out HTMatrix[i, j], out Length);
+
+					/* If has a function dependent on the length */
+					if (StrongValueFunction != null) StrongHoughTh = StrongValueFunction(Length);
 
 					/* If relevant coordinates */
-					if (HTMatrix[i, j] > StrongHoughTh)
+					if (Length != 0 && HTMatrix[i, j] > StrongHoughTh)
 					{
 						HoughPowerul.Add(new Vector() { X = i, Y = Theta });
 
