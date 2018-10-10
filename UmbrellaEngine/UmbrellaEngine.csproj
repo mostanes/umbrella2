@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -49,7 +51,8 @@
     <Compile Include="DetectionAlgorithms\DotDetector.cs" />
     <Compile Include="DetectionAlgorithms\PoolMDMerger.cs" />
     <Compile Include="Filtering\MedianDetectionFilters.cs" />
-    <Compile Include="Geometry\LineIntersection.cs" />
+    <Compile Include="Math\LinearRegression.cs" />
+    <Compile Include="Math\LineIntersection.cs" />
     <Compile Include="ImageAlgorithms\ImageStatistics.cs" />
     <Compile Include="ImageAlgorithms\LineAnalyzer.cs" />
     <Compile Include="ImageAlgorithms\LongTrailDetector.cs" />
@@ -64,6 +67,10 @@
     <Compile Include="ImageAlgorithms\SegmentDetector.cs" />
     <Compile Include="ImageAlgorithms\StandardImageMasker.cs" />
     <Compile Include="ImageAlgorithms\ParallelAlgorithmBackend.cs" />
+    <Compile Include="PairingAlgorithms\MDPoolCore.cs" />
+    <Compile Include="PairingAlgorithms\PoolPairwiseAnalyzer.cs" />
+    <Compile Include="PairingAlgorithms\PrePair.cs" />
+    <Compile Include="PairingAlgorithms\Tracklet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

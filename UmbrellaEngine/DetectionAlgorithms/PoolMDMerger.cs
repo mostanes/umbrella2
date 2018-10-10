@@ -84,7 +84,7 @@ namespace Umbrella2.Algorithms.Detection
 			TimeSpan DeltaTime = b.Time.Time - a.Time.Time;
 			var Line = b.BarycenterEP - a.BarycenterEP;
 			double PairEstimatedDistance = ~Line;
-			double PairEstimatedDistanceError = a.PixelEllipse.SemiaxisMajor + b.PixelEllipse.SemiaxisMajor;
+			double PairEstimatedDistanceError = (a.PixelEllipse.SemiaxisMajor + b.PixelEllipse.SemiaxisMajor) / 2;
 			PairEstimatedDistanceError *= a.ParentImage.Transform.GetEstimatedWCSChainDerivative();
 			double PairEstimatedVelocity = PairEstimatedDistance / DeltaTime.TotalSeconds;
 			double PairEstimatedVelocityError = PairEstimatedDistanceError / DeltaTime.TotalSeconds;
