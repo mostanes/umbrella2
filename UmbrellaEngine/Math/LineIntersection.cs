@@ -20,6 +20,11 @@ namespace Umbrella2.Algorithms.Geometry
 		public void Increment(Vector v)
 		{ X += v.X; Y += v.Y; }
 
+		/// <summary>
+		/// Multiplies the given vector by  scalar.
+		/// </summary>
+		public static Vector operator *(double Scalar, Vector Vect) => new Vector() { X = Scalar * Vect.X, Y = Scalar * Vect.Y };
+
 		public override string ToString() { return "(" + X.ToString() + ";" + Y.ToString() + ")"; }
 	}
 
@@ -66,7 +71,7 @@ namespace Umbrella2.Algorithms.Geometry
 		/// <param name="Width">Width of the rectangle.</param>
 		/// <param name="Height">Height of the rectangle.</param>
 		/// <returns>A tuple containing the intersection point and the distance from Origin to it.</returns>
-		internal static Tuple<Vector, double> IntersectLeft(Vector Origin, Vector Direction, int Width, int Height)
+		internal static bool IntersectLeft(Vector Origin, Vector Direction, int Width, int Height, out Vector Point, out double Distance)
 		{
 			/* Coordinate of the origin corner and the direction of the 2 axes */
 			Vector X0 = new Vector { X = 0, Y = 0 };
@@ -75,11 +80,23 @@ namespace Umbrella2.Algorithms.Geometry
 			/* Intersect with the vertical axis */
 			Vector v1 = GetLineIntersection(Origin, X0, Direction, Vert);
 			/* Intersection happening on the Y-axis */
-			if (v1.Y >= 0 && v1.Y < Height - 1) return new Tuple<Vector, double>(new Vector() { X = 0, Y = v1.Y }, v1.X);
+			if (v1.Y >= 0 && v1.Y < Height - 1)
+			{
+				Point = new Vector() { X = 0, Y = v1.Y };
+				Distance = v1.X;
+				return true;
+			}
 			v1 = GetLineIntersection(Origin, X0, Direction, Horz);
 			/* Intersection happening on the X-axis */
-			if (v1.Y >= 0 && v1.Y < Width - 1) return new Tuple<Vector, double>(new Vector() { X = v1.Y, Y = 0 }, v1.X);
-			return null;
+			if (v1.Y >= 0 && v1.Y < Width - 1)
+			{
+				Point = new Vector() { X = v1.Y, Y = 0 };
+				Distance = v1.X;
+				return true;
+			}
+			Point = default(Vector);
+			Distance = 0;
+			return false;
 		}
 
 		/// <summary>
@@ -90,7 +107,7 @@ namespace Umbrella2.Algorithms.Geometry
 		/// <param name="Width">Width of the rectangle.</param>
 		/// <param name="Height">Height of the rectangle.</param>
 		/// <returns>A tuple containing the intersection point and the distance from Origin to it.</returns>
-		internal static Tuple<Vector, double> IntersectRight(Vector Origin, Vector Direction, int Width, int Height)
+		internal static bool IntersectRight(Vector Origin, Vector Direction, int Width, int Height, out Vector Point, out double Distance)
 		{
 			/* Coordinate of the variable corner and the direction of the 2 axes */
 			Vector X0 = new Vector { X = Width - 1, Y = Height - 1 };
@@ -98,11 +115,23 @@ namespace Umbrella2.Algorithms.Geometry
 			Vector Horz = new Vector { X = -1, Y = 0 };
 			/* Intersect with the vertical axis */
 			Vector v1 = GetLineIntersection(Origin, X0, Direction, Vert);
-			if (v1.Y > 0 && v1.Y < Height - 1) return new Tuple<Vector, double>(new Vector() { X = Width - 1, Y = Height - 1 - v1.Y }, v1.X);
+			if (v1.Y > 0 && v1.Y < Height - 1)
+			{
+				Point = new Vector() { X = Width - 1, Y = Height - 1 - v1.Y };
+				Distance = v1.X;
+				return true;
+			}
 			/* Intersect with the horizontal axis */
 			v1 = GetLineIntersection(Origin, X0, Direction, Horz);
-			if (v1.Y > 0 && v1.Y < Width - 1) return new Tuple<Vector, double>(new Vector() { X = Width - 1 - v1.Y, Y = Height - 1 }, v1.X);
-			return null;
+			if (v1.Y > 0 && v1.Y < Width - 1)
+			{
+				Point = new Vector() { X = Width - 1 - v1.Y, Y = Height - 1 };
+				Distance = v1.X;
+				return true;
+			}
+			Point = default(Vector);
+			Distance = 0;
+			return false;
 		}
 	}
 }

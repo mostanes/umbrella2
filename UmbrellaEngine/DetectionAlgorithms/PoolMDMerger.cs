@@ -64,6 +64,7 @@ namespace Umbrella2.Algorithms.Detection
 
 		public bool PairPossible(MedianDetection a, MedianDetection b)
 		{
+			if (a.IsPaired || b.IsPaired) return false;
 			if (a.Time.Time == b.Time.Time) return false;
 			TimeSpan DeltaTime = a.Time.Time - b.Time.Time;
 			if ((a.LargestDistance + b.LargestDistance) * Math.Abs(DeltaTime.TotalSeconds) < (a.BarycenterEP ^ b.BarycenterEP) * (a.Time.Exposure.TotalSeconds + b.Time.Exposure.TotalSeconds) / 2) return false;
@@ -101,10 +102,13 @@ namespace Umbrella2.Algorithms.Detection
 				//DetectedInPool.Add(DetectionsList);
 				DIPAr.Add(DetectionsList.ToArray());
 			}
-			int i, c=0;
+			int i, c = 0;
 			for (i = 0; i < DIPAr.Count; i++) if (DIPAr[i].Length != 0) c++;
 			if (c >= 3)
+			{
 				CandidatePairings.Add(DIPAr.ToArray());
+				foreach (MedianDetection[] mdl in DIPAr) foreach (MedianDetection m in mdl) m.IsPaired = true;
+			}
 		}
 
 		/// <summary>

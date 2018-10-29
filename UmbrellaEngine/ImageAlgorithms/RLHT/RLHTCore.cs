@@ -21,14 +21,12 @@ namespace Umbrella2.Algorithms.Images
 			/* Set up geometry */
 			Vector LineVector = new Vector() { X = Cos(Theta), Y = Sin(Theta) };
 			Vector LineOrigin = new Vector() { X = -Rho * Sin(Theta), Y = Rho * Cos(Theta) };
-			var r = LineIntersection.IntersectLeft(LineOrigin, LineVector, Width, Height);
-			if (r == null) { HoughSum = 0; LineLength = 0; return; }
-			Vector LeftIntersect = r.Item1;
-			double LDist = r.Item2;
-			r = LineIntersection.IntersectRight(LineOrigin, LineVector, Width, Height);
-			if (r == null) { HoughSum = 0; LineLength = 0; return; }
-			Vector RightIntersect = r.Item1;
-			double RDist = r.Item2;
+			Vector LeftIntersect;
+			double LDist;
+			if (!LineIntersection.IntersectLeft(LineOrigin, LineVector, Width, Height, out LeftIntersect, out LDist)) { HoughSum = 0; LineLength = 0; return; }
+			Vector RightIntersect;
+			double RDist;
+			if (!LineIntersection.IntersectRight(LineOrigin, LineVector, Width, Height, out RightIntersect, out RDist)) { HoughSum = 0; LineLength = 0; return; }
 
 			double Start = Min(LDist, RDist);
 			double End = Max(LDist, RDist);

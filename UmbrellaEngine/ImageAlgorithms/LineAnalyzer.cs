@@ -39,14 +39,13 @@ namespace Umbrella2.Algorithms.Images
 			Vector LONormal = new Vector() { X = -Sin(Theta), Y = Cos(Theta) };
 
 			/* Compute the intersections with the bounding box */
-			var r = LineIntersection.IntersectLeft(LineOrigin, LineVector, Width, Height);
-			if (r == null) { return null; }
-			Vector LeftIntersect = r.Item1;
-			double LDist = r.Item2;
-			r = LineIntersection.IntersectRight(LineOrigin, LineVector, Width, Height);
-			if (r == null) { return null; }
-			Vector RightIntersect = r.Item1;
-			double RDist = r.Item2;
+			Vector LeftIntersect;
+			double LDist;
+			if (!LineIntersection.IntersectLeft(LineOrigin, LineVector, Width, Height, out LeftIntersect, out LDist)) { return null; }
+
+			Vector RightIntersect;
+			double RDist;
+			if (!LineIntersection.IntersectRight(LineOrigin, LineVector, Width, Height, out RightIntersect, out RDist)) { return null; }
 
 			/* Sort the intersections */
 			double Start = Min(LDist, RDist);

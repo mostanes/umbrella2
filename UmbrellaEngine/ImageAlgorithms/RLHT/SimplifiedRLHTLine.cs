@@ -17,19 +17,21 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="Theta">Angular coordinate.</param>
 		/// <param name="DetectionParameters">Image-specific algorithm parameters.</param>
 		/// <param name="HoughSum">Hough transform output for given coordinates.</param>
-		static void SimpleLineover(double[,] Input, int Height, int Width, double Rho, double Theta, ImageParameters DetectionParameters, out double HoughSum, out double LineLength)
+		/// <param name="LineLength">Length of the line scanned.</param>
+		/// <param name="LastVars">Data pool to be recycled between calls. Initialized internally.</param>
+		/// <param name="LineSkip">Amount of pixels by which to skip when computing the line score.</param>
+		static void SimpleLineover(double[,] Input, int Height, int Width, double Rho, double Theta, ImageParameters DetectionParameters, out double HoughSum, out double LineLength, ref float[] LastVars, int LineSkip)
 		{
 			/* Set up geometry */
 			Vector LineVector = new Vector() { X = Cos(Theta), Y = Sin(Theta) };
 			Vector LineOrigin = new Vector() { X = -Rho * Sin(Theta), Y = Rho * Cos(Theta) };
-			var r = LineIntersection.IntersectLeft(LineOrigin, LineVector, Width, Height);
-			if (r == null) { HoughSum = 0; LineLength = 0; return; }
-			Vector LeftIntersect = r.Item1;
-			double LDist = r.Item2;
-			r = LineIntersection.IntersectRight(LineOrigin, LineVector, Width, Height);
-			if (r == null) { HoughSum = 0; LineLength = 0; return; }
-			Vector RightIntersect = r.Item1;
-			double RDist = r.Item2;
+			Vector LeftIntersect;
+			double LDist;
+			if (!LineIntersection.IntersectLeft(LineOrigin, LineVector, Width, Height, out LeftIntersect, out LDist)) { HoughSum = 0; LineLength = 0; return; }
+			
+			Vector RightIntersect;
+			double RDist;
+			if (!LineIntersection.IntersectRight(LineOrigin, LineVector, Width, Height, out RightIntersect, out RDist)) { HoughSum = 0; LineLength = 0; return; }
 
 			double Start = Min(LDist, RDist);
 			double End = Max(LDist, RDist);
@@ -50,7 +52,7 @@ namespace Umbrella2.Algorithms.Images
 
 			int LongLength = DetectionParameters.LongAvgLength;
 			float LongAvg;
-			float[] LastVars = new float[LongLength];
+			if (LastVars == null) LastVars = new float[LongLength];
 			int RollingPtr;
 			float LongValue;
 			float HTSum;
@@ -77,8 +79,9 @@ namespace Umbrella2.Algorithms.Images
 			float Zero = (float) DetectionParameters.ZeroLevel;
 			float RevLL = 1.0f / LongLength;
 			float XRLL = RevIC * RevLL;
-			
-			for (k = LongLength; k < N; k++, pt.Increment(LineVector))
+
+			Vector LineIncrement = LineSkip * LineVector;
+			for (k = LongLength; k < N; k+=LineSkip, pt.Increment(LineIncrement))
 			{
 				/* Getting the value */
 				int X = (int) Round(pt.X);
@@ -94,7 +97,15 @@ namespace Umbrella2.Algorithms.Images
 				float LgMult = LongAvg < 0f ? LgBaseMul : LongAvg / (1.0f + LongAvg) * LgExtraMul + LgBaseMul;
 
 				/* The new weight is computed */
-				LongValue = LongValue * LgMult + LongAvg;
+				if (LineSkip > 2)
+				{
+					float flsk = FPow(LgMult, LineSkip);
+					if (Abs(flsk - 1.0f) < 0.0001) LongValue = LongValue + LineSkip * LongAvg;
+					else LongValue = LongValue * flsk + LongAvg * (flsk - 1.0f) / (LgMult - 1.0f);
+				}
+				else
+					LongValue = LongValue * LgMult + LongAvg;
+
 				if (LongValue < 0) LongValue = 0;
 				
 				if (Val > 0) /* Next part can be skipped if Val <= 0 */
@@ -107,12 +118,31 @@ namespace Umbrella2.Algorithms.Images
 					/* Computing the sum */
 					float CVal = Val * XLgMult;
 
-					HTSum += CVal;
+					HTSum += CVal * LineSkip;
 				}
 
-				RollingPtr = (RollingPtr + 1) % LongLength;
+				RollingPtr = (RollingPtr + LineSkip) % LongLength;
 			}
 			HoughSum = HTSum;
+		}
+
+		static float FPow(float Base, int Exponent)
+		{
+			float f1;
+			switch (Exponent)
+			{
+				case 1: return Base;
+				case 2: return Base * Base;
+				case 3: return Base * Base * Base;
+				case 4: f1 = Base * Base; return f1 * f1;
+				case 5: f1 = Base * Base; return f1 * f1 * Base;
+				case 6: f1 = Base * Base; return f1 * f1 * f1;
+				case 7: f1 = Base * Base * Base; return f1 * f1 * Base;
+				case 8: Base *= Base; Base *= Base; return Base * Base;
+				case 9: f1 = Base * Base * Base; return f1 * f1 * f1;
+				case 10: Base *= Base; f1 = Base * Base; return f1 * f1 * Base;
+			}
+			return (float) Pow(Base, Exponent);
 		}
 	}
 }

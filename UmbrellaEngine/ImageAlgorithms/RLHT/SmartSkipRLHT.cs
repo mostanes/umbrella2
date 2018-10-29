@@ -20,7 +20,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="SimplifiedLine">Use the simplified RLHT line scanner.</param>
 		/// <param name="StrongValueFunction">Function to compute threshold relative to length.</param>
 		/// <returns></returns>
-		internal static HTResult SmartSkipRLHT(double[,] Input, ImageParameters ImP, double StrongHoughTh, int Skip, bool SimplifiedLine = false, Func<double, double> StrongValueFunction = null)
+		internal static HTResult SmartSkipRLHT(double[,] Input, ImageParameters ImP, AlgorithmData AGD)
 		{
 			/* Compute algorithm parameters */
 			int Height = Input.GetLength(0);
@@ -28,14 +28,21 @@ namespace Umbrella2.Algorithms.Images
 			double ThetaUnit = Min(Atan2(1, Height), Atan2(1, Width));
 			double NTheta = 2 * PI / ThetaUnit;
 			double RhoMax = Sqrt(Width * Width + Height * Height);
-			double[,] HTMatrix = new double[(int) Round(RhoMax), (int) Round(NTheta)];
+			lock (AGD.HTPool)
+				if (AGD.HTPool.Constructor == null)
+					AGD.HTPool.Constructor = () => new double[(int) Round(RhoMax), (int) Round(NTheta)];
+			double[,] HTMatrix = AGD.HTPool.Acquire();
 			int NRd = HTMatrix.GetLength(0);
 			int NTh = HTMatrix.GetLength(1);
 			int i, j;
-			List<Vector> HoughPowerul = new List<Vector>();
+			List<Vector> HoughPowerul = AGD.VPool.Acquire();
+
+			double StrongHoughTh = AGD.StrongHoughThreshold;
+
+			float[] FData = null;
 
 			/* Initialize skip controlling variables */
-			int StrongHoughReset = 2 * Skip + 1; /* Counter reset value, minimum to search Skip around found value */
+			int StrongHoughReset = 2 * AGD.ScanSkip + 1; /* Counter reset value, minimum to search Skip around found value */
 			int StrongHoughInnerCounter = 0; /* Inner loop counter */
 			int StrongHoughOuterCounter = 0; /* Outer loop counter */
 			bool StrongHough = false;
@@ -54,11 +61,11 @@ namespace Umbrella2.Algorithms.Images
 
 					/* Integrate along the line */
 					double Length;
-					if(SimplifiedLine) SimpleLineover(Input, Height, Width, i, Theta, ImP, out HTMatrix[i, j], out Length);
+					if(AGD.SimpleLine) SimpleLineover(Input, Height, Width, i, Theta, ImP, out HTMatrix[i, j], out Length, ref FData, AGD.LineSkip);
 					else Lineover(Input, Height, Width, i, Theta, ImP, out HTMatrix[i, j], out Length);
 
 					/* If has a function dependent on the length */
-					if (StrongValueFunction != null) StrongHoughTh = StrongValueFunction(Length);
+					if (AGD.StrongValueFunction != null) StrongHoughTh = AGD.StrongValueFunction(Length);
 
 					/* If relevant coordinates */
 					if (Length != 0 && HTMatrix[i, j] > StrongHoughTh)
@@ -66,7 +73,7 @@ namespace Umbrella2.Algorithms.Images
 						HoughPowerul.Add(new Vector() { X = i, Y = Theta });
 
 						/* When new interesting coordinates, jump back and analyze */
-						if (StrongHoughInnerCounter == 0) { if (j > Skip) j -= Skip; else j = 0; }
+						if (StrongHoughInnerCounter == 0) { if (j > AGD.ScanSkip) j -= AGD.ScanSkip; else j = 0; }
 						/* Reset counter and notify outer loop */
 						StrongHoughInnerCounter = StrongHoughReset;
 						StrongHough = true;
@@ -74,20 +81,20 @@ namespace Umbrella2.Algorithms.Images
 					/* If no interesting points, skip angles and decrement counter */
 					else
 					{
-						if (StrongHoughInnerCounter == 0) j += Skip - 1;
+						if (StrongHoughInnerCounter == 0) j += AGD.ScanSkip - 1;
 						else StrongHoughInnerCounter--;
 					}
 				}
 				/* If no interesting points, skip radii and decrement counter */
 				if (!StrongHough)
 				{
-					if (StrongHoughOuterCounter == 0) i += Skip - 1;
+					if (StrongHoughOuterCounter == 0) i += AGD.ScanSkip - 1;
 					else StrongHoughOuterCounter--;
 				}
 				else
 				{
 					/* New interesting coordinates, jump back and analyze */
-					if (StrongHoughOuterCounter == 0) { if (i > Skip) i -= Skip; else i = 0; }
+					if (StrongHoughOuterCounter == 0) { if (i > AGD.ScanSkip) i -= AGD.ScanSkip; else i = 0; }
 					/* Reset counter */
 					StrongHoughOuterCounter = StrongHoughReset;
 				}

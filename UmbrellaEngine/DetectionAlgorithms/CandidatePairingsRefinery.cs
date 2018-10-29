@@ -14,7 +14,7 @@ namespace Umbrella2.Algorithms.Detection
 		public static void RefineCandidatePairs(List<MedianDetection[][]> Pairings)
 		{
 			;
-			throw new NotImplementedException();
+			//throw new NotImplementedException();
 		}
 	}
 }

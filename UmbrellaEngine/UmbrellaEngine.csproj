@@ -31,6 +31,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>7.2</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -45,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataStructures\ConnectedComponentGraph.cs" />
+    <Compile Include="DataStructures\MTPool.cs" />
     <Compile Include="DataStructures\QuadTree.cs" />
     <Compile Include="Detection.cs" />
     <Compile Include="DetectionAlgorithms\CandidatePairingsRefinery.cs" />
@@ -64,7 +66,6 @@
     <Compile Include="ImageAlgorithms\RLHT\RLHTCore.cs" />
     <Compile Include="ImageAlgorithms\RLHT\SimplifiedRLHTLine.cs" />
     <Compile Include="ImageAlgorithms\RLHT\SmartSkipRLHT.cs" />
-    <Compile Include="ImageAlgorithms\SegmentDetector.cs" />
     <Compile Include="ImageAlgorithms\StandardImageMasker.cs" />
     <Compile Include="ImageAlgorithms\ParallelAlgorithmBackend.cs" />
     <Compile Include="PairingAlgorithms\MDPoolCore.cs" />
@@ -72,11 +73,16 @@
     <Compile Include="PairingAlgorithms\PrePair.cs" />
     <Compile Include="PairingAlgorithms\Tracklet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StarData.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UmbrellaFitsIo\UmbrellaFitsIo.csproj">
       <Project>{9837fa6b-b7b7-49a1-a33f-cfb557652814}</Project>
       <Name>UmbrellaFitsIo</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UmbrellaPortableNumerical\UmbrellaPortableNumerical.csproj">
+      <Project>{c04015a0-7f9c-4fe3-a7a8-10fb22abbe87}</Project>
+      <Name>UmbrellaPortableNumerical</Name>
     </ProjectReference>
     <ProjectReference Include="..\UmbrellaSharedBase\UmbrellaSharedBase.csproj">
       <Project>{1f30dc02-4acb-4e11-85cb-827ec6f9cdcb}</Project>

@@ -2,15 +2,16 @@
 using System.Linq;
 using Umbrella2.IO.FITS;
 using Umbrella2.WCS;
+using Umbrella2.Algorithms.Images.Median;
 
 namespace Umbrella2.Algorithms.Images
 {
-	public static class HardMedians
+	public static partial class HardMedians
 	{
 		/// <summary>
 		/// Filters the input using a weighted median filter. The argument is the PSF importance distribution (here it functions as the median weights).
 		/// </summary>
-		public static ParallelAlgorithmRunner.SimpleMap<double[]> WeightedMedian = WeightedMedianAlgorithm;
+		public static ParallelAlgorithmRunner.SimpleMap<double[]> WeightedMedian = EstimatorFR.EstimatorFRMedian;
 
 		/// <summary>
 		/// Algorithm parameters for the weighted median filter.
@@ -67,10 +68,8 @@ namespace Umbrella2.Algorithms.Images
 					for (k = 0; k < Size; k++) for (l = 0; l < Size; l++)
 						{ MedValues[cnt] = Input[i + k, j + l]; cnt++; }
 					Buffer.BlockCopy(PSF, 0, DPSF, 0, 8 * PSF.Length);
-					Array.Sort(MedValues, DPSF);
-					for (k = 0, s = 0; s < 0.5; k++) s += DPSF[k];
-					Output[i, j] = 0.5 * (MedValues[k - 1] + MedValues[k + 1]) + MedValues[k];
-					Output[i, j] /= 2;
+					
+					Output[i, j] = MedianSelection.Quickselect(MedValues, DPSF);
 				}
 		}
 

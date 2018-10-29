@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Umbrella2.IO.FITS.KnownKeywords;
 using Umbrella2.IO.FITS;
+using Umbrella2.IO.FITS.KnownKeywords;
 using Umbrella2.WCS;
 using static System.Math;
 
@@ -26,6 +24,8 @@ namespace Umbrella2
 		internal ObservationTime Time;
 		internal double LargestDistance;
 		internal FitsImage ParentImage;
+		internal bool StarPolluted;
+		internal bool IsPaired;
 
 		internal MedianDetection(WCSViaProjection Transform, FitsImage Image, List<PixelPoint> Points, List<double> Values)
 		{

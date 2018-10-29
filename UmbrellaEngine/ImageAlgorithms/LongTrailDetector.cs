@@ -21,9 +21,9 @@ namespace Umbrella2.Algorithms.Images
 			/// </summary>
 			internal RLHT.ImageParameters ImageParameters;
 			/// <summary>
-			/// Amount of lines to skip when skimming over image with SmartSkipRLHT.
+			/// Bag of RLHT data.
 			/// </summary>
-			public int SkipSize;
+			internal RLHT.AlgorithmData AgData;
 			/// <summary>
 			/// The width over which to scan high-scoring lines using LineAnalyzer.
 			/// </summary>
@@ -32,10 +32,6 @@ namespace Umbrella2.Algorithms.Images
 			/// RLHT score detection threshold.
 			/// </summary>
 			public double SigmaCount;
-			/// <summary>
-			/// Whether to use the simpler version of the lineover function (which computes the RLHT score for a given line). Given in units of standard deviations.
-			/// </summary>
-			public bool SimpleLine;
 			/// <summary>
 			/// Input image standard deviation.
 			/// </summary>
@@ -100,9 +96,7 @@ namespace Umbrella2.Algorithms.Images
 				MaxInterblobDistance = MaxInterblobDistance,
 				SegmentDropThreshold = SegmentDropThreshold,
 				SegmentSelectThreshold = SegmentSelectThreshold,
-				SigmaCount = RLHTThreshold,
-				SkipSize = PSFSize - 1,
-				SimpleLine = SimpleLine
+				SigmaCount = RLHTThreshold
 			};
 			Data.ImageParameters = new RLHT.ImageParameters()
 			{
@@ -110,6 +104,14 @@ namespace Umbrella2.Algorithms.Images
 				ShortAvgLength = PSFSize,
 				MaxMultiplier = 10,
 				DefaultRatio = Math.Pow(0.01, 1.0 / MaxInterblobDistance)
+			};
+			Data.AgData = new RLHT.AlgorithmData()
+			{
+				HTPool = new Misc.MTPool<double[,]>(),
+				VPool = new Misc.MTPool<List<Vector>>(),
+				LineSkip = PSFSize - 1,
+				ScanSkip = 2 * Data.ImageParameters.ShortAvgLength,
+				SimpleLine = SimpleLine
 			};
 			Data.ImageParameters.MaxRatio = Math.Pow(Data.ImageParameters.MaxMultiplier, 1.0 / MaxInterblobDistance);
 			return Data;
@@ -128,7 +130,7 @@ namespace Umbrella2.Algorithms.Images
 			Data.Sigma = Stats.StDev;
 			Data.ImageParameters.IncreasingThreshold = Stats.StDev;
 			Data.ImageParameters.ZeroLevel = Stats.ZeroLevel;
-			if (Data.SimpleLine) Data.ImageParameters.IncreasingThreshold *= 1.5;
+			if (Data.AgData.SimpleLine) Data.ImageParameters.IncreasingThreshold *= 1.5;
 		}
 
 		/// <summary>
@@ -143,8 +145,13 @@ namespace Umbrella2.Algorithms.Images
 			int Height = Input.GetLength(0), Width = Input.GetLength(1);
 			double Diagonal = Math.Sqrt(Width * Width + Height * Height);
 
+			/* Initialize VPool */
+			lock (Data.AgData.VPool)
+				if (Data.AgData.VPool.Constructor == null) Data.AgData.VPool.Constructor = () => new List<Vector>();
+
 			/* Applies the RLHT algorithm */
-			var Result = RLHT.SmartSkipRLHT(Input, Data.ImageParameters, 0, Data.SkipSize, Data.SimpleLine, (x) => ThresholdComputer(x, Data, Diagonal));
+			Data.AgData.StrongValueFunction = (x) => ThresholdComputer(x, Data, Diagonal);
+			var Result = RLHT.SmartSkipRLHT(Input, Data.ImageParameters, Data.AgData);
 
 			/* Prepare common data for the LineAnalyzer */
 			bool[,] Mask = new bool[Height, Width];
@@ -153,14 +160,21 @@ namespace Umbrella2.Algorithms.Images
 
 			if (Data.DropCrowdedRegion) /* If the region is too crowded, it's very likely to be some luminous residue - for example star halos */
 				if (Result.StrongPoints.Count > Diagonal) /* There is no deep meaning between this comparison; a reasonable Diagonal seems to correspond to a reasonable number of lines */
-					return;
+					goto clear_end;
 
 			/* Analyze each possible trail line and store the detections */
 			foreach (Vector vx in Result.StrongPoints)
 			{
 				var z = LineAnalyzer.AnalyzeLine(Input, Mask, Height, Width, vx.X, vx.Y, SST, SDT, MIB, SW, pX, pY);
-				Data.Results.AddRange(z.Select((x) => new MedianDetection(Position.WCS, Data.RunningImage, x.Points, x.PointValues)));
+				lock (Data.Results)
+					Data.Results.AddRange(z.Select((x) => new MedianDetection(Position.WCS, Data.RunningImage, x.Points, x.PointValues)));
 			}
+
+			clear_end:
+			/* Release resources */
+			Result.StrongPoints.Clear();
+			Data.AgData.HTPool.Release();
+			Data.AgData.VPool.Release();
 		}
 
 		/// <summary>

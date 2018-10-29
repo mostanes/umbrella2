@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Umbrella2.Algorithms.Geometry;
 
 namespace Umbrella2.Algorithms.Images
@@ -29,5 +30,19 @@ namespace Umbrella2.Algorithms.Images
 			internal int LongAvgLength;
 		}
 
+		/// <summary>
+		/// Bag of data containing runtime RLHT values.
+		/// </summary>
+		internal struct AlgorithmData
+		{
+			internal bool SimpleLine;
+			internal double StrongHoughThreshold;
+			internal Func<double, double> StrongValueFunction;
+			internal int ScanSkip;
+			internal int LineSkip;
+
+			internal Misc.MTPool<double[,]> HTPool;
+			internal Misc.MTPool<List<Vector>> VPool;
+		}
 	}
 }
