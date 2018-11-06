@@ -13,9 +13,19 @@ namespace Umbrella2.WCS
 		readonly double Ref1, Ref2;
 		public readonly double WCSChainDerivative;
 
+		/// <summary>
+		/// Creates a new instance of WCSLinPart.
+		/// </summary>
+		/// <param name="CDRA_X">X to RA component, in degrees.</param>
+		/// <param name="CDRA_Y">Y to RA component, in degrees.</param>
+		/// <param name="CDDec_X">X to Dec component, in degrees.</param>
+		/// <param name="CDDec_Y">Y to Dec component, in degrees.</param>
+		/// <param name="RefX">Reference X point, 1-based.</param>
+		/// <param name="RefY">Reference Y point, 1-based.</param>
 		public WCSLinPart(double CDRA_X, double CDRA_Y, double CDDec_X, double CDDec_Y, double RefX, double RefY)
 		{
 			C11 = CDRA_X; C12 = CDRA_Y; C21 = CDDec_X; C22 = CDDec_Y;
+			C11 *= Math.PI / 180; C12 *= Math.PI / 180; C21 *= Math.PI / 180; C22 *= Math.PI / 180;
 			double Det = C11 * C22 - C12 * C21;
 			R11 = C22 / Det; R12 = -C12 / Det; R21 = -C21 / Det; R22 = C11 / Det;
 			Ref1 = RefX - 1;

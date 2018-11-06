@@ -28,7 +28,7 @@ namespace Umbrella2.WCS.Projections
 			double Rho = Sqrt(Point.X * Point.X + Point.Y * Point.Y);
 			double C = Atan(Rho);
 			double RAn = RA + Atan2(Point.X * Sin(C), (Rho * Cos(Dec) * Cos(C) - Point.Y * Sin(Dec) * Sin(C)));
-			double Decn = Asin((Point.Y * Cos(Dec) + Sin(Dec)) / Sqrt(1 + Point.X * Point.X + Point.Y * Point.Y));
+			double Decn = Asin((Point.Y * Cos(Dec) * Sin(C)) / Rho + Cos(C) * Sin(Dec));
 			return new EquatorialPoint() { RA = RAn, Dec = Decn };
 		}
 

@@ -13,19 +13,21 @@ namespace Umbrella2
 	/// </summary>
 	public class MedianDetection
 	{
-		internal List<EquatorialPoint> EquatorialPoints;
+		public List<EquatorialPoint> EquatorialPoints;
 		public List<PixelPoint> PixelPoints;
-		internal List<double> PixelValues;
-		internal double Flux;
-		internal SourceEllipse PixelEllipse;
-		internal SourceEllipse BarycentricEllipse;
-		internal PixelPoint BarycenterPP;
-		internal EquatorialPoint BarycenterEP;
-		internal ObservationTime Time;
+		public List<double> PixelValues;
+		public double Flux;
+		public SourceEllipse PixelEllipse;
+		public SourceEllipse BarycentricEllipse;
+		public PixelPoint BarycenterPP;
+		public EquatorialPoint BarycenterEP;
+		public ObservationTime Time;
 		internal double LargestDistance;
-		internal FitsImage ParentImage;
-		internal bool StarPolluted;
-		internal bool IsPaired;
+		public FitsImage ParentImage;
+		public bool StarPolluted;
+		public bool IsPaired;
+		public bool IsDotDetection;
+		public double PearsonR;
 
 		internal MedianDetection(WCSViaProjection Transform, FitsImage Image, List<PixelPoint> Points, List<double> Values)
 		{
@@ -95,11 +97,11 @@ namespace Umbrella2
 	/// <summary>
 	/// Represents an elliptical fit of a source's pixels.
 	/// </summary>
-	struct SourceEllipse
+	public struct SourceEllipse
 	{
-		internal double SemiaxisMajorAngle;
-		internal double SemiaxisMajor;
-		internal double SemiaxisMinor;
+		public double SemiaxisMajorAngle;
+		public double SemiaxisMajor;
+		public double SemiaxisMinor;
 
 		internal SourceEllipse(double XX, double XY, double YY)
 		{
@@ -110,6 +112,11 @@ namespace Umbrella2
 			double A2 = Atan2(2 * XY, -(-XX + YY - Msq));
 			if (L1 > L2) { SemiaxisMajorAngle = A1; SemiaxisMajor = 2 * Sqrt(L1); SemiaxisMinor = 2 * Sqrt(L2); }
 			else { SemiaxisMajorAngle = A2; SemiaxisMajor = 2 * Sqrt(L2); SemiaxisMinor = 2 * Sqrt(L1); }
+		}
+
+		public override string ToString()
+		{
+			return "a = " + SemiaxisMajor.ToString("G6") + "; b = " + SemiaxisMinor.ToString("G6");
 		}
 	}
 
@@ -122,18 +129,22 @@ namespace Umbrella2
 		internal FitsImageReference Image;
 		internal PixelPoint[] Pixels;
 		internal double[] Values;
+		internal bool IsDotDetection;
 
 		public MedianReference(MedianDetection Detection)
 		{
 			Image = new FitsImageReference(Detection.ParentImage);
 			Pixels = Detection.PixelPoints.ToArray();
 			Values = Detection.PixelValues.ToArray();
+			IsDotDetection = Detection.IsDotDetection;
 		}
 
 		public MedianDetection Acquire()
 		{
 			FitsImage Img = Image.AcquireImage();
-			return new MedianDetection(Img.Transform, Img, Pixels.ToList(), Values.ToList());
+			MedianDetection m = new MedianDetection(Img.Transform, Img, Pixels.ToList(), Values.ToList());
+			m.IsDotDetection = IsDotDetection;
+			return m;
 		}
 	}
 }

@@ -53,6 +53,7 @@
     <Compile Include="DetectionAlgorithms\DotDetector.cs" />
     <Compile Include="DetectionAlgorithms\PoolMDMerger.cs" />
     <Compile Include="Filtering\MedianDetectionFilters.cs" />
+    <Compile Include="Filtering\TrackletFilters.cs" />
     <Compile Include="Math\LinearRegression.cs" />
     <Compile Include="Math\LineIntersection.cs" />
     <Compile Include="ImageAlgorithms\ImageStatistics.cs" />

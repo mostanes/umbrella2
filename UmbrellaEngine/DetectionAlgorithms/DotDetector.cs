@@ -25,6 +25,10 @@ namespace Umbrella2.Algorithms.Detection
 		/// </summary>
 		public double MinPix;
 		/// <summary>
+		/// The maximum value a pixel can take before being excluded from the local mean.
+		/// </summary>
+		public double NonrepresentativeThreshold;
+		/// <summary>
 		/// List of unprocessed detections.
 		/// </summary>
 		List<DotDetection> Detections;
@@ -44,6 +48,7 @@ namespace Umbrella2.Algorithms.Detection
 			if (Input.Height % ThreadStep != 0) SingleImageBlock(Input, (int) (Input.Height - Input.Height % ThreadStep), LineStep, (int) Input.Height);
 
 			List<MedianDetection> Mdect = Detections.Select((x) => new MedianDetection(Input.Transform, Input, x.Pixels, x.PixelValues)).ToList();
+			foreach (MedianDetection m in Mdect) m.IsDotDetection = true;
 			return Mdect;
 		}
 
@@ -57,13 +62,16 @@ namespace Umbrella2.Algorithms.Detection
 		{
 			int OW = Input.GetLength(1);
 			int OH = Input.GetLength(0);
-			int i, j, k, l;
+			int i, j;
 			bool[,] Mask = new bool[OH, OW];
 			List<DotDetection> ldot = new List<DotDetection>();
 
+			/* Local mean & variance computation */
 			double Mean = 0, Var = 0;
+			double NThSq = NonrepresentativeThreshold * NonrepresentativeThreshold;
 			for (i = 0; i < OH; i++) for (j = 0; j < OW; j++)
-				{ Mean += Input[i, j]; Var += Input[i, j] * Input[i, j]; }
+					if (Input[i, j] * Input[i, j] < NThSq)
+					{ Mean += Input[i, j]; Var += Input[i, j] * Input[i, j]; }
 			Mean /= Input.Length;
 			Var /= Input.Length;
 			Var -= Mean;
@@ -71,6 +79,7 @@ namespace Umbrella2.Algorithms.Detection
 			double HighThreshold = HighThresholdMultiplier * StDev + Mean;
 			double LowThreshold = LowThresholdMultiplier * StDev + Mean;
 
+			/* Hysteresis-based detection */
 			for (i = 0; i < OH; i++) for (j = 0; j < OW; j++)
 				{
 					if (Mask[i, j]) continue;

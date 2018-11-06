@@ -70,6 +70,10 @@ namespace Umbrella2.Algorithms.Images
 			/// Extra radius (in pixels) to be added to the masking circle.
 			/// </summary>
 			public double ExtraMaskRadius;
+			/// <summary>
+			/// Optional list of stars; will be populated by the algorithm if present.
+			/// </summary>
+			public Umbrella2.Algorithms.Filtering.StarData StarList;
 		}
 
 		/// <summary>
@@ -97,7 +101,10 @@ namespace Umbrella2.Algorithms.Images
 					if (Properties.MaskData[(int) pxp.Y][(int) pxp.X]) continue;
 
 					if (Input[i, j] > UpperThreshold)
-						BitmapFill(Properties.MaskData, Input, Position.Alignment, pxp, LowerThreshold, Properties.MaskRadiusMultiplier, Properties.ExtraMaskRadius);
+					{
+						BitmapFill(Properties.MaskData, Input, Position.Alignment, pxp, LowerThreshold, Properties.MaskRadiusMultiplier, Properties.ExtraMaskRadius, out Filtering.Star? Star);
+						if (Star != null) { Filtering.Star S = Star.Value; S.EqCenter = Position.WCS.GetEquatorialPoint(S.PixCenter); lock (Properties.StarList) Properties.StarList.FixedStarList.Add(S); }
+					}
 				}
 		}
 
@@ -111,12 +118,13 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="LowerThreshold">Lower hysteresis threshold.</param>
 		/// <param name="RadiusMultiplier">Ratio between extra masking circle radius and light source radius.</param>
 		/// <param name="ExtraRadius">Extra radius for the masking circle.</param>
-		static void BitmapFill(BitArray[] Mask, double[,] MaskData, PixelPoint Alignment, PixelPoint DPoint, double LowerThreshold, double RadiusMultiplier, double ExtraRadius)
+		/// <param name="Star">The potential output star.</param>
+		static void BitmapFill(BitArray[] Mask, double[,] MaskData, PixelPoint Alignment, PixelPoint DPoint, double LowerThreshold, double RadiusMultiplier, double ExtraRadius, out Filtering.Star? Star)
 		{
 			Queue<PixelPoint> PointQ = new Queue<PixelPoint>();
 			PointQ.Enqueue(DPoint);
 
-			double XMean = 0, YMean = 0, XSquare = 0, YSquare = 0;
+			double XMean = 0, YMean = 0, XSquare = 0, YSquare = 0, XY = 0;
 			int PCount = 0;
 
 			while (PointQ.Count > 0)
@@ -142,20 +150,31 @@ namespace Umbrella2.Algorithms.Images
 					PointQ.Enqueue(new PixelPoint() { X = pt.X, Y = pt.Y + 1 });
 					XMean += pt.X; YMean += pt.Y;
 					XSquare += pt.X * pt.X; YSquare += pt.Y * pt.Y;
+					XY += pt.X * pt.Y;
 					PCount++;
 				}
 			}
 
-			/* Computes size of light source circle and applies extra masking circle */
+			/* Computes size of and shape of the light source */
 			XMean /= PCount;
 			YMean /= PCount;
 			XSquare /= PCount;
 			YSquare /= PCount;
+			XY /= PCount;
 			XSquare -= XMean * XMean;
 			YSquare -= YMean * YMean;
-			double Radius = Math.Sqrt(XSquare + YSquare);
+			XY -= XMean * YMean;
 
-			FillMarginsExtra(Mask, new PixelPoint() { X = XMean, Y = YMean }, Radius * RadiusMultiplier + ExtraRadius);
+			double Radius = Math.Sqrt(XSquare + YSquare);
+			SourceEllipse Shape = new SourceEllipse(XSquare, XY, YSquare);
+
+			/* If not to irregular, suppose it is a star and apply extra masking. */
+			if (Shape.SemiaxisMajor < 3 * Shape.SemiaxisMinor)
+			{
+				FillMarginsExtra(Mask, new PixelPoint() { X = XMean, Y = YMean }, Radius * RadiusMultiplier + ExtraRadius);
+				Star = new Filtering.Star() { Shape = Shape, PixCenter = new PixelPoint() { X = XMean, Y = YMean }, PixRadius = Radius };
+			}
+			else Star = null;
 		}
 
 		/// <summary>

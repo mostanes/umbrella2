@@ -25,13 +25,17 @@ namespace Umbrella2.Algorithms.Detection
 		double LongTrailLowThreshold = 10;
 		double AngleDistanceDifferenceThreshold = 10;
 		List<MedianDetection[][]> CandidatePairings;
+		const double MaxArcsecVDot = 16;
+		const double MinArcsecVDot = 0.2;
+		static double MaxVDD = MaxArcsecVDot * Math.PI / 180 / 3600;
+		static double MinVDD = MinArcsecVDot * Math.PI / 180 / 3600;
 
 		/// <summary>
 		/// Initializes a new instance.
 		/// </summary>
-		public PoolMDMerger()
+		public PoolMDMerger(DateTime[] ObservationTimes)
 		{
-			PoolList = new List<MedianDetection>(); ObsTimes = new List<DateTime>();
+			PoolList = new List<MedianDetection>(); ObsTimes = new List<DateTime>(ObservationTimes);
 			Topmost = double.MaxValue; Lowermost = double.MinValue; Leftmost = double.MaxValue; Rightmost = double.MinValue;
 		}
 
@@ -49,7 +53,6 @@ namespace Umbrella2.Algorithms.Detection
 				if (md.BarycenterEP.Dec > Lowermost) Lowermost = md.BarycenterEP.Dec;
 				if (md.BarycenterEP.RA < Leftmost) Leftmost = md.BarycenterEP.RA;
 				if (md.BarycenterEP.RA > Rightmost) Rightmost = md.BarycenterEP.RA;
-				if (!ObsTimes.Contains(md.Time.Time)) ObsTimes.Add(md.Time.Time);
 			}
 		}
 
@@ -65,6 +68,7 @@ namespace Umbrella2.Algorithms.Detection
 		public bool PairPossible(MedianDetection a, MedianDetection b)
 		{
 			if (a.IsPaired || b.IsPaired) return false;
+			if (a.StarPolluted || b.StarPolluted) return false;
 			if (a.Time.Time == b.Time.Time) return false;
 			TimeSpan DeltaTime = a.Time.Time - b.Time.Time;
 			if ((a.LargestDistance + b.LargestDistance) * Math.Abs(DeltaTime.TotalSeconds) < (a.BarycenterEP ^ b.BarycenterEP) * (a.Time.Exposure.TotalSeconds + b.Time.Exposure.TotalSeconds) / 2) return false;
@@ -98,7 +102,41 @@ namespace Umbrella2.Algorithms.Detection
 				double EstDistError = Math.Abs(PairEstimatedVelocityError * tsp.TotalSeconds) + PairEstimatedDistanceError;
 				EquatorialPoint EstimatedPoint = Line + EstDistance;
 				var DetectionsList = DetectionPool.Query(EstimatedPoint.Dec, EstimatedPoint.RA, EstDistError);
-				DetectionsList.RemoveAll((x) => ((x.BarycenterEP ^ EstimatedPoint) > EstDistError) || (x.Time.Time != dt));
+				DetectionsList.RemoveAll((x) => ((x.BarycenterEP ^ EstimatedPoint) > EstDistError) || (x.Time.Time != dt) || x.IsDotDetection);
+				//DetectedInPool.Add(DetectionsList);
+				DIPAr.Add(DetectionsList.ToArray());
+			}
+			int i, c = 0;
+			for (i = 0; i < DIPAr.Count; i++) if (DIPAr[i].Length != 0) c++;
+			if (c >= 3)
+			{
+				CandidatePairings.Add(DIPAr.ToArray());
+				foreach (MedianDetection[] mdl in DIPAr) foreach (MedianDetection m in mdl) m.IsPaired = true;
+			}
+		}
+
+		public void TryPairDot(MedianDetection a, MedianDetection b)
+		{
+			if (a.IsPaired || b.IsPaired) return;
+			TimeSpan DeltaTime = b.Time.Time - a.Time.Time;
+			var Line = b.BarycenterEP - a.BarycenterEP;
+			double PairEstimatedDistance = ~Line;
+			if (PairEstimatedDistance > MaxVDD * DeltaTime.TotalMinutes) return;
+			if (PairEstimatedDistance < MinVDD * DeltaTime.TotalMinutes) return;
+			double PairEstimatedDistanceError = 2 * (a.PixelEllipse.SemiaxisMajor + b.PixelEllipse.SemiaxisMajor);
+			PairEstimatedDistanceError *= a.ParentImage.Transform.GetEstimatedWCSChainDerivative();
+			double PairEstimatedVelocity = PairEstimatedDistance / DeltaTime.TotalSeconds;
+			double PairEstimatedVelocityError = PairEstimatedDistanceError / DeltaTime.TotalSeconds;
+			List<List<MedianDetection>> DetectedInPool = new List<List<MedianDetection>>();
+			List<MedianDetection[]> DIPAr = new List<MedianDetection[]>();
+			foreach (DateTime dt in ObsTimes)
+			{
+				TimeSpan tsp = dt - b.Time.Time;
+				double EstDistance = PairEstimatedVelocity * tsp.TotalSeconds;
+				double EstDistError = Math.Abs(PairEstimatedVelocityError * tsp.TotalSeconds) + PairEstimatedDistanceError;
+				EquatorialPoint EstimatedPoint = Line + EstDistance;
+				var DetectionsList = DetectionPool.Query(EstimatedPoint.Dec, EstimatedPoint.RA, EstDistError);
+				DetectionsList.RemoveAll((x) => ((x.BarycenterEP ^ EstimatedPoint) > EstDistError) || (x.Time.Time != dt) || !x.IsDotDetection);
 				//DetectedInPool.Add(DetectionsList);
 				DIPAr.Add(DetectionsList.ToArray());
 			}
@@ -123,8 +161,13 @@ namespace Umbrella2.Algorithms.Detection
 			int[] DetectionPairs = new int[PoolList.Count];
 			for (i = 0; i < PoolList.Count; i++) for (j = i + 1; j < PoolList.Count; j++)
 				{
-					if (!PairPossible(PoolList[i], PoolList[j])) continue;
-					else TryPair(PoolList[i], PoolList[j]);
+					if (PoolList[i].IsDotDetection != PoolList[j].IsDotDetection) continue;
+					if (PoolList[i].IsDotDetection) TryPairDot(PoolList[i], PoolList[j]);
+					else
+					{
+						if (!PairPossible(PoolList[i], PoolList[j])) continue;
+						else TryPair(PoolList[i], PoolList[j]);
+					}
 				}
 			return CandidatePairings;
 		}

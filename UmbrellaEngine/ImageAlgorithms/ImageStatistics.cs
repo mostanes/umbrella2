@@ -9,7 +9,7 @@ namespace Umbrella2.Algorithms.Images
 	/// <summary>
 	/// Contains a set of information about the image.
 	/// </summary>
-	public class ImageStatistics
+	public class ImageStatistics : ImageProperties
 	{
 		/// <summary>
 		/// Background level.
@@ -26,13 +26,13 @@ namespace Umbrella2.Algorithms.Images
 		/// <summary>
 		/// Computes the ImageStatistics for a given image.
 		/// </summary>
-		/// <param name="Input">Input image.</param>
-		public ImageStatistics(FitsImage Input)
+		/// <param name="Image">Input image.</param>
+		public ImageStatistics(FitsImage Image) : base(Image)
 		{
 			Means = new List<double>();
 			Variances = new List<double>();
 
-			StatAlgorithm.Run(this, Input, new ParallelAlgorithmRunner.AlgorithmRunParameters() { FillZero = false, InputMargins = 0, Xstep = 0, Ystep = 50 });
+			StatAlgorithm.Run(this, Image, new ParallelAlgorithmRunner.AlgorithmRunParameters() { FillZero = false, InputMargins = 0, Xstep = 0, Ystep = 50 });
 
 			double[] M = Means.ToArray();
 			double[] V = Variances.ToArray();
@@ -79,6 +79,11 @@ namespace Umbrella2.Algorithms.Images
 					Stats.Variances.Add(Var);
 				}
 			}			
+		}
+
+		public override List<ElevatedRecord> GetRecords()
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

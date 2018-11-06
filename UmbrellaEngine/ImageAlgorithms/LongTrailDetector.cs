@@ -102,7 +102,7 @@ namespace Umbrella2.Algorithms.Images
 			{
 				LongAvgLength = MaxInterblobDistance,
 				ShortAvgLength = PSFSize,
-				MaxMultiplier = 10,
+				MaxMultiplier = 30,
 				DefaultRatio = Math.Pow(0.01, 1.0 / MaxInterblobDistance)
 			};
 			Data.AgData = new RLHT.AlgorithmData()
