@@ -25,7 +25,7 @@ namespace Umbrella2.WCS.Projections
 
 		public override EquatorialPoint GetEquatorialPoint(ProjectionPoint Point)
 		{
-			double Rho = Sqrt(Point.X * Point.X + Point.Y * Point.Y);
+			double Rho = Sqrt(Point.X * Point.X + Point.Y * Point.Y + 144.0 / double.MaxValue);
 			double C = Atan(Rho);
 			double RAn = RA + Atan2(Point.X * Sin(C), (Rho * Cos(Dec) * Cos(C) - Point.Y * Sin(Dec) * Sin(C)));
 			double Decn = Asin((Point.Y * Cos(Dec) * Sin(C)) / Rho + Cos(C) * Sin(Dec));
@@ -39,10 +39,10 @@ namespace Umbrella2.WCS.Projections
 			{
 				double X = Points[i].X;
 				double Y = Points[i].Y;
-				double Rho = Sqrt(X * X + Y * Y);
+				double Rho = Sqrt(X * X + Y * Y + 144.0 / double.MaxValue);
 				double C = Atan(Rho);
 				EqP[i].RA = RA + Atan2(X * Sin(C), (Rho * Cos(Dec) * Cos(C) - Y * Sin(Dec) * Sin(C)));
-				EqP[i].Dec = Asin((Y * Cos(Dec) + Sin(Dec)) / Sqrt(1 + X * X + Y * Y));
+				EqP[i].Dec = Asin(Y * Cos(Dec) * Sin(C) / Rho + Cos(C) * Sin(Dec));
 			}
 			return EqP;
 		}
@@ -52,10 +52,10 @@ namespace Umbrella2.WCS.Projections
 			List<EquatorialPoint> EqP = new List<EquatorialPoint>();
 			foreach (ProjectionPoint Point in Points)
 			{
-				double Rho = Sqrt(Point.X * Point.X + Point.Y * Point.Y);
+				double Rho = Sqrt(Point.X * Point.X + Point.Y * Point.Y + 144.0 / double.MaxValue);
 				double C = Atan(Rho);
 				double RAn = RA + Atan2(Point.X * Sin(C), (Rho * Cos(Dec) * Cos(C) - Point.Y * Sin(Dec) * Sin(C)));
-				double Decn = Asin((Point.Y * Cos(Dec) + Sin(Dec)) / Sqrt(1 + Point.X * Point.X + Point.Y * Point.Y));
+				double Decn = Asin(Point.Y * Cos(Dec) * Sin(C) / Rho + Cos(C) * Sin(Dec));
 				EqP.Add(new EquatorialPoint() { RA = RAn, Dec = Decn });
 			}
 			return EqP;

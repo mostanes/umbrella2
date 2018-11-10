@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Umbrella2
 {
@@ -37,6 +33,9 @@ namespace Umbrella2
 	/// <summary>
 	/// Point representing a projection plane coordinate.
 	/// </summary>
+	/// <remarks>
+	/// The standard units of ProjectionPoint are radians.
+	/// </remarks>
 	[Serializable]
 	public struct ProjectionPoint
 	{

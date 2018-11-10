@@ -67,6 +67,6 @@ namespace Umbrella2.WCS
 			return pps;
 		}
 
-		public double[] Matrix { get => new double[] { C11, C12, C21, C22, Ref1, Ref2 }; }
+		public double[] Matrix { get => new double[] { C11 * 180 / Math.PI, C12 * 180 / Math.PI, C21 * 180 / Math.PI, C22 * 180 / Math.PI, Ref1 + 1, Ref2 + 1 }; }
 	}
 }
