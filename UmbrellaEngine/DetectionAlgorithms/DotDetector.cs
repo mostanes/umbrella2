@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Umbrella2.IO.FITS;
 using Umbrella2.IO.FITS.KnownKeywords;
+using static System.Math;
+using static Umbrella2.Algorithms.Images.ParallelAlgorithmRunner;
 
 namespace Umbrella2.Algorithms.Detection
 {
@@ -32,6 +32,16 @@ namespace Umbrella2.Algorithms.Detection
 		/// List of unprocessed detections.
 		/// </summary>
 		List<DotDetection> Detections;
+		/// <summary>
+		/// ParallelAlgorithm options.
+		/// </summary>
+		public AlgorithmRunParameters Parameters = new AlgorithmRunParameters()
+		{
+			FillZero = true,
+			InputMargins = 0,
+			Xstep = 0,
+			Ystep = 50
+		};
 
 		/// <summary>
 		/// Detects trailless light sources on the input image.
@@ -41,11 +51,10 @@ namespace Umbrella2.Algorithms.Detection
 		/// <returns>A list of detections.</returns>
 		public List<MedianDetection> DetectDots(FitsImage Input, ObservationTime ObservationTime)
 		{
-			const int ThreadStep = 250;
-			const int LineStep = 50;
 			Detections = new List<DotDetection>();
-			Parallel.For(0, Input.Height / ThreadStep, (x) => SingleImageBlock(Input, (int) x * ThreadStep, LineStep, (int) (x + 1) * ThreadStep));
-			if (Input.Height % ThreadStep != 0) SingleImageBlock(Input, (int) (Input.Height - Input.Height % ThreadStep), LineStep, (int) Input.Height);
+			PositionDependentExtractor<DotDetector> Extractor = DetectSources;
+
+			Extractor.Run(this, Input, Parameters);
 
 			List<MedianDetection> Mdect = Detections.Select((x) => new MedianDetection(Input.Transform, Input, x.Pixels, x.PixelValues)).ToList();
 			foreach (MedianDetection m in Mdect) m.IsDotDetection = true;
@@ -53,12 +62,12 @@ namespace Umbrella2.Algorithms.Detection
 		}
 
 		/// <summary>
-		/// Actual detection algorithm function.
+		/// Actual detection function for trailless light sources.
 		/// </summary>
-		/// <param name="Input">Input data.</param>
-		/// <param name="OX">X origin delta.</param>
-		/// <param name="OY">Y origin delta.</param>
-		void DotDetect(double[,] Input, int OX, int OY)
+		/// <param name="Input">Input image data.</param>
+		/// <param name="Position">Data position in the image.</param>
+		/// <param name="Instance">DotDetector instance in which this is called.</param>
+		static void DetectSources(double[,] Input, ImageSegmentPosition Position, DotDetector Instance)
 		{
 			int OW = Input.GetLength(1);
 			int OH = Input.GetLength(0);
@@ -68,49 +77,27 @@ namespace Umbrella2.Algorithms.Detection
 
 			/* Local mean & variance computation */
 			double Mean = 0, Var = 0;
-			double NThSq = NonrepresentativeThreshold * NonrepresentativeThreshold;
+			double NThSq = Instance.NonrepresentativeThreshold * Instance.NonrepresentativeThreshold;
 			for (i = 0; i < OH; i++) for (j = 0; j < OW; j++)
 					if (Input[i, j] * Input[i, j] < NThSq)
 					{ Mean += Input[i, j]; Var += Input[i, j] * Input[i, j]; }
 			Mean /= Input.Length;
 			Var /= Input.Length;
 			Var -= Mean;
-			double StDev = Math.Sqrt(Var);
-			double HighThreshold = HighThresholdMultiplier * StDev + Mean;
-			double LowThreshold = LowThresholdMultiplier * StDev + Mean;
+			double StDev = Sqrt(Var);
+			double HighThreshold = Instance.HighThresholdMultiplier * StDev + Mean;
+			double LowThreshold = Instance.LowThresholdMultiplier * StDev + Mean;
 
 			/* Hysteresis-based detection */
 			for (i = 0; i < OH; i++) for (j = 0; j < OW; j++)
 				{
 					if (Mask[i, j]) continue;
 					if (Input[i, j] > HighThreshold)
-						ldot.Add(BitmapFill(Input, new IntPoint() { X = j, Y = i }, Mask, LowThreshold, OX, OY));
+						ldot.Add(BitmapFill(Input, new IntPoint() { X = j, Y = i }, Mask, LowThreshold, (int) Position.Alignment.X, (int) Position.Alignment.Y));
 				}
-			ldot.RemoveAll((x) => x.Pixels.Count < MinPix);
-			lock (Detections)
-				Detections.AddRange(ldot);
-		}
-
-		/// <summary>
-		/// Parallel setup function for running the algorithm.
-		/// </summary>
-		/// <param name="Input">Input image.</param>
-		/// <param name="StartLine">Y coordinate where to start.</param>
-		/// <param name="LineStep">Amount of lines processed at the same time.</param>
-		/// <param name="LEnd">Y coordinate where to end.</param>
-		void SingleImageBlock(FitsImage Input, int StartLine, int LineStep, int LEnd)
-		{
-			ImageData InputData;
-			InputData = Input.LockData(new System.Drawing.Rectangle(0, StartLine, (int) Input.Width, LineStep), true);
-			int CLine = StartLine;
-			for (CLine = StartLine; CLine < LEnd; CLine += LineStep)
-			{
-				if (CLine != StartLine)
-					InputData = Input.SwitchLockData(InputData, 0, CLine, true);
-
-				DotDetect(InputData.Data, 0, CLine);
-			}
-			Input.ExitLock(InputData);
+			ldot.RemoveAll((x) => x.Pixels.Count < Instance.MinPix);
+			lock (Instance.Detections)
+				Instance.Detections.AddRange(ldot);
 		}
 
 		/// <summary>
