@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace Umbrella2.Algorithms.Misc
@@ -9,7 +7,7 @@ namespace Umbrella2.Algorithms.Misc
 	/// <summary>
 	/// Multithreaded object pool.
 	/// </summary>
-	class MTPool<T>
+	public class MTPool<T>
 	{
 		/// <summary>
 		/// Object status (whether the object is in the pool or held by other code.

@@ -6,7 +6,7 @@ namespace Umbrella2.Algorithms.Misc
 	/// A QuadTree (2-d tree) for quickly identifying objects in a given neighborhood.
 	/// </summary>
 	/// <typeparam name="T">The objects held by the QuadTree.</typeparam>
-	class QuadTree<T>
+	public class QuadTree<T>
 	{
 		/// <summary>
 		/// Tree depth.

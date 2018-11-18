@@ -22,14 +22,14 @@ namespace Umbrella2
 		public PixelPoint BarycenterPP;
 		public EquatorialPoint BarycenterEP;
 		public ObservationTime Time;
-		internal double LargestDistance;
+		public double LargestDistance;
 		public FitsImage ParentImage;
 		public bool StarPolluted;
 		public bool IsPaired;
 		public bool IsDotDetection;
 		public double PearsonR;
 
-		internal MedianDetection(WCSViaProjection Transform, FitsImage Image, List<PixelPoint> Points, List<double> Values)
+		public MedianDetection(WCSViaProjection Transform, FitsImage Image, List<PixelPoint> Points, List<double> Values)
 		{
 			this.Time = Image.GetProperty<ObservationTime>();
 			ParentImage = Image;
@@ -103,7 +103,7 @@ namespace Umbrella2
 		public double SemiaxisMajor;
 		public double SemiaxisMinor;
 
-		internal SourceEllipse(double XX, double XY, double YY)
+		public SourceEllipse(double XX, double XY, double YY)
 		{
 			double Msq = Sqrt(XX * XX + 4 * XY * XY - 2 * XX * YY + YY * YY);
 			double L1 = 1.0 / 2 * (XX + YY - Msq);

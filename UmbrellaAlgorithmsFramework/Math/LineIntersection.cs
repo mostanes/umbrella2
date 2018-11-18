@@ -9,7 +9,7 @@ namespace Umbrella2.Algorithms.Geometry
 	/// <summary>
 	/// 2D vector.
 	/// </summary>
-	struct Vector
+	public struct Vector
 	{
 		public double X, Y;
 
@@ -31,7 +31,7 @@ namespace Umbrella2.Algorithms.Geometry
 	/// <summary>
 	/// Class for computing intersections between lines.
 	/// </summary>
-	static class LineIntersection
+	public static class LineIntersection
 	{
 		/// <summary>
 		/// Intersects to lines given by directions D and a point on them X and returns the distance between Xs and the intersection in units of Ds.
@@ -41,7 +41,7 @@ namespace Umbrella2.Algorithms.Geometry
 		/// <param name="D1">Direction of the first line.</param>
 		/// <param name="D2">Direction of the second line.</param>
 		/// <returns>The distances (in units of direction vectors) on the lines from the point to the intersection.</returns>
-		internal static Vector GetLineIntersection(Vector X1, Vector X2, Vector D1, Vector D2)
+		public static Vector GetLineIntersection(Vector X1, Vector X2, Vector D1, Vector D2)
 		{
 			/* Determinant of the 2 directions */
 			double Det = (D2.X * D1.Y) - (D1.X * D2.Y);
@@ -71,7 +71,7 @@ namespace Umbrella2.Algorithms.Geometry
 		/// <param name="Width">Width of the rectangle.</param>
 		/// <param name="Height">Height of the rectangle.</param>
 		/// <returns>A tuple containing the intersection point and the distance from Origin to it.</returns>
-		internal static bool IntersectLeft(Vector Origin, Vector Direction, int Width, int Height, out Vector Point, out double Distance)
+		public static bool IntersectLeft(Vector Origin, Vector Direction, int Width, int Height, out Vector Point, out double Distance)
 		{
 			/* Coordinate of the origin corner and the direction of the 2 axes */
 			Vector X0 = new Vector { X = 0, Y = 0 };
@@ -107,7 +107,7 @@ namespace Umbrella2.Algorithms.Geometry
 		/// <param name="Width">Width of the rectangle.</param>
 		/// <param name="Height">Height of the rectangle.</param>
 		/// <returns>A tuple containing the intersection point and the distance from Origin to it.</returns>
-		internal static bool IntersectRight(Vector Origin, Vector Direction, int Width, int Height, out Vector Point, out double Distance)
+		public static bool IntersectRight(Vector Origin, Vector Direction, int Width, int Height, out Vector Point, out double Distance)
 		{
 			/* Coordinate of the variable corner and the direction of the 2 axes */
 			Vector X0 = new Vector { X = Width - 1, Y = Height - 1 };

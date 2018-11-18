@@ -4,14 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{38027E66-3BB3-472F-90B5-789B3960D401}</ProjectGuid>
+    <ProjectGuid>{E9384B08-F76C-4096-8BF0-A6515E6B6DEA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UmbrellaEngine</RootNamespace>
-    <AssemblyName>UmbrellaEngine</AssemblyName>
+    <RootNamespace>UmbrellaAlgorithmsFramework</RootNamespace>
+    <AssemblyName>UmbrellaAlgorithmsFramework</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,7 +20,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,62 +28,34 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>7.2</LangVersion>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataStructures\ConnectedComponentGraph.cs" />
     <Compile Include="DataStructures\MTPool.cs" />
     <Compile Include="DataStructures\QuadTree.cs" />
     <Compile Include="Detection.cs" />
-    <Compile Include="DetectionAlgorithms\CandidatePairingsRefinery.cs" />
-    <Compile Include="DetectionAlgorithms\DotDetector.cs" />
-    <Compile Include="DetectionAlgorithms\PoolMDMerger.cs" />
-    <Compile Include="Filtering\MedianDetectionFilters.cs" />
-    <Compile Include="Filtering\TrackletFilters.cs" />
+    <Compile Include="ImageAlgorithms\ImageStatistics.cs" />
+    <Compile Include="ImageAlgorithms\ParallelAlgorithmBackend.cs" />
+    <Compile Include="ImageAlgorithms\ParallelAlgorithmRunner.cs" />
     <Compile Include="Math\LinearRegression.cs" />
     <Compile Include="Math\LineIntersection.cs" />
-    <Compile Include="ImageAlgorithms\ImageStatistics.cs" />
-    <Compile Include="ImageAlgorithms\LineAnalyzer.cs" />
-    <Compile Include="ImageAlgorithms\LongTrailDetector.cs" />
-    <Compile Include="ImageAlgorithms\MaskByMedian.cs" />
-    <Compile Include="ImageAlgorithms\NoiseReduction\HardMedians.cs" />
-    <Compile Include="ImageAlgorithms\NoiseReduction\RestrictedMean.cs" />
-    <Compile Include="ImageAlgorithms\ParallelAlgorithmRunner.cs" />
-    <Compile Include="ImageAlgorithms\RLHT\RLHT.cs" />
-    <Compile Include="ImageAlgorithms\RLHT\RLHTCore.cs" />
-    <Compile Include="ImageAlgorithms\RLHT\SimplifiedRLHTLine.cs" />
-    <Compile Include="ImageAlgorithms\RLHT\SmartSkipRLHT.cs" />
-    <Compile Include="ImageAlgorithms\StandardImageMasker.cs" />
-    <Compile Include="ImageAlgorithms\ParallelAlgorithmBackend.cs" />
-    <Compile Include="PairingAlgorithms\MDPoolCore.cs" />
-    <Compile Include="PairingAlgorithms\PoolPairwiseAnalyzer.cs" />
-    <Compile Include="PairingAlgorithms\PrePair.cs" />
-    <Compile Include="PairingAlgorithms\Tracklet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StarData.cs" />
+    <Compile Include="Tracklet.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UmbrellaFitsIo\UmbrellaFitsIo.csproj">
       <Project>{9837fa6b-b7b7-49a1-a33f-cfb557652814}</Project>
       <Name>UmbrellaFitsIo</Name>
     </ProjectReference>
-    <ProjectReference Include="..\UmbrellaPortableNumerical\UmbrellaPortableNumerical.csproj">
-      <Project>{c04015a0-7f9c-4fe3-a7a8-10fb22abbe87}</Project>
-      <Name>UmbrellaPortableNumerical</Name>
-    </ProjectReference>
     <ProjectReference Include="..\UmbrellaSharedBase\UmbrellaSharedBase.csproj">
       <Project>{1f30dc02-4acb-4e11-85cb-827ec6f9cdcb}</Project>
       <Name>UmbrellaSharedBase</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

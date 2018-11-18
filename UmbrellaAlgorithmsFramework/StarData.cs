@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Umbrella2.Algorithms.Filtering
 {
 	/// <summary>
 	/// Represents a fixed star; used for filtering.
 	/// </summary>
-	struct Star
+	public struct Star
 	{
-		internal EquatorialPoint EqCenter;
-		internal PixelPoint PixCenter;
-		internal double PixRadius;
-		internal SourceEllipse Shape;
+		public EquatorialPoint EqCenter;
+		public PixelPoint PixCenter;
+		public double PixRadius;
+		public SourceEllipse Shape;
 	}
 
 	/// <summary>
@@ -21,7 +18,7 @@ namespace Umbrella2.Algorithms.Filtering
 	/// </summary>
 	public class StarData
 	{
-		internal List<Star> FixedStarList = new List<Star>();
+		public List<Star> FixedStarList = new List<Star>();
 
 		/// <summary>
 		/// Marks detections that cross near a star (and therefore could well be parts of the star's halo.

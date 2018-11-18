@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Umbrella2.Algorithms.Misc
 {
 	/// <summary>
 	/// Provides linear regression functions.
 	/// </summary>
-	class LinearRegression
+	public class LinearRegression
 	{
 		/// <summary>
 		/// The parameters obtained from a linear regression.
