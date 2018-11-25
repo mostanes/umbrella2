@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Umbrella2.Algorithms.Images
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Umbrella2.Algorithms.Detections", "Umbrella2.Algorithms.Detections\Umbrella2.Algorithms.Detections.csproj", "{F503CB75-B6C8-4137-B499-72AEABEA9159}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Umbrella2.Pipeline.EIOAlgorithms", "Umbrella2.Pipeline.EIOAlgorithms\Umbrella2.Pipeline.EIOAlgorithms.csproj", "{B6862DE7-DF63-48A2-A754-7B85A4FCAF88}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,14 @@ Global
 		{F503CB75-B6C8-4137-B499-72AEABEA9159}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F503CB75-B6C8-4137-B499-72AEABEA9159}.Release|x64.ActiveCfg = Release|Any CPU
 		{F503CB75-B6C8-4137-B499-72AEABEA9159}.Release|x64.Build.0 = Release|Any CPU
+		{B6862DE7-DF63-48A2-A754-7B85A4FCAF88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6862DE7-DF63-48A2-A754-7B85A4FCAF88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6862DE7-DF63-48A2-A754-7B85A4FCAF88}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B6862DE7-DF63-48A2-A754-7B85A4FCAF88}.Debug|x64.Build.0 = Debug|Any CPU
+		{B6862DE7-DF63-48A2-A754-7B85A4FCAF88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6862DE7-DF63-48A2-A754-7B85A4FCAF88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6862DE7-DF63-48A2-A754-7B85A4FCAF88}.Release|x64.ActiveCfg = Release|Any CPU
+		{B6862DE7-DF63-48A2-A754-7B85A4FCAF88}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

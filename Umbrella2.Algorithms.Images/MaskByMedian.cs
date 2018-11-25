@@ -126,6 +126,7 @@ namespace Umbrella2.Algorithms.Images
 
 			double XMean = 0, YMean = 0, XSquare = 0, YSquare = 0, XY = 0;
 			int PCount = 0;
+			double Flux = 0;
 
 			while (PointQ.Count > 0)
 			{
@@ -152,6 +153,7 @@ namespace Umbrella2.Algorithms.Images
 					XSquare += pt.X * pt.X; YSquare += pt.Y * pt.Y;
 					XY += pt.X * pt.Y;
 					PCount++;
+					Flux += MaskData[(int) dY, (int) dX];
 				}
 			}
 

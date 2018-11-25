@@ -26,11 +26,16 @@ namespace Umbrella2.Pipeline.ExtraIO
 			/// Position of the object.
 			/// </summary>
 			public readonly EquatorialPoint Position;
+			/// <summary>
+			/// Time at which the object is at the specified position.
+			/// </summary>
+			public readonly DateTime TimeCoordinate;
 
-			public SkybotObject(string Name, string Position)
+			public SkybotObject(string Name, string Position, DateTime Time)
 			{
 				this.Name = Name;
 				this.Position = EquatorialPointStringFormatter.ParseFromMPCString(Position);
+				this.TimeCoordinate = Time;
 			}
 		}
 
@@ -75,7 +80,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 				string name = z[1].Value;
 				string ra = z[2].Value;
 				string dec = z[3].Value;
-				SkybotObject oj = new SkybotObject(name, ra + " " + dec);
+				SkybotObject oj = new SkybotObject(name, ra + " " + dec, Time);
 				objs.Add(oj);
 			}
 			return objs;

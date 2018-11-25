@@ -11,6 +11,7 @@ namespace Umbrella2.Algorithms.Filtering
 		public PixelPoint PixCenter;
 		public double PixRadius;
 		public SourceEllipse Shape;
+		public double Flux;
 	}
 
 	/// <summary>

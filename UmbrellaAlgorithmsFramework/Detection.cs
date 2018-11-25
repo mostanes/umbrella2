@@ -28,6 +28,7 @@ namespace Umbrella2
 		public bool IsPaired;
 		public bool IsDotDetection;
 		public double PearsonR;
+		public string Name;
 
 		public MedianDetection(WCSViaProjection Transform, FitsImage Image, List<PixelPoint> Points, List<double> Values)
 		{
