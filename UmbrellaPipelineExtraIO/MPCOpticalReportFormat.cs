@@ -12,8 +12,9 @@ namespace Umbrella2.Pipeline.ExtraIO
 		/// <summary>ASCII space. Defined for convenience.</summary>
 		const char MPCSpace = (char) 32;
 
+#pragma warning disable 1591
 		/// <summary>
-		/// The Publishing Note entry of a record.
+		/// The Publishing Note entry of a record. See the <a href="https://www.minorplanetcenter.net/iau/info/ObsNote.html">MPC publishing note entry</a>
 		/// </summary>
 		public enum PublishingNote : byte
 		{
@@ -60,8 +61,11 @@ namespace Umbrella2.Pipeline.ExtraIO
 		}
 
 		/// <summary>
-		/// The magnitude band in which the observations took place.
+		/// The magnitude band in which the observations took place. See <a href="https://www.minorplanetcenter.net/iau/info/OpticalObs.html">MPC optical report format</a>.
 		/// </summary>
+		/// <remarks>
+		/// This list of magnitude bands is not complete.
+		/// </remarks>
 		public enum MagnitudeBand : byte
 		{
 			none = (byte) MPCSpace,
@@ -70,7 +74,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 		}
 
 		/// <summary>
-		/// The Note2 entry of a record.
+		/// The Note2 entry of a record. See <a href="https://www.minorplanetcenter.net/iau/info/OpticalObs.html">MPC optical report format</a>.
 		/// </summary>
 		public enum Note2 : byte
 		{
@@ -87,14 +91,14 @@ namespace Umbrella2.Pipeline.ExtraIO
 			NormalPlace = (byte) 'N',
 			MiniNormalPlaceDerivedFromAveragingObservationsFromVideoFrames = (byte) 'n'
 		}
-		
+
 		/// <summary>
-		/// Instance of an observed object. Provides the object equivalent of a MPC record.
+		/// Instance of an observed object. Provides the object equivalent of a <a href="https://www.minorplanetcenter.net/iau/info/OpticalObs.html">MPC optical report format</a> record.
 		/// </summary>
 		public struct ObsInstance
 		{
 			public string ObjectDesignation;
-			public bool DetectionAsterix;
+			public bool DetectionAsterisk;
 			public PublishingNote PubNote;
 			public Note2 N2;
 			public DateTime ObsTime;
@@ -103,6 +107,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 			public MagnitudeBand MagBand;
 			public string ObservatoryCode;
 		}
+#pragma warning restore 1591
 
 		/// <summary>
 		/// Creates a MPC record line from a given object observation.
@@ -122,7 +127,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 			if (ObservedObject.ObjectDesignation.Length != 7)
 				throw new InvalidFieldException(InvalidFieldException.FieldType.ObjectDesignation);
 			Line.Insert(5, ObservedObject.ObjectDesignation);
-			Line[12] = ObservedObject.DetectionAsterix ? '*' : MPCSpace;
+			Line[12] = ObservedObject.DetectionAsterisk ? '*' : MPCSpace;
 			Line[13] = (char) ((byte) ObservedObject.PubNote);
 			Line[14] = (char) ((byte) ObservedObject.N2);
 			string DateString = ObservedObject.ObsTime.ToString("yyyy MM dd");
@@ -145,6 +150,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 			return Line.ToString().Substring(0, 80);
 		}
 
+#pragma warning disable 1591
 		/// <summary>
 		/// Represents an invalid ObsInstance field.
 		/// </summary>
@@ -164,5 +170,6 @@ namespace Umbrella2.Pipeline.ExtraIO
 			public InvalidFieldException(FieldType type) : base("Field " + type.ToString() + " is invalid.")
 			{ ExceptionType = type; }
 		}
+#pragma warning restore 1591
 	}
 }

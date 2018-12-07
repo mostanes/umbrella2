@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Umbrella2.Algorithms.Images.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,6 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Umbrella2.Algorithms.Images.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -44,7 +46,6 @@
     <Compile Include="RLHT\RLHTCore.cs" />
     <Compile Include="RLHT\SimplifiedRLHTLine.cs" />
     <Compile Include="RLHT\SmartSkipRLHT.cs" />
-    <Compile Include="StandardImageMasker.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UmbrellaAlgorithmsFramework\UmbrellaAlgorithmsFramework.csproj">

@@ -134,7 +134,7 @@ namespace Umbrella2.Visualizers.Winforms
 					MPCOpticalReportFormat.ObsInstance instance = new MPCOpticalReportFormat.ObsInstance()
 					{
 						Coordinates = md.BarycenterEP,
-						DetectionAsterix = false,
+						DetectionAsterisk = false,
 						Mag = 0,
 						MagBand = Band,
 						ObservatoryCode = ObservatoryCode,

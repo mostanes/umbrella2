@@ -43,7 +43,9 @@ namespace Umbrella2.IO.FITS
 		/// <summary>
 		/// Opens a FITS File handle from a file on a local disk.
 		/// </summary>
-		/// <param name="Path"></param>
+		/// <param name="Path">Path to where the image is stored.</param>
+		/// <param name="OutputImage">Specifies whether the image is an input or an output one.</param>
+		/// <param name="numberGetter">Delegate that generates the image numbers in a MEF FITS.</param>
 		public FitsFile(string Path, bool OutputImage, MEFImageNumberGetter numberGetter = null) : this()
 		{
 			OutputFile = OutputImage;

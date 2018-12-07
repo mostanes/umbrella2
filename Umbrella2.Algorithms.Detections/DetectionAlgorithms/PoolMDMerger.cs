@@ -157,7 +157,6 @@ namespace Umbrella2.Algorithms.Detection
 		{
 			CandidatePairings = new List<MedianDetection[][]>();
 			int i, j;
-			int cnt = 1;
 			int[] DetectionPairs = new int[PoolList.Count];
 			for (i = 0; i < PoolList.Count; i++) for (j = i + 1; j < PoolList.Count; j++)
 				{

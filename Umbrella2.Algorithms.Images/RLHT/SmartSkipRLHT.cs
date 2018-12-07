@@ -15,10 +15,7 @@ namespace Umbrella2.Algorithms.Images
 		/// </summary>
 		/// <param name="Input">Input image segment.</param>
 		/// <param name="ImP">Image-specific detection parameters.</param>
-		/// <param name="StrongHoughTh">Threshold for a strong response.</param>
-		/// <param name="Skip">Number of steps to skip if no strong response has been observed.</param>
-		/// <param name="SimplifiedLine">Use the simplified RLHT line scanner.</param>
-		/// <param name="StrongValueFunction">Function to compute threshold relative to length.</param>
+		/// <param name="AGD">Algorithm arguments.</param>
 		/// <returns></returns>
 		internal static HTResult SmartSkipRLHT(double[,] Input, ImageParameters ImP, AlgorithmData AGD)
 		{

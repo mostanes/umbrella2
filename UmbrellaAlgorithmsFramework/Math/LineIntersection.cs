@@ -70,6 +70,8 @@ namespace Umbrella2.Algorithms.Geometry
 		/// <param name="Direction">Direction of the semiline.</param>
 		/// <param name="Width">Width of the rectangle.</param>
 		/// <param name="Height">Height of the rectangle.</param>
+		/// <param name="Point">The resulting intersection point.</param>
+		/// <param name="Distance">The distance between the line support and the intersection point.</param>
 		/// <returns>A tuple containing the intersection point and the distance from Origin to it.</returns>
 		public static bool IntersectLeft(Vector Origin, Vector Direction, int Width, int Height, out Vector Point, out double Distance)
 		{
@@ -106,6 +108,8 @@ namespace Umbrella2.Algorithms.Geometry
 		/// <param name="Direction">Direction of the semiline.</param>
 		/// <param name="Width">Width of the rectangle.</param>
 		/// <param name="Height">Height of the rectangle.</param>
+		/// <param name="Point">The resulting intersection point.</param>
+		/// <param name="Distance">The distance between the line support and the intersection point.</param>
 		/// <returns>A tuple containing the intersection point and the distance from Origin to it.</returns>
 		public static bool IntersectRight(Vector Origin, Vector Direction, int Width, int Height, out Vector Point, out double Distance)
 		{
