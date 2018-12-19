@@ -41,4 +41,10 @@ namespace Umbrella2.PropertyModel
 
 	public interface IExtensionProperty
 	{ }
+
+	public interface IPropertyCalculator<T, U>
+	{
+		Type[] GetRequiredProperties();
+		T ComputeProperty(U Object);
+	}
 }

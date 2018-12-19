@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using Umbrella2;
+using Umbrella2.PropertyModel.CommonProperties;
 
 namespace Umbrella2.Algorithms.Filtering
 {
@@ -35,22 +36,24 @@ namespace Umbrella2.Algorithms.Filtering
 
 		double ComputePearsonR(Tracklet Input)
 		{
-			if (Input.TimeXPearsonR * Input.TimeXPearsonR < TimeRsquared) return 0;
-			if (Input.TimeYPearsonR * Input.TimeYPearsonR < TimeRsquared) return 0;
+			if (Input.VelReg.R_TX * Input.VelReg.R_TX < TimeRsquared) return 0;
+			if (Input.VelReg.R_TY * Input.VelReg.R_TY < TimeRsquared) return 0;
 
 			List<PixelPoint> Points = new List<PixelPoint>();
 			double MeanR = 0;
 			int count = 0;
 			bool IsDot = false;
 			/* Computes the PearsonR for each source and takes the mean */
-			foreach (MedianDetection md in Input.MergedDetections) if (md != null)
+			foreach (ImageDetection md in Input.Detections) if (md != null)
 				{
-					Points.AddRange(md.PixelPoints);
-					var mlinr = Misc.LinearRegression.ComputeLinearRegression(md.PixelPoints);
-					md.PearsonR = mlinr.PearsonR;
+					var PixP = md.FetchProperty<ObjectPoints>().PixelPoints;
+					Points.AddRange(PixP);
+					var mlinr = Misc.LinearRegression.ComputeLinearRegression(PixP);
+					//md.PearsonR = mlinr.PearsonR;
 					MeanR += Math.Abs(mlinr.PearsonR);
 					count++;
-					if (md.IsDotDetection) IsDot = true;
+					if (md.TryFetchProperty<PairingProperties>(out PairingProperties PairProp))
+						if (PairProp.IsDotDetection) IsDot = true;
 				}
 			MeanR /= count;
 			/* If not line-like but not a dot detection, drop */

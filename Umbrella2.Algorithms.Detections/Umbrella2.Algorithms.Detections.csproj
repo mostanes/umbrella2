@@ -37,13 +37,12 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DetectionAlgorithms\CandidatePairingsRefinery.cs" />
     <Compile Include="DetectionAlgorithms\DotDetector.cs" />
-    <Compile Include="DetectionAlgorithms\PoolMDMerger.cs" />
+    <None Include="DetectionAlgorithms\PoolMDMerger.cs" />
     <Compile Include="Filtering\MedianDetectionFilters.cs" />
     <Compile Include="Filtering\TrackletFilters.cs" />
     <Compile Include="PairingAlgorithms\MDPoolCore.cs" />
-    <Compile Include="PairingAlgorithms\PoolPairwiseAnalyzer.cs" />
+    <None Include="PairingAlgorithms\PoolPairwiseAnalyzer.cs" />
     <Compile Include="PairingAlgorithms\PrePair.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

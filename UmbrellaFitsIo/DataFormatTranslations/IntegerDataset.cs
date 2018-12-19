@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UmbrellaFitsIo.DataFormatTranslations
+namespace Umbrella2.IO.FITS.Formats
 {
 	/// <summary>
 	/// Module for reading from and writing to floating-point FITS data arrays.

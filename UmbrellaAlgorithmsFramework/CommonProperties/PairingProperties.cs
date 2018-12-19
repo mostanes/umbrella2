@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Umbrella2.PropertyModel;
 
-namespace UmbrellaAlgorithmsFramework.CommonProperties
+namespace Umbrella2.PropertyModel.CommonProperties
 {
 	/// <summary>
 	/// Holds information relevant to object pairing.

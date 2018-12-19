@@ -2,6 +2,7 @@
 using System.Linq;
 using Umbrella2.IO.FITS;
 using Umbrella2.IO.FITS.KnownKeywords;
+using Umbrella2.PropertyModel.CommonProperties;
 using static System.Math;
 using static Umbrella2.Algorithms.Images.ParallelAlgorithmRunner;
 
@@ -49,15 +50,15 @@ namespace Umbrella2.Algorithms.Detection
 		/// <param name="Input">Input image.</param>
 		/// <param name="ObservationTime">Input image time of observation.</param>
 		/// <returns>A list of detections.</returns>
-		public List<MedianDetection> DetectDots(FitsImage Input, ObservationTime ObservationTime)
+		public List<ImageDetection> DetectDots(FitsImage Input, ObservationTime ObservationTime)
 		{
 			Detections = new List<DotDetection>();
 			PositionDependentExtractor<DotDetector> Extractor = DetectSources;
 
 			Extractor.Run(this, Input, Parameters);
 
-			List<MedianDetection> Mdect = Detections.Select((x) => new MedianDetection(Input.Transform, Input, x.Pixels, x.PixelValues)).ToList();
-			foreach (MedianDetection m in Mdect) m.IsDotDetection = true;
+			List<ImageDetection> Mdect = Detections.Select((x) => StandardDetectionFactory.CreateDetection(Input, x.Pixels, x.PixelValues)).ToList();
+			foreach (ImageDetection m in Mdect) m.SetResetProperty(new PairingProperties() { IsDotDetection = true });
 			return Mdect;
 		}
 

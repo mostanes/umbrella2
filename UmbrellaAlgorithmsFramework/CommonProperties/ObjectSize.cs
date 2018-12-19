@@ -5,7 +5,7 @@ using System.Text;
 using Umbrella2;
 using Umbrella2.PropertyModel;
 
-namespace UmbrellaAlgorithmsFramework.CommonProperties
+namespace Umbrella2.PropertyModel.CommonProperties
 {
 	/// <summary>
 	/// Holds information on the size of the object.

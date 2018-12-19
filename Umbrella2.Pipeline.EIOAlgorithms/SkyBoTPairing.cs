@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Umbrella2.Algorithms.Misc;
+using Umbrella2.PropertyModel.CommonProperties;
 using static Umbrella2.Pipeline.ExtraIO.SkyBoTLookup;
 
 namespace Umbrella2.Pipeline.ExtraIO
@@ -50,12 +51,12 @@ namespace Umbrella2.Pipeline.ExtraIO
 		/// <param name="Separation">Maximum distance between SkyBoT object and detection at which they are considered the same object.</param>
 		static void PairTracklet(Tracklet t, QuadTree<SkybotObject> NamesTree, double Separation)
 		{
-			foreach (MedianDetection m in t.MergedDetections)
+			foreach (ImageDetection m in t.Detections)
 				if (m != null)
 				{
-					List<SkybotObject> Objects = NamesTree.Query(m.BarycenterEP.RA, m.BarycenterEP.Dec, Separation);
-					List<SkybotObject> Selected = Objects.Where((x) => x.TimeCoordinate == m.Time.Time && (x.Position ^ m.BarycenterEP) < Separation).ToList();
-					if (Selected.Count == 1) m.Name = Objects[0].Name;
+					List<SkybotObject> Objects = NamesTree.Query(m.Barycenter.EP.RA, m.Barycenter.EP.Dec, Separation);
+					List<SkybotObject> Selected = Objects.Where((x) => x.TimeCoordinate == m.Time.Time && (x.Position ^ m.Barycenter.EP) < Separation).ToList();
+					if (Selected.Count == 1) m.SetResetProperty(new ObjectIdentity() { Name = Objects[0].Name });
 				}
 		}
     }

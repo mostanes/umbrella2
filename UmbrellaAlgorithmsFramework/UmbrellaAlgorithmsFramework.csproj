@@ -42,6 +42,8 @@
     <Compile Include="CommonProperties\ObjectSize.cs" />
     <Compile Include="CommonProperties\PairingProperties.cs" />
     <Compile Include="CommonProperties\Position.cs" />
+    <Compile Include="CommonProperties\TrackletVelocity.cs" />
+    <Compile Include="CommonProperties\TrackletVelocityRegression.cs" />
     <Compile Include="DataStructures\ConnectedComponentGraph.cs" />
     <Compile Include="DataStructures\MTPool.cs" />
     <Compile Include="DataStructures\QuadTree.cs" />
@@ -52,7 +54,9 @@
     <Compile Include="ImageDetection.cs" />
     <Compile Include="Math\LinearRegression.cs" />
     <Compile Include="Math\LineIntersection.cs" />
+    <Compile Include="OldTracklet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StandardDetectionFactory.cs" />
     <Compile Include="StarData.cs" />
     <Compile Include="Tracklet.cs" />
   </ItemGroup>

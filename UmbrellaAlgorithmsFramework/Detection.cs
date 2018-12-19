@@ -125,6 +125,7 @@ namespace Umbrella2
 	/// <summary>
 	/// Represents a serializable reference to a MedianDetection.
 	/// </summary>
+	[Obsolete]
 	[Serializable]
 	public struct MedianReference
 	{

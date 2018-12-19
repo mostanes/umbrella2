@@ -1,62 +1,83 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Umbrella2.Algorithms.Misc;
+using Umbrella2.PropertyModel;
+using Umbrella2.PropertyModel.CommonProperties;
 
 namespace Umbrella2
 {
 	/// <summary>
-	/// Represents a tracklet.
+	/// An object candidate.
 	/// </summary>
-	/// <remarks>
-	/// The interface is volatile for now.
-	/// </remarks>
 	public class Tracklet
 	{
-		readonly MedianDetection[][] Detections;
-		public readonly MedianDetection[] MergedDetections;
-		public readonly PixelPoint[] PixelBarycenters;
-		public readonly double PixelVelocityX;
-		public readonly double PixelVelocityY;
-		public readonly double Velocity;
-		public double LinearityPearsonR;
-		public double TimeXPearsonR;
-		public double TimeYPearsonR;
+		/// <summary>
+		/// Object instances that form the tracklet.
+		/// </summary>
+		public readonly ImageDetection[] Detections;
+		/// <summary>
+		/// Object velocity.
+		/// </summary>
+		public readonly TrackletVelocity Velocity;
+		/// <summary>
+		/// Represents the tracklet's velocity regression parameters.
+		/// </summary>
+		public readonly TrackletVelocityRegression VelReg;
 
-		public Tracklet(MedianDetection[][] Detections)
+		/// <summary>
+		/// List of supplementary properties.
+		/// </summary>
+		/// <remarks>
+		/// The held values should be reference types; otherwise boxing will make them read-only.
+		/// </remarks>
+		[PropertyList]
+		public readonly Dictionary<Type, IExtensionProperty> ExtendedProperties;
+
+		/// <summary>
+		/// Fetches a property of the ImageDetection. Not thread-safe when also appending properties concurrently.
+		/// </summary>
+		/// <typeparam name="T">Property type.</typeparam>
+		/// <returns>The property, casted to the appropriate type.</returns>
+		public T FetchProperty<T>() where T : IExtensionProperty => (T) ExtendedProperties[typeof(T)];
+
+		/// <summary>
+		/// Tries fetching a property of the ImageDetection.
+		/// </summary>
+		/// <typeparam name="T">Property type.</typeparam>
+		/// <param name="Property">Property instance on the object.</param>
+		/// <returns>True if property exists.</returns>
+		public bool TryFetchProperty<T>(out T Property) where T : IExtensionProperty
 		{
-			this.Detections = Detections;
-			MergedDetections = new MedianDetection[Detections.Length];
-			PixelBarycenters = new PixelPoint[Detections.Length];
-			List<PixelPoint> ValidPP = new List<PixelPoint>();
-			List<DateTime> ValidTimes = new List<DateTime>();
-			DateTime ZeroTime = DateTime.Now;
-			WCS.WCSViaProjection Projection = null;
-			for (int i = 0; i < MergedDetections.Length; i++)
-				if (Detections[i].Length != 0)
-				{
-					List<PixelPoint> Points = new List<PixelPoint>();
-					foreach (MedianDetection m in Detections[i])
-						Points.AddRange(m.PixelPoints);
-					List<double> Values = new List<double>();
-					foreach (MedianDetection m in Detections[i])
-						Values.AddRange(m.PixelValues);
-					MergedDetections[i] = new MedianDetection(Detections[i][0].ParentImage.Transform, Detections[i][0].ParentImage, Points, Values);
-					MergedDetections[i].IsDotDetection = Detections[i][0].IsDotDetection;
-					PixelBarycenters[i] = MergedDetections[i].BarycenterPP;
-					ZeroTime = MergedDetections[i].Time.Time;
-					Projection = MergedDetections[i].ParentImage.Transform;
-					ValidPP.Add(PixelBarycenters[i]);
-					ValidTimes.Add(MergedDetections[i].Time.Time);
-				}
-			var Xreg = LinearRegression.ComputeLinearRegression(ValidPP.Select((x) => x.X).ToArray(), ValidTimes.Select((x) => (x - ZeroTime).TotalSeconds).ToArray());
-			var Yreg = LinearRegression.ComputeLinearRegression(ValidPP.Select((x) => x.Y).ToArray(), ValidTimes.Select((x) => (x - ZeroTime).TotalSeconds).ToArray());
-			PixelVelocityX = 1 / Xreg.Slope;
-			PixelVelocityY = 1 / Yreg.Slope;
-			TimeXPearsonR = Xreg.PearsonR;
-			TimeYPearsonR = Yreg.PearsonR;
-			Velocity = Math.Sqrt(PixelVelocityX * PixelVelocityX + PixelVelocityY * PixelVelocityY) * Projection.GetEstimatedWCSChainDerivative();
+			bool b = ExtendedProperties.TryGetValue(typeof(T), out IExtensionProperty PropertyIEP);
+			if (b)
+				Property = (T) PropertyIEP;
+			else Property = default(T);
+			return b;
+		}
+
+		/// <summary>
+		/// Appends a property to the object.
+		/// </summary>
+		/// <remarks>
+		/// Note that this function sets the property type according to the generic type parameter.
+		/// </remarks>
+		/// <typeparam name="T">Property type.</typeparam>
+		/// <param name="Property">Property instance.</param>
+		public void AppendProperty<T>(T Property) where T : IExtensionProperty
+		{ lock (ExtendedProperties) ExtendedProperties.Add(typeof(T), Property); }
+
+		/// <summary>
+		/// Appends or overwrites a property.
+		/// </summary>
+		/// <typeparam name="T">Property type.</typeparam>
+		/// <param name="Property">Property instance.</param>
+		public void SetResetProperty<T>(T Property) where T : IExtensionProperty
+		{
+			Type t = typeof(T);
+			lock (ExtendedProperties)
+			{
+				if (ExtendedProperties.ContainsKey(t)) ExtendedProperties[t] = Property;
+				else ExtendedProperties.Add(t, Property);
+			}
 		}
 	}
 }

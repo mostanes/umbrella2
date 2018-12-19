@@ -59,7 +59,7 @@ namespace Umbrella2.Algorithms.Images
 			/// <summary>
 			/// The results of the algorithm run.
 			/// </summary>
-			public List<MedianDetection> Results;
+			public List<ImageDetection> Results;
 		}
 
 		/// <summary>
@@ -125,7 +125,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="Data">Algorithm data bag.</param>
 		public static void PrepareAlgorithmForImage(FitsImage Image, ImageStatistics Stats, ref LongTrailData Data)
 		{
-			Data.Results = new List<MedianDetection>();
+			Data.Results = new List<ImageDetection>();
 			Data.RunningImage = Image;
 			Data.Sigma = Stats.StDev;
 			Data.ImageParameters.IncreasingThreshold = Stats.StDev;
@@ -167,7 +167,7 @@ namespace Umbrella2.Algorithms.Images
 			{
 				var z = LineAnalyzer.AnalyzeLine(Input, Mask, Height, Width, vx.X, vx.Y, SST, SDT, MIB, SW, pX, pY);
 				lock (Data.Results)
-					Data.Results.AddRange(z.Select((x) => new MedianDetection(Position.WCS, Data.RunningImage, x.Points, x.PointValues)));
+					Data.Results.AddRange(z.Select((x) => StandardDetectionFactory.CreateDetection(Data.RunningImage, x.Points, x.PointValues)));
 			}
 
 			clear_end:

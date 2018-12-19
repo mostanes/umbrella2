@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace UmbrellaFitsIo.FrameworkSupport
+namespace Umbrella2.Framework
 {
 	/// <summary>
 	/// Provides readers-writers lock for images.
