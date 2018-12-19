@@ -38,7 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DetectionAlgorithms\DotDetector.cs" />
-    <None Include="DetectionAlgorithms\PoolMDMerger.cs" />
+    <Compile Include="DetectionAlgorithms\PoolMDMerger.cs" />
     <Compile Include="Filtering\MedianDetectionFilters.cs" />
     <Compile Include="Filtering\TrackletFilters.cs" />
     <Compile Include="PairingAlgorithms\MDPoolCore.cs" />

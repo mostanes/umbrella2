@@ -22,7 +22,7 @@ namespace Umbrella2
 		/// Creates a ImageDetection from the given arguments. This constructor is internally called by the ImageDetection factories.
 		/// </summary>
 		public ImageDetection(Position Barycenter, ObservationTime Time, FitsImage ParentImage)
-		{ this.Barycenter = Barycenter; this.Time = Time; this.ParentImage = ParentImage; }
+		{ this.Barycenter = Barycenter; this.Time = Time; this.ParentImage = ParentImage; ExtendedProperties = new Dictionary<Type, IExtensionProperty>(); }
 
 		/// <summary>
 		/// Empty constructor, for easier use with reflection.
@@ -51,12 +51,13 @@ namespace Umbrella2
 		/// <typeparam name="T">Property type.</typeparam>
 		/// <param name="Property">Property instance on the object.</param>
 		/// <returns>True if property exists.</returns>
-		public bool TryFetchProperty<T>(out T Property) where T : IExtensionProperty
+		public bool TryFetchProperty<T>(out T Property) where T : IExtensionProperty, new()
 		{
 			bool b = ExtendedProperties.TryGetValue(typeof(T), out IExtensionProperty PropertyIEP);
 			if (b)
 				Property = (T) PropertyIEP;
 			else Property = default(T);
+			if (Property == null) Property = new T();
 			return b;
 		}
 
@@ -65,12 +66,14 @@ namespace Umbrella2
 		/// </summary>
 		/// <typeparam name="T">Property type.</typeparam>
 		/// <returns>Property instance on the object or the default value of the type.</returns>
-		public T FetchOrCreate<T>() where T : IExtensionProperty
+		public T FetchOrCreate<T>() where T : IExtensionProperty, new()
 		{
 			bool b = ExtendedProperties.TryGetValue(typeof(T), out IExtensionProperty PropertyIEP);
 			if (b)
 				return (T) PropertyIEP;
-			return default(T);
+			T Value = default(T);
+			if (Value == null) Value = new T();
+			return Value;
 		}
 
 		/// <summary>

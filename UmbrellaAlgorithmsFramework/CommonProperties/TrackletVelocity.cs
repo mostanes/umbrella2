@@ -11,7 +11,7 @@ namespace Umbrella2
 		/// <summary>
 		/// Represents the velocity in pixel coordinates.
 		/// </summary>
-		public readonly PixelVelocity PixelVelocity;
+		public PixelVelocity PixelVelocity;
 
 		/* NOTE: The following code should be implemented at a later time. */
 		/*
@@ -23,7 +23,7 @@ namespace Umbrella2
 		/// <summary>
 		/// Represents the velocity in equatorial coordinates.
 		/// </summary>
-		public readonly double EquatorialVelocity;
+		public double EquatorialVelocity;
 	}
 
 	/// <summary>
@@ -31,8 +31,8 @@ namespace Umbrella2
 	/// </summary>
 	public struct PixelVelocity
 	{
-		public readonly double Xvel;
-		public readonly double Yvel;
+		public double Xvel;
+		public double Yvel;
 
 		public static explicit operator double(PixelVelocity Velocity) => Math.Sqrt(Velocity.Xvel * Velocity.Xvel + Velocity.Yvel * Velocity.Yvel);
 	}

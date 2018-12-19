@@ -57,6 +57,7 @@
     <Compile Include="OldTracklet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StandardDetectionFactory.cs" />
+    <Compile Include="StandardTrackletFactory.cs" />
     <Compile Include="StarData.cs" />
     <Compile Include="Tracklet.cs" />
   </ItemGroup>

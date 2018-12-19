@@ -12,10 +12,10 @@ namespace Umbrella2.PropertyModel.CommonProperties
 	public class TrackletVelocityRegression : IExtensionProperty
 	{
 		/// <summary>Pearson R correlation between Time and X coordinate.</summary>
-		public readonly double R_TX;
+		public double R_TX;
 		/// <summary>Pearson R correlation between Time and Y coordinate.</summary>
-		public readonly double R_TY;
+		public double R_TY;
 		/// <summary>Pearson R correlation between X and Y coordinates.</summary>
-		public readonly double R_XY;
+		public double R_XY;
 	}
 }

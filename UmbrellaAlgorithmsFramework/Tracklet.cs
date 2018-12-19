@@ -33,6 +33,17 @@ namespace Umbrella2
 		public readonly Dictionary<Type, IExtensionProperty> ExtendedProperties;
 
 		/// <summary>
+		/// Creates a Tracklet from the given arguments. This constructor is internally called by the Tracklet factories.
+		/// </summary>
+		public Tracklet(ImageDetection[] Detections, TrackletVelocity Velocity, TrackletVelocityRegression Regression)
+		{
+			this.Detections = Detections;
+			this.Velocity = Velocity;
+			VelReg = Regression;
+			ExtendedProperties = new Dictionary<Type, IExtensionProperty>();
+		}
+
+		/// <summary>
 		/// Fetches a property of the ImageDetection. Not thread-safe when also appending properties concurrently.
 		/// </summary>
 		/// <typeparam name="T">Property type.</typeparam>

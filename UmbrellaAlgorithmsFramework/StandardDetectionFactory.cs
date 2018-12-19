@@ -8,8 +8,19 @@ using Umbrella2.WCS;
 
 namespace Umbrella2
 {
+	/// <summary>
+	/// A set of standard methods of creating ImageDetections.
+	/// </summary>
 	public static class StandardDetectionFactory
 	{
+		/// <summary>
+		/// Creates a new ImageDetection from a given image, set of points and values. It also populates it with <see cref="ObjectPhotometry"/>, <see cref="ObjectPoints"/>,
+		/// and <see cref="ObjectSize"/> properties.
+		/// </summary>
+		/// <param name="Image">Image on which the object was detected.</param>
+		/// <param name="Points">The set of points on the image where it has been detected.</param>
+		/// <param name="Values">The set of pixel intensitities.</param>
+		/// <returns>A new instance of ImageDetection with the specified extension properties.</returns>
 		public static ImageDetection CreateDetection(FitsImage Image, IEnumerable<PixelPoint> Points, IEnumerable<double> Values)
 		{
 			WCSViaProjection Transform = Image.Transform;
@@ -55,8 +66,22 @@ namespace Umbrella2
 			return Detection;
 		}
 
+		/// <summary>
+		/// Wrapper for the original ImageDetection constructor.
+		/// </summary>
+		/// <param name="Barycenter">Object barycenter.</param>
+		/// <param name="Time">Time at which the object was observed.</param>
+		/// <param name="ParentImage">Image on which the object was detected.</param>
+		/// <returns></returns>
 		public static ImageDetection CreateDetection(Position Barycenter, ObservationTime Time, FitsImage ParentImage) => new ImageDetection(Barycenter, Time, ParentImage);
 
+		/// <summary>
+		/// Creates a new ImageDetection at a specified position in an image.
+		/// Internally, fetches the intensities from the image at the given position and calls <see cref="CreateDetection(FitsImage, IEnumerable{PixelPoint}, IEnumerable{double})"/>.
+		/// </summary>
+		/// <param name="Image">Image on which the object was detected.</param>
+		/// <param name="Points">The set of pixels at which it has been detected.</param>
+		/// <returns>The ImageDetection as from the expanded form.</returns>
 		public static ImageDetection CreateDetection(FitsImage Image, IEnumerable<PixelPoint> Points)
 		{
 			double MinX = double.MaxValue, MaxX = double.MinValue, MinY = double.MaxValue, MaxY = double.MinValue;
@@ -77,8 +102,17 @@ namespace Umbrella2
 				PixelPoint Point = PixPoints[i];
 				int Px = (int) Math.Round(Point.X - X);
 				int Py = (int) Math.Round(Point.Y - Y);
-				PixValues[i] = Data.Data[Py, Px];
+				if (Px < 0) continue;
+				if (Py < 0) continue;
+				if (Px > Data.Data.GetLength(1)) continue;
+				if (Py > Data.Data.GetLength(0)) continue;
+				try
+				{
+					PixValues[i] = Data.Data[Py, Px];
+				}
+				catch { PixValues[i] = 0; }
 			}
+			Image.ExitLock(Data);
 
 			return CreateDetection(Image, PixPoints, PixValues);
 		}

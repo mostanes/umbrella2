@@ -66,19 +66,20 @@ namespace Umbrella2.Algorithms.Detection
 
 		public bool PairPossible(ImageDetection a, ImageDetection b)
 		{
-			PairingProperties App = a.FetchProperty<PairingProperties>(), Bpp = b.FetchProperty<PairingProperties>();
+			PairingProperties App = a.FetchOrCreate<PairingProperties>(), Bpp = b.FetchOrCreate<PairingProperties>();
 			if (App.IsPaired || Bpp.IsPaired) return false;
 			if (App.StarPolluted || Bpp.StarPolluted) return false;
 			if (a.Time.Time == b.Time.Time) return false;
 			TimeSpan DeltaTime = a.Time.Time - b.Time.Time;
-			if ((a.LargestDistance + b.LargestDistance) * Math.Abs(DeltaTime.TotalSeconds) < (a.Barycenter.EP ^ b.Barycenter.EP) * (a.Time.Exposure.TotalSeconds + b.Time.Exposure.TotalSeconds) / 2) return false;
+			//if ((a.LargestDistance + b.LargestDistance) * Math.Abs(DeltaTime.TotalSeconds) < (a.Barycenter.EP ^ b.Barycenter.EP) * (a.Time.Exposure.TotalSeconds + b.Time.Exposure.TotalSeconds) / 2) return false;
 
-			if(a.PixelEllipse.SemiaxisMajor > LongTrailHighThreshold*LongTrailHighThreshold)
+			SourceEllipse aPel = a.FetchProperty<ObjectSize>().PixelEllipse, bPel = b.FetchProperty<ObjectSize>().PixelEllipse;
+			if(aPel.SemiaxisMajor > LongTrailHighThreshold*LongTrailHighThreshold)
 			{
-				if (b.PixelEllipse.SemiaxisMajor < LongTrailLowThreshold * LongTrailLowThreshold) return false;
+				if (bPel.SemiaxisMajor < LongTrailLowThreshold * LongTrailLowThreshold) return false;
 			}
-			double DeltaAngle = a.PixelEllipse.SemiaxisMajorAngle - b.PixelEllipse.SemiaxisMajorAngle;
-			double Length = a.PixelEllipse.SemiaxisMajor + b.PixelEllipse.SemiaxisMajor;
+			double DeltaAngle = aPel.SemiaxisMajorAngle - bPel.SemiaxisMajorAngle;
+			double Length = aPel.SemiaxisMajor + bPel.SemiaxisMajor;
 			if (DeltaAngle * DeltaAngle * Math.Sqrt(Length) > AngleDistanceDifferenceThreshold) return false;
 
 			return true;
@@ -89,7 +90,7 @@ namespace Umbrella2.Algorithms.Detection
 			TimeSpan DeltaTime = b.Time.Time - a.Time.Time;
 			var Line = b.Barycenter.EP - a.Barycenter.EP;
 			double PairEstimatedDistance = ~Line;
-			double PairEstimatedDistanceError = (a.PixelEllipse.SemiaxisMajor + b.PixelEllipse.SemiaxisMajor) / 2;
+			double PairEstimatedDistanceError = (a.FetchProperty<ObjectSize>().PixelEllipse.SemiaxisMajor + b.FetchProperty<ObjectSize>().PixelEllipse.SemiaxisMajor) / 2;
 			PairEstimatedDistanceError *= a.ParentImage.Transform.GetEstimatedWCSChainDerivative();
 			double PairEstimatedVelocity = PairEstimatedDistance / DeltaTime.TotalSeconds;
 			double PairEstimatedVelocityError = PairEstimatedDistanceError / DeltaTime.TotalSeconds;
@@ -102,7 +103,7 @@ namespace Umbrella2.Algorithms.Detection
 				double EstDistError = Math.Abs(PairEstimatedVelocityError * tsp.TotalSeconds) + PairEstimatedDistanceError;
 				EquatorialPoint EstimatedPoint = Line + EstDistance;
 				var DetectionsList = DetectionPool.Query(EstimatedPoint.Dec, EstimatedPoint.RA, EstDistError);
-				DetectionsList.RemoveAll((x) => ((x.BarycenterEP ^ EstimatedPoint) > EstDistError) || (x.Time.Time != dt) || x.IsDotDetection);
+				DetectionsList.RemoveAll((x) => ((x.Barycenter.EP ^ EstimatedPoint) > EstDistError) || (x.Time.Time != dt) || x.FetchOrCreate<PairingProperties>().IsDotDetection);
 				//DetectedInPool.Add(DetectionsList);
 				DIPAr.Add(DetectionsList.ToArray());
 			}
@@ -111,7 +112,7 @@ namespace Umbrella2.Algorithms.Detection
 			if (c >= 3)
 			{
 				CandidatePairings.Add(DIPAr.ToArray());
-				foreach (ImageDetection[] mdl in DIPAr) foreach (ImageDetection m in mdl) m.IsPaired = true;
+				foreach (ImageDetection[] mdl in DIPAr) foreach (ImageDetection m in mdl) m.FetchOrCreate<PairingProperties>().IsPaired = true;
 			}
 		}
 
@@ -123,7 +124,7 @@ namespace Umbrella2.Algorithms.Detection
 			double PairEstimatedDistance = ~Line;
 			if (PairEstimatedDistance > MaxVDD * DeltaTime.TotalMinutes) return;
 			if (PairEstimatedDistance < MinVDD * DeltaTime.TotalMinutes) return;
-			double PairEstimatedDistanceError = 2 * (a.PixelEllipse.SemiaxisMajor + b.PixelEllipse.SemiaxisMajor);
+			double PairEstimatedDistanceError = 2 * (a.FetchProperty<ObjectSize>().PixelEllipse.SemiaxisMajor + b.FetchProperty<ObjectSize>().PixelEllipse.SemiaxisMajor);
 			PairEstimatedDistanceError *= a.ParentImage.Transform.GetEstimatedWCSChainDerivative();
 			double PairEstimatedVelocity = PairEstimatedDistance / DeltaTime.TotalSeconds;
 			double PairEstimatedVelocityError = PairEstimatedDistanceError / DeltaTime.TotalSeconds;
@@ -160,8 +161,8 @@ namespace Umbrella2.Algorithms.Detection
 			int[] DetectionPairs = new int[PoolList.Count];
 			for (i = 0; i < PoolList.Count; i++) for (j = i + 1; j < PoolList.Count; j++)
 				{
-					if (PoolList[i].IsDotDetection != PoolList[j].IsDotDetection) continue;
-					if (PoolList[i].IsDotDetection) TryPairDot(PoolList[i], PoolList[j]);
+					if (PoolList[i].FetchOrCreate<PairingProperties>().IsDotDetection != PoolList[j].FetchOrCreate<PairingProperties>().IsDotDetection) continue;
+					if (PoolList[i].FetchOrCreate<PairingProperties>().IsDotDetection) TryPairDot(PoolList[i], PoolList[j]);
 					else
 					{
 						if (!PairPossible(PoolList[i], PoolList[j])) continue;
