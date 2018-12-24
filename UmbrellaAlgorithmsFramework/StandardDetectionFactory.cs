@@ -94,7 +94,7 @@ namespace Umbrella2
 				if (Point.Y > MaxY) MaxY = Point.Y;
 			}
 
-			int X = (int) Math.Round(MinX), Y = (int) Math.Round(MinY), W = (int) Math.Round(MaxX - MinX), H = (int) Math.Round(MaxY - MinY);
+			int X = (int) Math.Round(MinX), Y = (int) Math.Round(MinY), W = (int) Math.Round(MaxX - MinX) + 1, H = (int) Math.Round(MaxY - MinY) + 1;
 			ImageData Data = Image.LockData(new System.Drawing.Rectangle(X, Y, W, H), false);
 			double[] PixValues = new double[PixPoints.Length];
 			for (int i = 0; i < PixPoints.Length; i++)
@@ -102,10 +102,6 @@ namespace Umbrella2
 				PixelPoint Point = PixPoints[i];
 				int Px = (int) Math.Round(Point.X - X);
 				int Py = (int) Math.Round(Point.Y - Y);
-				if (Px < 0) continue;
-				if (Py < 0) continue;
-				if (Px > Data.Data.GetLength(1)) continue;
-				if (Py > Data.Data.GetLength(0)) continue;
 				try
 				{
 					PixValues[i] = Data.Data[Py, Px];

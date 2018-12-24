@@ -7,8 +7,16 @@ using Umbrella2.PropertyModel.CommonProperties;
 
 namespace Umbrella2
 {
+	/// <summary>
+	/// A set of standard methods for creating Tracklets.
+	/// </summary>
 	public static class StandardTrackletFactory
 	{
+		/// <summary>
+		/// Creates a new ImageDetection by merging the blobs of other detections. Requires the input ImageDetections to have <see cref="ObjectPoints"/> property.
+		/// </summary>
+		/// <param name="Detections">The list of input detections to merge.</param>
+		/// <returns>A new instance of ImageDetection.</returns>
 		public static ImageDetection MergeStandardDetections(ImageDetection[] Detections)
 		{
 			List<PixelPoint> Pixels = new List<PixelPoint>();
@@ -22,6 +30,11 @@ namespace Umbrella2
 			return StandardDetectionFactory.CreateDetection(Detections[0].ParentImage, Pixels, Values);
 		}
 
+		/// <summary>
+		/// Creates a tracklet from a set of detections.
+		/// </summary>
+		/// <param name="Detections">Input detections; one per image.</param>
+		/// <returns>A new Tracklet instance.</returns>
 		public static Tracklet CreateTracklet(ImageDetection[] Detections)
 		{
 			List<ImageDetection> DetectionsList = new List<ImageDetection>();
@@ -34,6 +47,7 @@ namespace Umbrella2
 				ValidPP[i] = Detections[i].Barycenter.PP;
 				ValidTimes[i] = Detections[i].Time.Time;
 				ZeroTime = ValidTimes[i];
+				Projection = Detections[i].ParentImage.Transform;
 			}
 			var Xreg = LinearRegression.ComputeLinearRegression(ValidPP.Select((x) => x.X).ToArray(), ValidTimes.Select((x) => (x - ZeroTime).TotalSeconds).ToArray());
 			var Yreg = LinearRegression.ComputeLinearRegression(ValidPP.Select((x) => x.Y).ToArray(), ValidTimes.Select((x) => (x - ZeroTime).TotalSeconds).ToArray());
