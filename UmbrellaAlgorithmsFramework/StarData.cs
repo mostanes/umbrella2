@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Umbrella2.PropertyModel.CommonProperties;
 
 namespace Umbrella2.Algorithms.Filtering
 {
@@ -25,11 +26,12 @@ namespace Umbrella2.Algorithms.Filtering
 		/// Marks detections that cross near a star (and therefore could well be parts of the star's halo.
 		/// </summary>
 		/// <param name="Detections">List of the detections to analyze.</param>
-		public void MarkStarCrossed(IEnumerable<MedianDetection> Detections, double StarMultiplier)
+		/// <param name="StarMultiplier">Ratio between the radius of star pollution marking and the star radius.</param>
+		public void MarkStarCrossed(IEnumerable<ImageDetection> Detections, double StarMultiplier)
 		{
-			foreach (MedianDetection d in Detections)
+			foreach (ImageDetection d in Detections)
 				foreach (Star s in FixedStarList)
-					if ((s.PixCenter ^ d.BarycenterPP) < s.PixRadius * StarMultiplier) { d.StarPolluted = true; break; }
+					if ((s.PixCenter ^ d.Barycenter.PP) < s.PixRadius * StarMultiplier) { d.FetchOrCreate<PairingProperties>().StarPolluted = true; break; }
 		}
 	}
 }

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace UmbrellaFitsIo.FrameworkSupport
+namespace Umbrella2.Framework
 {
 	/// <summary>
 	/// Provides readers-writers lock for images.
@@ -31,6 +31,7 @@ namespace UmbrellaFitsIo.FrameworkSupport
 		/// Acquire a read or write lock.
 		/// </summary>
 		/// <param name="zone">Image area over which to get the lock.</param>
+		/// <param name="WriteLock">True if the lock is a writer lock, false if it is a reader lock.</param>
 		/// <returns>A lock token.</returns>
 		public Guid EnterLock(Rectangle zone, bool WriteLock)
 		{

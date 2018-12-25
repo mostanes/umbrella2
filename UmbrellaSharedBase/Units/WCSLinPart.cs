@@ -11,6 +11,10 @@ namespace Umbrella2.WCS
 		readonly double C11, C12, C21, C22;
 		readonly double R11, R12, R21, R22;
 		readonly double Ref1, Ref2;
+
+		/// <summary>
+		/// Average scaling from pixel coordinates to projection plane coordinates.
+		/// </summary>
 		public readonly double WCSChainDerivative;
 
 		/// <summary>
@@ -32,7 +36,7 @@ namespace Umbrella2.WCS
 			Ref2 = RefY - 1;
 			WCSChainDerivative = Math.Sqrt(Math.Abs(Det));
 		}
-
+#pragma warning disable 1591
 		public ProjectionPoint GetProjectionPoint(PixelPoint Point)
 		{ return new ProjectionPoint() { X = C11 * (Point.X - Ref1) + C12 * (Point.Y - Ref2), Y = C21 * (Point.X - Ref1) + C22 * (Point.Y - Ref2) }; }
 
@@ -66,7 +70,11 @@ namespace Umbrella2.WCS
 			foreach (ProjectionPoint pp in Points) pps.Add(new PixelPoint() { X = R11 * pp.X + R12 * pp.Y + Ref1, Y = R21 * pp.X + R22 * pp.Y + Ref2 });
 			return pps;
 		}
+#pragma warning restore 1591
 
+		/// <summary>
+		/// The transformation matrix conforming to the FITS standard.
+		/// </summary>
 		public double[] Matrix { get => new double[] { C11 * 180 / Math.PI, C12 * 180 / Math.PI, C21 * 180 / Math.PI, C22 * 180 / Math.PI, Ref1 + 1, Ref2 + 1 }; }
 	}
 }

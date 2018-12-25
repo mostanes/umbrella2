@@ -1,27 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using Umbrella2.IO.FITS;
+using Umbrella2.IO.FITS.KnownKeywords;
 using Umbrella2.PropertyModel;
-using Umbrella2.PropertyModel.CommonProperties;
 
 namespace Umbrella2
 {
-	/// <summary>
-	/// An object candidate.
-	/// </summary>
-	public class Tracklet
+	public class ImageDetection
 	{
+		/// <summary>Position of the flux barycenter.</summary>
+		[PropertyDescription(true)]
+		public readonly Position Barycenter;
+		/// <summary>Exposure information.</summary>
+		[PropertyDescription(true)]
+		public readonly ObservationTime Time;
+		/// <summary>Image on which the detection was observed.</summary>
+		[PropertyDescription(true)]
+		public readonly FitsImage ParentImage;
+
 		/// <summary>
-		/// Object instances that form the tracklet.
+		/// Creates a ImageDetection from the given arguments. This constructor is internally called by the ImageDetection factories.
 		/// </summary>
-		public readonly ImageDetection[] Detections;
+		public ImageDetection(Position Barycenter, ObservationTime Time, FitsImage ParentImage)
+		{ this.Barycenter = Barycenter; this.Time = Time; this.ParentImage = ParentImage; ExtendedProperties = new Dictionary<Type, IExtensionProperty>(); }
+
 		/// <summary>
-		/// Object velocity.
+		/// Empty constructor, for easier use with reflection.
 		/// </summary>
-		public readonly TrackletVelocity Velocity;
-		/// <summary>
-		/// Represents the tracklet's velocity regression parameters.
-		/// </summary>
-		public readonly TrackletVelocityRegression VelReg;
+		public ImageDetection() { }
 
 		/// <summary>
 		/// List of supplementary properties.
@@ -31,17 +37,6 @@ namespace Umbrella2
 		/// </remarks>
 		[PropertyList]
 		public readonly Dictionary<Type, IExtensionProperty> ExtendedProperties;
-
-		/// <summary>
-		/// Creates a Tracklet from the given arguments. This constructor is internally called by the Tracklet factories.
-		/// </summary>
-		public Tracklet(ImageDetection[] Detections, TrackletVelocity Velocity, TrackletVelocityRegression Regression)
-		{
-			this.Detections = Detections;
-			this.Velocity = Velocity;
-			VelReg = Regression;
-			ExtendedProperties = new Dictionary<Type, IExtensionProperty>();
-		}
 
 		/// <summary>
 		/// Fetches a property of the ImageDetection. Not thread-safe when also appending properties concurrently.
@@ -56,13 +51,29 @@ namespace Umbrella2
 		/// <typeparam name="T">Property type.</typeparam>
 		/// <param name="Property">Property instance on the object.</param>
 		/// <returns>True if property exists.</returns>
-		public bool TryFetchProperty<T>(out T Property) where T : IExtensionProperty
+		public bool TryFetchProperty<T>(out T Property) where T : IExtensionProperty, new()
 		{
 			bool b = ExtendedProperties.TryGetValue(typeof(T), out IExtensionProperty PropertyIEP);
 			if (b)
 				Property = (T) PropertyIEP;
 			else Property = default(T);
+			if (Property == null) Property = new T();
 			return b;
+		}
+
+		/// <summary>
+		/// Tries fetching a property of the ImageDetection or creates a new one.
+		/// </summary>
+		/// <typeparam name="T">Property type.</typeparam>
+		/// <returns>Property instance on the object or the default value of the type.</returns>
+		public T FetchOrCreate<T>() where T : IExtensionProperty, new()
+		{
+			bool b = ExtendedProperties.TryGetValue(typeof(T), out IExtensionProperty PropertyIEP);
+			if (b)
+				return (T) PropertyIEP;
+			T Value = default(T);
+			if (Value == null) Value = new T();
+			return Value;
 		}
 
 		/// <summary>
@@ -90,5 +101,6 @@ namespace Umbrella2
 				else ExtendedProperties.Add(t, Property);
 			}
 		}
+
 	}
 }

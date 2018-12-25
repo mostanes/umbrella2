@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using Umbrella2.Algorithms.Images;
 using Umbrella2.Pipeline.ExtraIO;
+using Umbrella2.PropertyModel.CommonProperties;
 using static Umbrella2.Pipeline.ExtraIO.EquatorialPointStringFormatter;
 
 namespace Umbrella2.Visualizers.Winforms
@@ -17,7 +18,7 @@ namespace Umbrella2.Visualizers.Winforms
 		FitsView ImageView;
 		List<Tracklet> m_tracklets;
 		int SelectedTracklet;
-		MedianDetection SelectedDetection;
+		ImageDetection SelectedDetection;
 		public string ObservatoryCode;
 		public string ReportName;
 		public int CCDNumber;
@@ -55,7 +56,7 @@ namespace Umbrella2.Visualizers.Winforms
 			checkedListBox1.Items.Clear();
 			foreach(Tracklet t in m_tracklets)
 			{
-				double ArcsecVelocity = t.Velocity * 3600 * 180 / Math.PI * 60;
+				double ArcsecVelocity = t.Velocity.EquatorialVelocity * 3600 * 180 / Math.PI * 60;
 				checkedListBox1.Items.Add("Tracklet " + (cnt++) + ", velocity = " + ArcsecVelocity.ToString("G5") + "\"/min");
 			}
 		}
@@ -75,11 +76,12 @@ namespace Umbrella2.Visualizers.Winforms
 		{
 			Tracklet t = m_tracklets[SelectedTracklet];
 			dataGridView1.Rows.Clear();
-			for (int i = 0; i < t.MergedDetections.Length; i++)
-				if (t.MergedDetections[i] != null)
+			for (int i = 0; i < t.Detections.Length; i++)
+				if (t.Detections[i] != null)
 				{
-					MedianDetection det = t.MergedDetections[i];
-					dataGridView1.Rows.Add(i, det.BarycenterPP.X.ToString("G6"), det.BarycenterPP.Y.ToString("G6"), det.BarycenterEP.FormatToString(Format.MPC_RA), det.BarycenterEP.FormatToString(Format.MPC_Dec), det.PixelEllipse.ToString());
+					ImageDetection det = t.Detections[i];
+					dataGridView1.Rows.Add(i, det.Barycenter.PP.X.ToString("G6"), det.Barycenter.PP.Y.ToString("G6"), det.Barycenter.EP.FormatToString(Format.MPC_RA),
+						det.Barycenter.EP.FormatToString(Format.MPC_Dec), det.FetchProperty<ObjectSize>().PixelEllipse.ToString());
 				}
 		}
 
@@ -102,16 +104,17 @@ namespace Umbrella2.Visualizers.Winforms
 		private void SelectObject(int Index)
 		{
 			int ImageNumber = (int) dataGridView1.Rows[Index].Cells[0].Value;
-			SelectedDetection = m_tracklets[SelectedTracklet].MergedDetections[ImageNumber];
+			SelectedDetection = m_tracklets[SelectedTracklet].Detections[ImageNumber];
 			/* Prepare view */
 			ImageView.Image = SelectedDetection.ParentImage;
-			ImageView.Center = new Point((int) SelectedDetection.BarycenterPP.X, (int) SelectedDetection.BarycenterPP.Y);
+			ImageView.Center = new Point((int) SelectedDetection.Barycenter.PP.X, (int) SelectedDetection.Barycenter.PP.Y);
 			/* Scale the image accordingly */
 			ImageStatistics ImStat = ImageView.Image.GetProperty<ImageStatistics>();
 			ImageView.Scaler = new LinearScaler(ImStat.ZeroLevel - ImStat.StDev, ImStat.ZeroLevel + 7 * ImStat.StDev);
 			/* Show image and highlight */
 			ImageView.Refresh();
-			ImageView.HighlightPixels(SelectedDetection.PixelPoints);
+			if (SelectedDetection.TryFetchProperty(out ObjectPoints objp))
+				ImageView.HighlightPixels(objp.PixelPoints);
 		}
 
 		private void button1_Click(object sender, EventArgs e)
@@ -123,7 +126,7 @@ namespace Umbrella2.Visualizers.Winforms
 			foreach (int idx in checkedListBox1.CheckedIndices)
 			{
 				/* Write a line for each detection */
-				foreach (MedianDetection md in m_tracklets[idx].MergedDetections)
+				foreach (ImageDetection md in m_tracklets[idx].Detections)
 				{
 					/* Skip if no detection on a particular image */
 					if (md == null) continue;
@@ -133,8 +136,8 @@ namespace Umbrella2.Visualizers.Winforms
 					 */
 					MPCOpticalReportFormat.ObsInstance instance = new MPCOpticalReportFormat.ObsInstance()
 					{
-						Coordinates = md.BarycenterEP,
-						DetectionAsterix = false,
+						Coordinates = md.Barycenter.EP,
+						DetectionAsterisk = false,
 						Mag = 0,
 						MagBand = Band,
 						ObservatoryCode = ObservatoryCode,

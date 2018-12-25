@@ -37,7 +37,7 @@ namespace Umbrella2.Algorithms.Misc
 		public static LinearRegressionParameters ComputeLinearRegression(double[] X, double[] Y)
 		{
 			System.Diagnostics.Contracts.Contract.Requires(X.Length == Y.Length);
-			double sumX = 0, sumY = 0, sumXSq = 0, sumYSq = 0, ssX = 0, ssY = 0, sumCodev = 0, sCo = 0;
+			double sumX = 0, sumY = 0, sumXSq = 0, sumYSq = 0, sumCodev = 0;
 			int i;
 			for (i = 0; i < X.Length; i++)
 			{

@@ -57,6 +57,11 @@ namespace Umbrella2.WCS
 			internal Vector3D A, B;
 			internal double AlphaAngle;
 
+			/// <summary>
+			/// Generates the great circle through the 2 given points.
+			/// </summary>
+			/// <param name="A">The positive direction of the great circle.</param>
+			/// <param name="B">The origin of the great circle.</param>
 			public GreatLine(EquatorialPoint A, EquatorialPoint B)
 			{
 				double sA = Cos(A.Dec), sB = Cos(B.Dec);
@@ -76,7 +81,7 @@ namespace Umbrella2.WCS
 			public static double operator ~(GreatLine Vector) => Vector.AlphaAngle;
 
 			/// <summary>
-			/// Returns the point a given distance away on the great circle.
+			/// Returns the point a given distance away (from B) on the great circle.
 			/// </summary>
 			public EquatorialPoint GetPointOnLine(double Distance)
 			{

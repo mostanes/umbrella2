@@ -8,17 +8,35 @@ using Umbrella2;
 
 namespace Umbrella2.Pipeline.ExtraIO
 {
+	/// <summary>
+	/// Provides an API for accessing VizieR services.
+	/// </summary>
 	public static class VizieR
 	{
 		/* USNO B1.0 Catalogue URL in VizieR */
-		public static string VizieRURL = "http://vizier.ast.cam.ac.uk/viz-bin/asu-tsv?-out.max=1000&-sort=_r&-order=I&-oc.form=sexa&-c.eq=J2000&-c.u=arcmin&-c.geom=r&-source=I/284/out&-c=";
+		private const string USNOB10 = "http://vizier.ast.cam.ac.uk/viz-bin/asu-tsv?-out.max=1000&-sort=_r&-order=I&-oc.form=sexa&-c.eq=J2000&-c.u=arcmin&-c.geom=r&-source=I/284/out&-c=";
 
+		/// <summary>
+		/// URL used for querying VizieR.
+		/// </summary>
+		public static string VizieRURL = USNOB10;
+
+		/// <summary>
+		/// Star data as provided from VizieR.
+		/// </summary>
 		public struct StarInfo
 		{
 			public EquatorialPoint Coordinate;
 			public double Magnitude;
 		}
 
+		/// <summary>
+		/// Retrieves a list of reference stars around a given position.
+		/// </summary>
+		/// <param name="Center">Location around which to search.</param>
+		/// <param name="Radius">Radius (in radians) of the search cone.</param>
+		/// <param name="LowMagLimit">Lowest star magnitude to include in results.</param>
+		/// <returns>A list of StarInfo containing the data of the reference stars.</returns>
 		public static List<StarInfo> GetVizieRObjects(EquatorialPoint Center, double Radius, double LowMagLimit)
 		{
 			WebClient client = new WebClient();
@@ -27,7 +45,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 			string Data = "";
 			try
 			{ Data = client.DownloadString(URL); }
-			catch (WebException ex)
+			catch (WebException)
 			{ return new List<StarInfo>(); }
 			string[] lines = Data.Split('\n');
 			int i;

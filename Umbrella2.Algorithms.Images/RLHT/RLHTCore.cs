@@ -16,6 +16,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="Theta">Angular coordinate.</param>
 		/// <param name="DetectionParameters">Image-specific algorithm parameters.</param>
 		/// <param name="HoughSum">Hough transform output for given coordinates.</param>
+		/// <param name="LineLength">Length of the scanned line.</param>
 		static void Lineover(double[,] Input, int Height, int Width, double Rho, double Theta, ImageParameters DetectionParameters, out double HoughSum, out double LineLength)
 		{
 			/* Set up geometry */

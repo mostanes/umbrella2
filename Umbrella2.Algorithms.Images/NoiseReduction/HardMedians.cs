@@ -60,7 +60,6 @@ namespace Umbrella2.Algorithms.Images
 			double[] MedValues = new double[PSF.Length];
 			double[] DPSF = new double[PSF.Length];
 			int cnt;
-			double s;
 			int SzD = Size / 2;
 			for (i = 0; i < OH; i++) for (j = 0; j < OW; j++)
 				{
@@ -78,9 +77,9 @@ namespace Umbrella2.Algorithms.Images
 		/// </summary>
 		/// <param name="Inputs">Input data.</param>
 		/// <param name="Output">Output data.</param>
-		/// <param name="InputAlignments">Alignments of input data.</param>
-		/// <param name="OutputAlignments">Alignment of output data.</param>
-		/// <param name="WCS">WCS projections.</param>
+		/// <param name="InputPositions">Input alignments.</param>
+		/// <param name="OutputPosition">Output alignment.</param>
+		/// <param name="empty">Dummy argument.</param>
 		static void MultiImageMedianFilter(double[][,] Inputs, double[,] Output, ParallelAlgorithmRunner.ImageSegmentPosition[] InputPositions, ParallelAlgorithmRunner.ImageSegmentPosition OutputPosition, object empty)
 		{
 			PixelPoint[] InputAlignments = InputPositions.Select((x) => x.Alignment).ToArray();

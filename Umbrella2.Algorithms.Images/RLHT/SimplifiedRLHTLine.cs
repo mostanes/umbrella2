@@ -17,7 +17,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="Theta">Angular coordinate.</param>
 		/// <param name="DetectionParameters">Image-specific algorithm parameters.</param>
 		/// <param name="HoughSum">Hough transform output for given coordinates.</param>
-		/// <param name="LineLength">Length of the line scanned.</param>
+		/// <param name="LineLength">Length of the scanned line.</param>
 		/// <param name="LastVars">Data pool to be recycled between calls. Initialized internally.</param>
 		/// <param name="LineSkip">Amount of pixels by which to skip when computing the line score.</param>
 		static void SimpleLineover(double[,] Input, int Height, int Width, double Rho, double Theta, ImageParameters DetectionParameters, out double HoughSum, out double LineLength, ref float[] LastVars, int LineSkip)

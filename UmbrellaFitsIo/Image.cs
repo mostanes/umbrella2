@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
 using System.Runtime.Serialization;
-using UmbrellaFitsIo.FrameworkSupport;
 using Umbrella2.WCS;
 using HeaderTable = System.Collections.Generic.Dictionary<string, Umbrella2.IO.FITS.ElevatedRecord>;
 using Umbrella2.IO.FITS.Formats;
-using UmbrellaFitsIo.DataFormatTranslations;
+using Umbrella2.Framework;
 
 namespace Umbrella2.IO.FITS
 {

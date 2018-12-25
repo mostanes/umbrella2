@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Umbrella2.Algorithms.Misc;
+using Umbrella2.PropertyModel.CommonProperties;
 
 namespace Umbrella2.Algorithms.Detection
 {
@@ -17,14 +15,14 @@ namespace Umbrella2.Algorithms.Detection
 	public class PoolMDMerger
 	{
 		const int PoolDepth = 10;
-		QuadTree<MedianDetection> DetectionPool;
-		List<MedianDetection> PoolList;
+		QuadTree<ImageDetection> DetectionPool;
+		List<ImageDetection> PoolList;
 		double Topmost, Lowermost, Leftmost, Rightmost;
 		List<DateTime> ObsTimes;
 		double LongTrailHighThreshold = 30;
 		double LongTrailLowThreshold = 10;
 		double AngleDistanceDifferenceThreshold = 10;
-		List<MedianDetection[][]> CandidatePairings;
+		List<ImageDetection[][]> CandidatePairings;
 		const double MaxArcsecVDot = 16;
 		const double MinArcsecVDot = 0.2;
 		static double MaxVDD = MaxArcsecVDot * Math.PI / 180 / 3600;
@@ -35,7 +33,7 @@ namespace Umbrella2.Algorithms.Detection
 		/// </summary>
 		public PoolMDMerger(DateTime[] ObservationTimes)
 		{
-			PoolList = new List<MedianDetection>(); ObsTimes = new List<DateTime>(ObservationTimes);
+			PoolList = new List<ImageDetection>(); ObsTimes = new List<DateTime>(ObservationTimes);
 			Topmost = double.MaxValue; Lowermost = double.MinValue; Leftmost = double.MaxValue; Rightmost = double.MinValue;
 		}
 
@@ -43,16 +41,17 @@ namespace Umbrella2.Algorithms.Detection
 		/// Preloads detections into the search structures.
 		/// </summary>
 		/// <param name="Detections">Detected sources.</param>
-		public void LoadDetections(List<MedianDetection> Detections)
+		public void LoadDetections(List<ImageDetection> Detections)
 		{
 			if (DetectionPool != null) throw new NotSupportedException("Cannot modify the detection pool after it is generated");
 			PoolList.AddRange(Detections);
-			foreach (MedianDetection md in Detections)
+			foreach (ImageDetection md in Detections)
 			{
-				if (md.BarycenterEP.Dec < Topmost) Topmost = md.BarycenterEP.Dec;
-				if (md.BarycenterEP.Dec > Lowermost) Lowermost = md.BarycenterEP.Dec;
-				if (md.BarycenterEP.RA < Leftmost) Leftmost = md.BarycenterEP.RA;
-				if (md.BarycenterEP.RA > Rightmost) Rightmost = md.BarycenterEP.RA;
+				EquatorialPoint ep = md.Barycenter.EP;
+				if (ep.Dec < Topmost) Topmost = ep.Dec;
+				if (ep.Dec > Lowermost) Lowermost = ep.Dec;
+				if (ep.RA < Leftmost) Leftmost = ep.RA;
+				if (ep.RA > Rightmost) Rightmost = ep.RA;
 			}
 		}
 
@@ -61,40 +60,42 @@ namespace Umbrella2.Algorithms.Detection
 		/// </summary>
 		public void GeneratePool()
 		{
-			DetectionPool = new QuadTree<MedianDetection>(PoolDepth, Topmost, Lowermost, Leftmost, Rightmost);
-			foreach (MedianDetection md in PoolList) DetectionPool.Add(md, md.BarycenterEP.RA, md.BarycenterEP.Dec);
+			DetectionPool = new QuadTree<ImageDetection>(PoolDepth, Topmost, Lowermost, Leftmost, Rightmost);
+			foreach (ImageDetection md in PoolList) DetectionPool.Add(md, md.Barycenter.EP.RA, md.Barycenter.EP.Dec);
 		}
 
-		public bool PairPossible(MedianDetection a, MedianDetection b)
+		public bool PairPossible(ImageDetection a, ImageDetection b)
 		{
-			if (a.IsPaired || b.IsPaired) return false;
-			if (a.StarPolluted || b.StarPolluted) return false;
+			PairingProperties App = a.FetchOrCreate<PairingProperties>(), Bpp = b.FetchOrCreate<PairingProperties>();
+			if (App.IsPaired || Bpp.IsPaired) return false;
+			if (App.StarPolluted || Bpp.StarPolluted) return false;
 			if (a.Time.Time == b.Time.Time) return false;
 			TimeSpan DeltaTime = a.Time.Time - b.Time.Time;
-			if ((a.LargestDistance + b.LargestDistance) * Math.Abs(DeltaTime.TotalSeconds) < (a.BarycenterEP ^ b.BarycenterEP) * (a.Time.Exposure.TotalSeconds + b.Time.Exposure.TotalSeconds) / 2) return false;
+			//if ((a.LargestDistance + b.LargestDistance) * Math.Abs(DeltaTime.TotalSeconds) < (a.Barycenter.EP ^ b.Barycenter.EP) * (a.Time.Exposure.TotalSeconds + b.Time.Exposure.TotalSeconds) / 2) return false;
 
-			if(a.PixelEllipse.SemiaxisMajor > LongTrailHighThreshold*LongTrailHighThreshold)
+			SourceEllipse aPel = a.FetchProperty<ObjectSize>().PixelEllipse, bPel = b.FetchProperty<ObjectSize>().PixelEllipse;
+			if(aPel.SemiaxisMajor > LongTrailHighThreshold*LongTrailHighThreshold)
 			{
-				if (b.PixelEllipse.SemiaxisMajor < LongTrailLowThreshold * LongTrailLowThreshold) return false;
+				if (bPel.SemiaxisMajor < LongTrailLowThreshold * LongTrailLowThreshold) return false;
 			}
-			double DeltaAngle = a.PixelEllipse.SemiaxisMajorAngle - b.PixelEllipse.SemiaxisMajorAngle;
-			double Length = a.PixelEllipse.SemiaxisMajor + b.PixelEllipse.SemiaxisMajor;
+			double DeltaAngle = aPel.SemiaxisMajorAngle - bPel.SemiaxisMajorAngle;
+			double Length = aPel.SemiaxisMajor + bPel.SemiaxisMajor;
 			if (DeltaAngle * DeltaAngle * Math.Sqrt(Length) > AngleDistanceDifferenceThreshold) return false;
 
 			return true;
 		}
 
-		public void TryPair(MedianDetection a, MedianDetection b)
+		public void TryPair(ImageDetection a, ImageDetection b)
 		{
 			TimeSpan DeltaTime = b.Time.Time - a.Time.Time;
-			var Line = b.BarycenterEP - a.BarycenterEP;
+			var Line = b.Barycenter.EP - a.Barycenter.EP;
 			double PairEstimatedDistance = ~Line;
-			double PairEstimatedDistanceError = (a.PixelEllipse.SemiaxisMajor + b.PixelEllipse.SemiaxisMajor) / 2;
+			double PairEstimatedDistanceError = (a.FetchProperty<ObjectSize>().PixelEllipse.SemiaxisMajor + b.FetchProperty<ObjectSize>().PixelEllipse.SemiaxisMajor) / 2;
 			PairEstimatedDistanceError *= a.ParentImage.Transform.GetEstimatedWCSChainDerivative();
 			double PairEstimatedVelocity = PairEstimatedDistance / DeltaTime.TotalSeconds;
 			double PairEstimatedVelocityError = PairEstimatedDistanceError / DeltaTime.TotalSeconds;
-			List<List<MedianDetection>> DetectedInPool = new List<List<MedianDetection>>();
-			List<MedianDetection[]> DIPAr = new List<MedianDetection[]>();
+			List<List<ImageDetection>> DetectedInPool = new List<List<ImageDetection>>();
+			List<ImageDetection[]> DIPAr = new List<ImageDetection[]>();
 			foreach (DateTime dt in ObsTimes)
 			{
 				TimeSpan tsp = dt - b.Time.Time;
@@ -102,7 +103,7 @@ namespace Umbrella2.Algorithms.Detection
 				double EstDistError = Math.Abs(PairEstimatedVelocityError * tsp.TotalSeconds) + PairEstimatedDistanceError;
 				EquatorialPoint EstimatedPoint = Line + EstDistance;
 				var DetectionsList = DetectionPool.Query(EstimatedPoint.Dec, EstimatedPoint.RA, EstDistError);
-				DetectionsList.RemoveAll((x) => ((x.BarycenterEP ^ EstimatedPoint) > EstDistError) || (x.Time.Time != dt) || x.IsDotDetection);
+				DetectionsList.RemoveAll((x) => ((x.Barycenter.EP ^ EstimatedPoint) > EstDistError) || (x.Time.Time != dt) || x.FetchOrCreate<PairingProperties>().IsDotDetection);
 				//DetectedInPool.Add(DetectionsList);
 				DIPAr.Add(DetectionsList.ToArray());
 			}
@@ -111,24 +112,24 @@ namespace Umbrella2.Algorithms.Detection
 			if (c >= 3)
 			{
 				CandidatePairings.Add(DIPAr.ToArray());
-				foreach (MedianDetection[] mdl in DIPAr) foreach (MedianDetection m in mdl) m.IsPaired = true;
+				foreach (ImageDetection[] mdl in DIPAr) foreach (ImageDetection m in mdl) m.FetchOrCreate<PairingProperties>().IsPaired = true;
 			}
 		}
 
-		public void TryPairDot(MedianDetection a, MedianDetection b)
+		public void TryPairDot(ImageDetection a, ImageDetection b)
 		{
-			if (a.IsPaired || b.IsPaired) return;
+			if (a.FetchProperty<PairingProperties>().IsPaired || b.FetchProperty<PairingProperties>().IsPaired) return;
 			TimeSpan DeltaTime = b.Time.Time - a.Time.Time;
-			var Line = b.BarycenterEP - a.BarycenterEP;
+			var Line = b.Barycenter.EP - a.Barycenter.EP;
 			double PairEstimatedDistance = ~Line;
 			if (PairEstimatedDistance > MaxVDD * DeltaTime.TotalMinutes) return;
 			if (PairEstimatedDistance < MinVDD * DeltaTime.TotalMinutes) return;
-			double PairEstimatedDistanceError = 2 * (a.PixelEllipse.SemiaxisMajor + b.PixelEllipse.SemiaxisMajor);
+			double PairEstimatedDistanceError = 2 * (a.FetchProperty<ObjectSize>().PixelEllipse.SemiaxisMajor + b.FetchProperty<ObjectSize>().PixelEllipse.SemiaxisMajor);
 			PairEstimatedDistanceError *= a.ParentImage.Transform.GetEstimatedWCSChainDerivative();
 			double PairEstimatedVelocity = PairEstimatedDistance / DeltaTime.TotalSeconds;
 			double PairEstimatedVelocityError = PairEstimatedDistanceError / DeltaTime.TotalSeconds;
-			List<List<MedianDetection>> DetectedInPool = new List<List<MedianDetection>>();
-			List<MedianDetection[]> DIPAr = new List<MedianDetection[]>();
+			List<List<ImageDetection>> DetectedInPool = new List<List<ImageDetection>>();
+			List<ImageDetection[]> DIPAr = new List<ImageDetection[]>();
 			foreach (DateTime dt in ObsTimes)
 			{
 				TimeSpan tsp = dt - b.Time.Time;
@@ -136,7 +137,7 @@ namespace Umbrella2.Algorithms.Detection
 				double EstDistError = Math.Abs(PairEstimatedVelocityError * tsp.TotalSeconds) + PairEstimatedDistanceError;
 				EquatorialPoint EstimatedPoint = Line + EstDistance;
 				var DetectionsList = DetectionPool.Query(EstimatedPoint.Dec, EstimatedPoint.RA, EstDistError);
-				DetectionsList.RemoveAll((x) => ((x.BarycenterEP ^ EstimatedPoint) > EstDistError) || (x.Time.Time != dt) || !x.IsDotDetection);
+				DetectionsList.RemoveAll((x) => ((x.Barycenter.EP ^ EstimatedPoint) > EstDistError) || (x.Time.Time != dt) || !x.FetchProperty<PairingProperties>().IsDotDetection);
 				//DetectedInPool.Add(DetectionsList);
 				DIPAr.Add(DetectionsList.ToArray());
 			}
@@ -145,7 +146,7 @@ namespace Umbrella2.Algorithms.Detection
 			if (c >= 3)
 			{
 				CandidatePairings.Add(DIPAr.ToArray());
-				foreach (MedianDetection[] mdl in DIPAr) foreach (MedianDetection m in mdl) m.IsPaired = true;
+				foreach (ImageDetection[] mdl in DIPAr) foreach (ImageDetection m in mdl) m.FetchProperty<PairingProperties>().IsPaired = true;
 			}
 		}
 
@@ -153,16 +154,15 @@ namespace Umbrella2.Algorithms.Detection
 		/// Searches for tracklets from the given sources.
 		/// </summary>
 		/// <returns></returns>
-		public List<MedianDetection[][]> Search()
+		public List<ImageDetection[][]> Search()
 		{
-			CandidatePairings = new List<MedianDetection[][]>();
+			CandidatePairings = new List<ImageDetection[][]>();
 			int i, j;
-			int cnt = 1;
 			int[] DetectionPairs = new int[PoolList.Count];
 			for (i = 0; i < PoolList.Count; i++) for (j = i + 1; j < PoolList.Count; j++)
 				{
-					if (PoolList[i].IsDotDetection != PoolList[j].IsDotDetection) continue;
-					if (PoolList[i].IsDotDetection) TryPairDot(PoolList[i], PoolList[j]);
+					if (PoolList[i].FetchOrCreate<PairingProperties>().IsDotDetection != PoolList[j].FetchOrCreate<PairingProperties>().IsDotDetection) continue;
+					if (PoolList[i].FetchOrCreate<PairingProperties>().IsDotDetection) TryPairDot(PoolList[i], PoolList[j]);
 					else
 					{
 						if (!PairPossible(PoolList[i], PoolList[j])) continue;

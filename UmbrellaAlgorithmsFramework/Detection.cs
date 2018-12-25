@@ -11,6 +11,7 @@ namespace Umbrella2
 	/// <summary>
 	/// Represents a detection on a processed image. Volatile interface.
 	/// </summary>
+	[Obsolete]
 	public class MedianDetection
 	{
 		public List<EquatorialPoint> EquatorialPoints;
@@ -124,6 +125,7 @@ namespace Umbrella2
 	/// <summary>
 	/// Represents a serializable reference to a MedianDetection.
 	/// </summary>
+	[Obsolete]
 	[Serializable]
 	public struct MedianReference
 	{

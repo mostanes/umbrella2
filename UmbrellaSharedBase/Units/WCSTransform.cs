@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Umbrella2.WCS
 {
+#pragma warning disable 1591
 	/// <summary>
 	/// Represents a transform of FITS image coordinates to WCS via a linear map and a spherical projection.
 	/// </summary>
@@ -83,6 +84,7 @@ namespace Umbrella2.WCS
 		/// </summary>
 		public abstract string Description { get; }
 	}
+#pragma warning restore 1591
 
 	/// <summary>
 	/// Attribute for recognizing WCS projection algorithms.

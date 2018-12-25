@@ -48,7 +48,6 @@ namespace Umbrella2.Algorithms.Images.Median
 			int Size = (int) Math.Round(Math.Sqrt(PSF.Length));
 			double[] MedValuesM = new double[PSF.Length];
 			double[] WeightsM = new double[PSF.Length];
-			double s;
 			int SzD = Size / 2;
 			unsafe
 			{

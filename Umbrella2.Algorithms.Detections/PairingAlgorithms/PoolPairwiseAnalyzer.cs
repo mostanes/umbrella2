@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Umbrella2.PropertyModel.CommonProperties;
 
 namespace Umbrella2.Algorithms.Pairing
 {
@@ -12,10 +13,10 @@ namespace Umbrella2.Algorithms.Pairing
 		public PoolPairwiseAnalyzer() : base()
 		{ }
 
-		bool VerifyPair(MedianDetection a, MedianDetection b)
+		bool VerifyPair(ImageDetection a, ImageDetection b)
 		{
 			double MsizeLD = a.LargestDistance + b.LargestDistance;
-			double Mdistance = a.BarycenterEP ^ b.BarycenterEP;
+			double Mdistance = a.Barycenter.EP ^ b.Barycenter.EP;
 			double DeltaABTimeS = (b.Time.Time - a.Time.Time).TotalSeconds;
 			double TExpTime = a.Time.Exposure.TotalSeconds + b.Time.Exposure.TotalSeconds;
 
@@ -25,7 +26,7 @@ namespace Umbrella2.Algorithms.Pairing
 			return true;
 		}
 
-		void AnalyzePair(MedianDetection a, MedianDetection b)
+		void AnalyzePair(ImageDetection a, ImageDetection b)
 		{
 
 		}
@@ -37,7 +38,7 @@ namespace Umbrella2.Algorithms.Pairing
 			internal double MaxVelocity;
 		}
 
-		SearchParameters ComputeSearchDisk(MedianDetection m)
+		SearchParameters ComputeSearchDisk(ImageDetection m)
 		{
 			SearchParameters SP = new SearchParameters();
 			SP.AngularRadius = Math.Abs(Math.Atan2(m.PixelEllipse.SemiaxisMinor, m.PixelEllipse.SemiaxisMajor));
