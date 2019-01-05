@@ -36,6 +36,7 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommonProperties\ImageSource.cs" />
     <Compile Include="CommonProperties\ObjectIdentity.cs" />
     <Compile Include="CommonProperties\ObjectPhotometry.cs" />
     <Compile Include="CommonProperties\ObjectPoints.cs" />

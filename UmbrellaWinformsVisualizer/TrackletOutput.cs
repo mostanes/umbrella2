@@ -83,7 +83,22 @@ namespace Umbrella2.Visualizers.Winforms
 					dataGridView1.Rows.Add(i, det.Barycenter.PP.X.ToString("G6"), det.Barycenter.PP.Y.ToString("G6"), det.Barycenter.EP.FormatToString(Format.MPC_RA),
 						det.Barycenter.EP.FormatToString(Format.MPC_Dec), det.FetchProperty<ObjectSize>().PixelEllipse.ToString());
 				}
+			UpdateProperties();
 		}
+
+		void UpdateProperties()
+		{
+			dataGridView2.Rows.Clear();
+			Tracklet t = m_tracklets[SelectedTracklet];
+			TrackletVelocityRegression tvr = t.VelReg;
+			{
+				object[][] PropertySet = new object[][] { new object[] { "X-Y R", tvr.R_XY }, new object[] { "T-X R", tvr.R_TX }, new object[] { "T-Y R", tvr.R_TY } };
+				AddTrackletProperties(PropertySet);
+			}
+		}
+
+		void AddTrackletProperties(object[][] Properties)
+		{ foreach (object[] Row in Properties) dataGridView2.Rows.Add(Row); }
 
 		private void dataGridView1_SelectionChanged(object sender, EventArgs e)
 		{
@@ -106,7 +121,9 @@ namespace Umbrella2.Visualizers.Winforms
 			int ImageNumber = (int) dataGridView1.Rows[Index].Cells[0].Value;
 			SelectedDetection = m_tracklets[SelectedTracklet].Detections[ImageNumber];
 			/* Prepare view */
-			ImageView.Image = SelectedDetection.ParentImage;
+			IO.FITS.FitsImage Image = SelectedDetection.ParentImage;
+			if (Image.GetProperty<ImageSource>().Original != null) Image = Image.GetProperty<ImageSource>().Original;
+			ImageView.Image = Image;
 			ImageView.Center = new Point((int) SelectedDetection.Barycenter.PP.X, (int) SelectedDetection.Barycenter.PP.Y);
 			/* Scale the image accordingly */
 			ImageStatistics ImStat = ImageView.Image.GetProperty<ImageStatistics>();
@@ -138,10 +155,11 @@ namespace Umbrella2.Visualizers.Winforms
 					{
 						Coordinates = md.Barycenter.EP,
 						DetectionAsterisk = false,
+						N2 = MPCOpticalReportFormat.Note2.CCD,
 						Mag = 0,
 						MagBand = Band,
 						ObservatoryCode = ObservatoryCode,
-						ObsTime = md.Time.Time,
+						ObsTime = md.Time.Time + new TimeSpan(md.Time.Exposure.Ticks / 2),
 						PubNote = MPCOpticalReportFormat.PublishingNote.none,
 						ObjectDesignation = new string(' ', 7)
 					};

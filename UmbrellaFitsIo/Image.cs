@@ -373,7 +373,7 @@ namespace Umbrella2.IO.FITS
 	/// Represents a serializable handle for a FitsImage, so that results of the pipeline can be saved to disk and recalled later with full access to information.
 	/// </summary>
 	[Serializable]
-	public struct FitsImageReference
+	public class FitsImageReference
 	{
 		/// <summary>
 		/// Path to the FITS file holding the image.
@@ -418,6 +418,8 @@ namespace Umbrella2.IO.FITS
 				return ImageReferences[Path][ImageNumber];
 			}
 		}
+
+		public static implicit operator FitsImage(FitsImageReference reference) => reference.AcquireImage();
 
 		/// <summary>
 		/// Creates a reference from an existing FitsImage.

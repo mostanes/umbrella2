@@ -31,8 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Migrant">
-      <HintPath>..\..\..\..\Downloads\SW\libs\Migrant-master\Migrant\bin\Release\Migrant.dll</HintPath>
+    <Reference Include="Migrant, Version=0.14.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Downloads\SW\libs\Migrant-master\Migrant\bin\Debug\Migrant.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Umbrella2
 {
@@ -22,10 +23,12 @@ namespace Umbrella2
 	/// Point representing a point on the equatorial coordinate system.
 	/// </summary>
 	[Serializable]
+	[DebuggerDisplay("{MPCForm}")]
 	public struct EquatorialPoint
 	{
 		public double RA;
 		public double Dec;
+		private string MPCForm => Umbrella2.Pipeline.ExtraIO.EquatorialPointStringFormatter.FormatToString(this, Pipeline.ExtraIO.EquatorialPointStringFormatter.Format.RadExplicit);
 
 		/// <summary>
 		/// Computes the distance between 2 equatorial points.

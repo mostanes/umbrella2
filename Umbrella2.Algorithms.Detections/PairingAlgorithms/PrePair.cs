@@ -21,6 +21,7 @@ namespace Umbrella2.Algorithms.Pairing
 		{
 			int i, j;
 			List<HashSet<PixelPoint>> LHP = RawDetections.Select((x) => new HashSet<PixelPoint>(x.FetchProperty<ObjectPoints>().PixelPoints)).ToList();
+			List<PairingProperties> PairPropList = RawDetections.Select((x) => x.TryFetchProperty(out PairingProperties Prop) ? Prop : null).ToList();
 			for (i = 0; i < RawDetections.Count; i++) for (j = i + 1; j < RawDetections.Count; j++)
 				{
 					/* Must be two detections captured at the same time */
@@ -52,10 +53,19 @@ namespace Umbrella2.Algorithms.Pairing
 						LHP[i].UnionWith(LHP[j]);
 						LHP.RemoveAt(j);
 						RawDetections.RemoveAt(j);
+						PairPropList.RemoveAt(j);
 						j--;
 					}
 				}
-			for (i = 0; i < LHP.Count; i++) RawDetections[i] = StandardDetectionFactory.CreateDetection(RawDetections[i].ParentImage, LHP[i]);
+			for (i = 0; i < LHP.Count; i++)
+			{
+				try
+				{
+					RawDetections[i] = StandardDetectionFactory.CreateDetection(RawDetections[i].ParentImage, LHP[i]);
+					if (PairPropList[i] != null) RawDetections[i].SetResetProperty(PairPropList[i]);
+				}
+				catch { RawDetections.RemoveAt(i); PairPropList.RemoveAt(i); LHP.RemoveAt(i); i--; }
+			}
 		}
 	}
 }

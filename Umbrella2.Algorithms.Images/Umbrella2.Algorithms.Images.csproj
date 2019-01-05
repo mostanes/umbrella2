@@ -41,6 +41,7 @@
     <Compile Include="MaskByMedian.cs" />
     <Compile Include="NoiseReduction\HardMedians.cs" />
     <Compile Include="NoiseReduction\RestrictedMean.cs" />
+    <Compile Include="Normalization\Point4Distance.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RLHT\RLHT.cs" />
     <Compile Include="RLHT\RLHTCore.cs" />
@@ -65,5 +66,6 @@
       <Name>UmbrellaSharedBase</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

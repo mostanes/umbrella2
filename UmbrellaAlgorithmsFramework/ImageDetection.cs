@@ -73,6 +73,7 @@ namespace Umbrella2
 				return (T) PropertyIEP;
 			T Value = default(T);
 			if (Value == null) Value = new T();
+			ExtendedProperties.Add(typeof(T), Value);
 			return Value;
 		}
 

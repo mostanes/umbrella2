@@ -21,13 +21,17 @@ namespace Umbrella2
 		{
 			List<PixelPoint> Pixels = new List<PixelPoint>();
 			List<double> Values = new List<double>();
+			PairingProperties KeptProp = null;
 			foreach(ImageDetection imd in Detections)
 			{
 				ObjectPoints ojp = imd.FetchProperty<ObjectPoints>();
 				Pixels.AddRange(ojp.PixelPoints);
 				Values.AddRange(ojp.PixelValues);
+				imd.TryFetchProperty<PairingProperties>(out KeptProp);
 			}
-			return StandardDetectionFactory.CreateDetection(Detections[0].ParentImage, Pixels, Values);
+			ImageDetection Result = StandardDetectionFactory.CreateDetection(Detections[0].ParentImage, Pixels, Values);
+			if (KeptProp != null) Result.SetResetProperty(KeptProp);
+			return Result;
 		}
 
 		/// <summary>

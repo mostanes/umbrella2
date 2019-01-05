@@ -37,6 +37,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EquatorialPointStringFormatter.cs" />
     <Compile Include="FrameworkSupport\LoadableTypes.cs" />
     <Compile Include="FrameworkSupport\PropertyModel.cs" />
     <Compile Include="Points.cs" />

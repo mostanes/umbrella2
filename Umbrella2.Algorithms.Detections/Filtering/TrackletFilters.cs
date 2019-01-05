@@ -59,7 +59,9 @@ namespace Umbrella2.Algorithms.Filtering
 			/* If not line-like but not a dot detection, drop */
 			if (!IsDot && MeanR < IndividualRsquared) return 0;
 			var LRP = Misc.LinearRegression.ComputeLinearRegression(Points);
-			return LRP.PearsonR;
+			double RR = Math.Abs(LRP.PearsonR);
+			if (IsDot) RR += (1 - Math.Abs(MeanR)) / Input.Velocity.ArcSecMin;
+			return RR;
 		}
 
 		public static implicit operator Predicate<Tracklet>(LinearityTest f) => f.Filter;

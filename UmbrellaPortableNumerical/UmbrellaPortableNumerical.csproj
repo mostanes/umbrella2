@@ -42,6 +42,7 @@
     <Compile Include="EstimatorFR.cs" />
     <Compile Include="MedianSelection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SkippedMedian.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

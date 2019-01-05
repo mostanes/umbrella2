@@ -3,9 +3,9 @@ using System.IO;
 using Antmicro.Migrant;
 using Antmicro.Migrant.Customization;
 
-namespace UmbrellaDataInterchangeFormatter
+namespace Umbrella2.DataInterchange.Formatter
 {
-	class UDIFWriter
+	public class UDIFWriter
 	{
 		Stream WriteStream;
 		Serializer MasterSerializer;
@@ -14,22 +14,21 @@ namespace UmbrellaDataInterchangeFormatter
 		public UDIFWriter(Stream s)
 		{
 			WriteStream = s;
-			MasterSerializer = new Serializer(new Settings(versionTolerance: VersionToleranceLevel.AllowAssemblyVersionChange));
-			Serializer = MasterSerializer.ObtainOpenStreamSerializer(WriteStream);
+			MasterSerializer = new Serializer(new Settings(versionTolerance: VersionToleranceLevel.AllowAssemblyVersionChange | VersionToleranceLevel.AllowFieldAddition | VersionToleranceLevel.AllowFieldRemoval | VersionToleranceLevel.AllowInheritanceChainChange));
 		}
 
 		public void SetSurrogate<T, U>(Func<T, U> SurrogateGenerator) where U : class
 		{
 			var w = MasterSerializer.ForObject<T>();
 			w.SetSurrogate(SurrogateGenerator);
-			Serializer = MasterSerializer.ObtainOpenStreamSerializer(WriteStream);
 		}
 
 		public void BeginData()
 		{
 			byte[] Header = new byte[8];
-			System.Text.Encoding.UTF8.GetBytes("UDIFV2.1", 0, 4, Header, 0);
+			System.Text.Encoding.UTF8.GetBytes("UDIFV2.1", 0, 8, Header, 0);
 			WriteStream.Write(Header, 0, 8);
+			Serializer = MasterSerializer.ObtainOpenStreamSerializer(WriteStream);
 		}
 
 		public void Write<T>(T o)
@@ -40,7 +39,7 @@ namespace UmbrellaDataInterchangeFormatter
 
 	}
 
-	class UDIFReader
+	public class UDIFReader
 	{
 		Stream ReadStream;
 		Serializer MasterSerializer;
@@ -49,15 +48,13 @@ namespace UmbrellaDataInterchangeFormatter
 		public UDIFReader(Stream s)
 		{
 			ReadStream = s;
-			MasterSerializer = new Serializer(new Settings(versionTolerance: VersionToleranceLevel.AllowAssemblyVersionChange));
-			Deserializer = MasterSerializer.ObtainOpenStreamDeserializer(ReadStream);
+			MasterSerializer = new Serializer(new Settings(versionTolerance: VersionToleranceLevel.AllowAssemblyVersionChange | VersionToleranceLevel.AllowFieldAddition | VersionToleranceLevel.AllowFieldRemoval | VersionToleranceLevel.AllowInheritanceChainChange));
 		}
 
 		public void SetSurrogate<T, U>(Func<U, T> ObjectFromSurrogate) where T : class
 		{
-			var w = MasterSerializer.ForSurrogate<U>();
-			w.SetObject(ObjectFromSurrogate);
-			Deserializer = MasterSerializer.ObtainOpenStreamDeserializer(ReadStream);
+			var w = MasterSerializer.ForObject<U>();
+			w.SetSurrogate(ObjectFromSurrogate);
 		}
 
 		public bool CheckHeader()
@@ -70,6 +67,13 @@ namespace UmbrellaDataInterchangeFormatter
 				return str == "UDIFV2.1";
 			}
 			catch { return false; }
+		}
+
+		public void BeginRead()
+		{
+			if (CheckHeader())
+				Deserializer = MasterSerializer.ObtainOpenStreamDeserializer(ReadStream);
+			else throw new IOException("Wrong header type");
 		}
 
 		public T Read<T>() => Deserializer.Deserialize<T>();

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Umbrella2.IO.FITS;
 
-namespace UmbrellaDataInterchangeFormatter
+namespace Umbrella2.DataInterchange.Formatter
 {
 	class FitsHandler
 	{

@@ -103,7 +103,7 @@ namespace Umbrella2.Algorithms.Images.Median
 		/// Selects input pixels in a given interval.
 		/// </summary>
 		/// <returns>Number of selected input pixels.</returns>
-		unsafe static int FFRSelectZero(double[,] Input, double[] InputWeights, int i, int j, int Size, double UTh, double DTh, double* Values, double* VWeights, out double LowerW, out int LowI, out double HigherW, out int HighI)
+		unsafe internal static int FFRSelectZero(double[,] Input, double[] InputWeights, int i, int j, int Size, double UTh, double DTh, double* Values, double* VWeights, out double LowerW, out int LowI, out double HigherW, out int HighI)
 		{
 			int cnt = 0;
 			HigherW = LowerW = 0;
@@ -152,7 +152,7 @@ namespace Umbrella2.Algorithms.Images.Median
 		/// <param name="HigherW">Sum of weights for values larger than the selected ones.</param>
 		/// <param name="HighI">Index of the highest value.</param>
 		/// <returns>The median of the input values.</returns>
-		unsafe static double CallQsel(double* SelectedInput, double* Weights, int Count, double LowerW, int LowI, double HigherW, int HighI)
+		unsafe internal static double CallQsel(double* SelectedInput, double* Weights, int Count, double LowerW, int LowI, double HigherW, int HighI)
 		{
 			/* Some runtime statistics about efficiency of the algorithm. */
 			AvCount += Count;
