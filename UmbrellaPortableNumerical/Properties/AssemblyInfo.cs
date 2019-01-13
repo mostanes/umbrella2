@@ -4,12 +4,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("UmbrellaPortableNumerical")]
+[assembly: AssemblyTitle("Umbrella2 Portable Numerical methods")]
 [assembly: AssemblyDescription("Umbrella2 numerical library; uses only dotNET code")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Umbrella2")]
-[assembly: AssemblyCopyright("Copyright © Mălin Stănescu 2018")]
+[assembly: AssemblyCopyright("Copyright © Mălin Stănescu 2018-2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -31,4 +31,4 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2.1.*")]
+[assembly: AssemblyVersion("2.2.*")]

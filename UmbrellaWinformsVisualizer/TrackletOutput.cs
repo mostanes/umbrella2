@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using Umbrella2.Algorithms.Images;
+using Umbrella2.IO.FITS;
 using Umbrella2.Pipeline.ExtraIO;
 using Umbrella2.PropertyModel.CommonProperties;
 using static Umbrella2.Pipeline.ExtraIO.EquatorialPointStringFormatter;
@@ -24,6 +25,8 @@ namespace Umbrella2.Visualizers.Winforms
 		public int CCDNumber;
 		public string FieldName;
 		readonly string ListName;
+		string CurrentImageName;
+		Dictionary<string, FitsImage> Images;
 		public MPCOpticalReportFormat.MagnitudeBand Band;
 
 		public List<Tracklet> Tracklets { get { return m_tracklets; } set { m_tracklets = value; RefreshTracklets(); } }
@@ -112,6 +115,21 @@ namespace Umbrella2.Visualizers.Winforms
 			}
 		}
 
+
+		void UpdateImage()
+		{
+			if (Images != null) { ImageView.Image = Images[CurrentImageName]; }
+
+			ImageView.Center = new Point((int) SelectedDetection.Barycenter.PP.X, (int) SelectedDetection.Barycenter.PP.Y);
+			/* Scale the image accordingly */
+			ImageStatistics ImStat = ImageView.Image.GetProperty<ImageStatistics>();
+			ImageView.Scaler = new LinearScaler(ImStat.ZeroLevel - ImStat.StDev, ImStat.ZeroLevel + 7 * ImStat.StDev);
+			/* Show image and highlight */
+			ImageView.Refresh();
+			if (SelectedDetection.TryFetchProperty(out ObjectPoints objp))
+				ImageView.HighlightPixels(objp.PixelPoints);
+		}
+
 		/// <summary>
 		/// The selected tracklet detection changed.
 		/// </summary>
@@ -122,16 +140,22 @@ namespace Umbrella2.Visualizers.Winforms
 			SelectedDetection = m_tracklets[SelectedTracklet].Detections[ImageNumber];
 			/* Prepare view */
 			IO.FITS.FitsImage Image = SelectedDetection.ParentImage;
-			if (Image.GetProperty<ImageSource>().Original != null) Image = Image.GetProperty<ImageSource>().Original;
+
+			ImageSet ImSet = ((ImageSet) Image.GetProperty<ImageSource>());
+			if (ImSet != null)
+			{
+				Images = ImSet.FetchVariants();
+				contextMenuStrip1.Items.Clear();
+				var Entries = ImSet.FetchVariants();
+				foreach (var Entry in Entries)
+				{
+					contextMenuStrip1.Items.Add(Entry.Key, null, new EventHandler((o, e) => { CurrentImageName = Entry.Key; UpdateImage(); }));
+					if (CurrentImageName == null) if (Entry.Value == Image) CurrentImageName = Entry.Key;
+				}
+			}
+
 			ImageView.Image = Image;
-			ImageView.Center = new Point((int) SelectedDetection.Barycenter.PP.X, (int) SelectedDetection.Barycenter.PP.Y);
-			/* Scale the image accordingly */
-			ImageStatistics ImStat = ImageView.Image.GetProperty<ImageStatistics>();
-			ImageView.Scaler = new LinearScaler(ImStat.ZeroLevel - ImStat.StDev, ImStat.ZeroLevel + 7 * ImStat.StDev);
-			/* Show image and highlight */
-			ImageView.Refresh();
-			if (SelectedDetection.TryFetchProperty(out ObjectPoints objp))
-				ImageView.HighlightPixels(objp.PixelPoints);
+			UpdateImage();
 		}
 
 		private void button1_Click(object sender, EventArgs e)
@@ -168,6 +192,57 @@ namespace Umbrella2.Visualizers.Winforms
 				Report.AppendLine();
 			}
 			System.IO.File.AppendAllText(ReportName, Report.ToString());
+		}
+
+		private void TrackletOutput_KeyPress(object sender, KeyPressEventArgs e)
+		{ HandleKeyPress(e.KeyChar); }
+
+		private void HandleKeyPress(char Key)
+		{
+			int Index;
+			Key = char.ToUpper(Key);
+			switch (Key)
+			{
+				case 'S':
+					if (checkedListBox1.SelectedIndex + 1 < checkedListBox1.Items.Count) checkedListBox1.SelectedIndex++;
+					break;
+				case 'W':
+					if (checkedListBox1.SelectedIndex > 0) checkedListBox1.SelectedIndex--;
+					break;
+				case 'D':
+					if (dataGridView1.SelectedRows.Count >= 1)
+					{
+						Index = dataGridView1.SelectedRows[0].Index; dataGridView1.ClearSelection();
+						if (Index + 1 < dataGridView1.Rows.Count) dataGridView1.Rows[Index + 1].Selected = true;
+						else dataGridView1.Rows[Index].Selected = true;
+					}
+					if (dataGridView1.SelectedRows.Count == 0) dataGridView1.Rows[0].Selected = true;
+					break;
+				case 'A':
+					if (dataGridView1.SelectedRows.Count >= 1)
+					{
+						Index = dataGridView1.SelectedRows[0].Index; dataGridView1.ClearSelection();
+						if (Index > 0) dataGridView1.Rows[Index - 1].Selected = true;
+						else dataGridView1.Rows[Index].Selected = true;
+					}
+					if (dataGridView1.SelectedRows.Count == 0) dataGridView1.Rows[dataGridView1.Rows.Count - 1].Selected = true;
+					break;
+				case 'Q':
+					var Keys = System.Linq.Enumerable.ToList(Images.Keys);
+					Index = Keys.IndexOf(CurrentImageName);
+					if (Index > 0) CurrentImageName = Keys[Index - 1];
+					UpdateImage();
+					break;
+				case 'E':
+					Keys = System.Linq.Enumerable.ToList(Images.Keys);
+					Index = Keys.IndexOf(CurrentImageName);
+					if (Index < Keys.Count - 1) CurrentImageName = Keys[Index + 1];
+					UpdateImage();
+					break;
+				case ' ':
+					checkedListBox1.SetItemChecked(checkedListBox1.SelectedIndex, !checkedListBox1.GetItemChecked(checkedListBox1.SelectedIndex));
+					break;
+			}
 		}
 	}
 }

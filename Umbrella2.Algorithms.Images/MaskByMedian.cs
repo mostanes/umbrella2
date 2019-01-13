@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Umbrella2.IO.FITS;
+using Umbrella2.PropertyModel.CommonProperties;
 using Umbrella2.WCS;
 using static Umbrella2.Algorithms.Images.ParallelAlgorithmRunner;
 

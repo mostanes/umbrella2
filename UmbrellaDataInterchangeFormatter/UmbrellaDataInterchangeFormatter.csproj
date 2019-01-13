@@ -31,17 +31,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Migrant, Version=0.14.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Downloads\SW\libs\Migrant-master\Migrant\bin\Debug\Migrant.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FitsHandler.cs" />
+    <None Include="FitsHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UDIF.cs" />
+    <None Include="UDIF.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UmbrellaAlgorithmsFramework\UmbrellaAlgorithmsFramework.csproj">

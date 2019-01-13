@@ -1,16 +1,15 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Umbrella2.Pipeline.EIOAlgorithms")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Umbrella2 Pipeline External IO Algorithms")]
+[assembly: AssemblyDescription("Provides algorithms for the smooth interoperation of Umbrella2 and external tools")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Umbrella2.Pipeline.EIOAlgorithms")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyProduct("Umbrella2")]
+[assembly: AssemblyCopyright("Copyright © Mălin Stănescu 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
