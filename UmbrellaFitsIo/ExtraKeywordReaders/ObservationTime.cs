@@ -12,7 +12,10 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 	/// </summary>
 	public class ObservationTime : ImageProperties
 	{
+		/// <summary>Observation time of the image. As given in image fields, but assumed to be since the start of the observation.</summary>
+		/// <remarks>There is no standard way of determining whether the Time field refers to the start of the observation.</remarks>
 		public readonly DateTime Time;
+		/// <summary>Exposure of the image, as given by EXPTIME.</summary>
 		public readonly TimeSpan Exposure;
 
 		public ObservationTime(FitsImage File) : base(File)
@@ -30,7 +33,7 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 			string Day = DatePieces[2];
 			/* Whether the DATE-OBS includes the time or not */
 			bool UTData = DatePieces.Length > 3;
-			DateTime tm = new DateTime(int.Parse(Year), int.Parse(Month), int.Parse(Day));
+			DateTime tm = new DateTime(int.Parse(Year), int.Parse(Month), int.Parse(Day), 0, 0, 0, DateTimeKind.Utc);
 			if (UTData)
 			{
 				string Hour = DatePieces[3];

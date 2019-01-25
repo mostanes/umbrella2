@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Umbrella2;
 using Umbrella2.PropertyModel.CommonProperties;
 
 namespace Umbrella2.Algorithms.Filtering
@@ -49,10 +48,10 @@ namespace Umbrella2.Algorithms.Filtering
 					var PixP = md.FetchProperty<ObjectPoints>().PixelPoints;
 					Points.AddRange(PixP);
 					var mlinr = Misc.LinearRegression.ComputeLinearRegression(PixP);
-					//md.PearsonR = mlinr.PearsonR;
+
 					MeanR += Math.Abs(mlinr.PearsonR);
 					count++;
-					if (md.TryFetchProperty<PairingProperties>(out PairingProperties PairProp))
+					if (md.TryFetchProperty(out PairingProperties PairProp))
 						if (PairProp.IsDotDetection) IsDot = true;
 				}
 			MeanR /= count;
@@ -64,6 +63,8 @@ namespace Umbrella2.Algorithms.Filtering
 			return RR;
 		}
 
+		/// <summary>Implicitly converts itself to the signature of a filter.</summary>
+		/// <param name="f">Instance to convert to a filter.</param>
 		public static implicit operator Predicate<Tracklet>(LinearityTest f) => f.Filter;
 	}
 }

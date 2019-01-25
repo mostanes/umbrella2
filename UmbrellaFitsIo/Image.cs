@@ -98,7 +98,8 @@ namespace Umbrella2.IO.FITS
 		/// <summary>The number of bytes for each pixel. Abs(BITPIX)/8.</summary>
 		readonly byte BytesPerPixel;
 
-		public readonly bool RAFirst;
+		/// <summary>True if Right ascension is AXIS1. False otherwise.</summary>
+		protected readonly bool RAFirst;
 
 		/// <summary>Common constructor code.</summary>
 		protected FitsImage() { ImageLock = new RWLockArea(); PropertiesDictionary = new Dictionary<Type, ImageProperties>(); }

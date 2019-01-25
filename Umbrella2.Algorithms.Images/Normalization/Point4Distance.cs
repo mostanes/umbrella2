@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using static Umbrella2.Algorithms.Images.ParallelAlgorithmRunner;
-using static System.Math;
 using Umbrella2.Algorithms.Misc;
 using Umbrella2.IO.FITS;
+using static System.Math;
+using static Umbrella2.Algorithms.Images.ParallelAlgorithmRunner;
 
 namespace Umbrella2.Algorithms.Images.Normalization
 {
@@ -79,7 +76,7 @@ namespace Umbrella2.Algorithms.Images.Normalization
 					int PY = (int) InputPosition.Alignment.Y + i;
 					double[] Distances = new double[4];
 					double DistSum, ValSum;
-					int DistCount = 0;
+					
 					int dPX = PX % Mesh.MeshSize;
 					int dPY = PY % Mesh.MeshSize;
 					int kPX = PX / Mesh.MeshSize;

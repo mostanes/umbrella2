@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Umbrella2.IO.FITS
 {
@@ -43,6 +41,11 @@ namespace Umbrella2.IO.FITS
 			return ev;
 		}
 
+		/// <summary>
+		/// Formats an <see cref="ElevatedRecord"/> as an 80-byte field ready to be written to disk.
+		/// </summary>
+		/// <param name="record">Instance to be formatted.</param>
+		/// <returns>A byte array containing the binary representation of the record.</returns>
 		internal static byte[] ToRawRecord(ElevatedRecord record)
 		{
 			byte[] Record = Encoding.UTF8.GetBytes(new string(' ', 80));
@@ -54,14 +57,14 @@ namespace Umbrella2.IO.FITS
 			return Record;
 		}
 
-		internal byte[] ToRawRecord()
-		{
-			return ToRawRecord(this);
-		}
+		internal byte[] ToRawRecord() => ToRawRecord(this);
 
+		/// <summary>Reads the data string as a FITS value-typed string.</summary>
+		/// <returns>The value encoded in the DataString.</returns>
 		string GetValueTypedValue()
 		{
 			/* FIXME: Does not handle keywords with single quotes in character strings */
+#warning FIXME
 			if (DataString[0] != ' ') throw new FITSFormatException("Record is not value type.");
 			int i, f;
 			for (i = 0; i < DataString.Length && DataString[i] == ' '; i++) ;
@@ -81,21 +84,27 @@ namespace Umbrella2.IO.FITS
 			return long.Parse(s);
 		}
 
+		/// <summary>Parses the value as a <see cref="long"/>.</summary>
 		public long Long
 		{ get { return GetIntegerValue(); } }
 
+		/// <summary>Parses the value as an <see cref="int"/>.</summary>
 		public int Int
 		{ get { return (int) GetIntegerValue(); } }
 
+		/// <summary>Parses the value as a <see cref="short"/>.</summary>
 		public short Short
 		{ get { return (short) GetIntegerValue(); } }
 
+		/// <summary>Parses the value as an <see cref="sbyte"/>.</summary>
 		public sbyte SByte
 		{ get { return (sbyte) GetIntegerValue(); } }
 
+		/// <summary>Parses the value as a <see cref="byte"/>.</summary>
 		public byte Byte
 		{ get { return (byte) GetIntegerValue(); } }
 
+		/// <summary>Parses the value as a <see cref="string"/> from the encoding of a FITS fixed string.</summary>
 		public string GetFixedString
 		{
 			get
@@ -107,6 +116,7 @@ namespace Umbrella2.IO.FITS
 			}
 		}
 
+		/// <summary>Parses the value as a <see cref="bool"/>.</summary>
 		public bool Bool
 		{
 			get
@@ -118,6 +128,7 @@ namespace Umbrella2.IO.FITS
 			}
 		}
 
+		/// <summary>Parses the value as a <see cref="double"/>.</summary>
 		public double FloatingPoint
 		{ get { string s = GetValueTypedValue(); return double.Parse(s); } }
 
