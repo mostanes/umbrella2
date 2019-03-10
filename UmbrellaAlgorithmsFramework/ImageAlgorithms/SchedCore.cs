@@ -2,7 +2,10 @@
 
 namespace Umbrella2.Algorithms.Images
 {
-	public static partial class ParallelAlgorithmRunner
+	/// <summary>
+	/// Algorithm scheduling core interface.
+	/// </summary>
+	public static partial class SchedCore
 	{
 		/// <summary>
 		/// Delegate for a transform that maps one input image to an output image with one extra argument.
@@ -83,9 +86,17 @@ namespace Umbrella2.Algorithms.Images
 		/// </summary>
 		public struct AlgorithmRunParameters
 		{
+			/// <summary>Amount of data to read around the current working window.</summary>
 			public int InputMargins;
+			/// <summary>
+			/// Amount of X-coordinate data to be fed at once in the function. When set to 0, it is implicitly set to the image width.
+			/// </summary>
 			public int Xstep;
+			/// <summary>Amount of Y-coordinate data to be fed at once in the function.</summary>
 			public int Ystep;
+			/// <summary>
+			/// Whether to ignore the image margins and fill regions outside the image with zeros. Must be set to true if <see cref="InputMargins"/> or <see cref="Xstep"/> is non-zero.
+			/// </summary>
 			public bool FillZero;
 		}
 
@@ -94,7 +105,9 @@ namespace Umbrella2.Algorithms.Images
 		/// </summary>
 		public struct ImageSegmentPosition
 		{
+			/// <summary>Position of the data block in the image.</summary>
 			public PixelPoint Alignment;
+			/// <summary>WCS coordinates of the image.</summary>
 			public WCS.WCSViaProjection WCS;
 		}
 
@@ -120,9 +133,9 @@ namespace Umbrella2.Algorithms.Images
 				OutputImage = null,
 				Parameters = new object[] { Argument },
 				Type = AlgorithmType.Extractor,
-				OriginalP = Parameters
 			};
-			CommonRunAlg(details);
+			PrepareGeometry(details, Parameters);
+			DefaultScheduler(details);
 		}
 
 		/// <summary>
@@ -142,9 +155,9 @@ namespace Umbrella2.Algorithms.Images
 				OutputImage = null,
 				Parameters = new object[] { Argument },
 				Type = AlgorithmType.PositionExtractor,
-				OriginalP = Parameters
 			};
-			CommonRunAlg(details);
+			PrepareGeometry(details, Parameters);
+			DefaultScheduler(details);
 		}
 
 		/// <summary>
@@ -165,9 +178,9 @@ namespace Umbrella2.Algorithms.Images
 				OutputImage = Output,
 				Parameters = new object[] { Argument },
 				Type = AlgorithmType.SimpleMap_T,
-				OriginalP = Parameters
 			};
-			CommonRunAlg(details);
+			PrepareGeometry(details, Parameters);
+			DefaultScheduler(details);
 		}
 
 		/// <summary>
@@ -190,9 +203,9 @@ namespace Umbrella2.Algorithms.Images
 				OutputImage = Output,
 				Parameters = new object[] { Argument1, Argument2 },
 				Type = AlgorithmType.SimpleMap_TU,
-				OriginalP = Parameters
 			};
-			CommonRunAlg(details);
+			PrepareGeometry(details, Parameters);
+			DefaultScheduler(details);
 		}
 
 		/// <summary>
@@ -217,9 +230,9 @@ namespace Umbrella2.Algorithms.Images
 				OutputImage = Output,
 				Parameters = new object[] { Argument1, Argument2, Argument3 },
 				Type = AlgorithmType.SimpleMap_TUV,
-				OriginalP = Parameters
 			};
-			CommonRunAlg(details);
+			PrepareGeometry(details, Parameters);
+			DefaultScheduler(details);
 		}
 
 		/// <summary>
@@ -240,9 +253,9 @@ namespace Umbrella2.Algorithms.Images
 				OutputImage = Output,
 				Parameters = new object[] { Argument },
 				Type = AlgorithmType.PositionMap,
-				OriginalP = Parameters
 			};
-			CommonRunAlg(details);
+			PrepareGeometry(details, Parameters);
+			DefaultScheduler(details);
 		}
 
 		/// <summary>
@@ -263,11 +276,13 @@ namespace Umbrella2.Algorithms.Images
 				OutputImage = Output,
 				Parameters = new object[] { Argument },
 				Type = AlgorithmType.Combiner,
-				OriginalP = Parameters
 			};
-			CommonRunAlg(details);
+			PrepareGeometry(details, Parameters);
+			DefaultScheduler(details);
 		}
 
+#pragma warning disable CS1591
+		/* Extension method for running the delegates with the default scheduler */
 		public static void Run<T>(this SimpleMap<T> Algorithm, T Argument, FitsImage Input, FitsImage Output, AlgorithmRunParameters Parameters)
 		{ RunAlgorithm(Algorithm, Argument, Input, Output, Parameters); }
 
@@ -288,5 +303,84 @@ namespace Umbrella2.Algorithms.Images
 
 		public static void Run<T>(this PositionDependentExtractor<T> Algorithm, T Argument, FitsImage Input, AlgorithmRunParameters Parameters)
 		{ RunAlgorithm(Algorithm, Argument, Input, Parameters); }
+
+		/// <summary>
+		/// Which delegate the algorithm corresponds to.
+		/// </summary>
+		public enum AlgorithmType
+		{
+			SimpleMap_T,
+			SimpleMap_TU,
+			SimpleMap_TUV,
+			PositionMap,
+			Combiner,
+			Extractor,
+			PositionExtractor
+		}
+#pragma warning restore CS1591
+
+		/// <summary>
+		/// Bag of data for the algorithm run.
+		/// </summary>
+		public struct RunDetails
+		{
+			/// <summary>Function to be run.</summary>
+			public System.Delegate Algorithm;
+			/// <summary>Arguments passed through from the caller.</summary>
+			public object[] Parameters;
+			/// <summary>Delegate type.</summary>
+			public AlgorithmType Type;
+			/// <summary>Images read by the scheduler and fed into the target algorithm.</summary>
+			public FitsImage[] InputImages;
+			/// <summary>Image to be written by the algorithm.</summary>
+			public FitsImage OutputImage;
+			/// <summary>Same as <see cref="AlgorithmRunParameters.InputMargins"/>.</summary>
+			public int InputMargins;
+			/// <summary>Same as <see cref="AlgorithmRunParameters.Ystep"/>.</summary>
+			public int Ystep;
+			/// <summary>Same as <see cref="AlgorithmRunParameters.Xstep"/>.</summary>
+			public int Xstep;
+			/// <summary>Width of the working image.</summary>
+			public int DataWidth;
+			/// <summary>Height of the working image.</summary>
+			public int DataHeight;
+			/// <summary>Same as <see cref="AlgorithmRunParameters.FillZero"/>.</summary>
+			public bool FillZero;
+		}
+
+		/// <summary>
+		/// Represents a scheduler for image processing functions. It must run the functions of a given algorithm over the image, according to the given parameters.
+		/// </summary>
+		/// <param name="RunParameters">Parameters that specify the context to be prepared for the called function.</param>
+		public delegate void Scheduler(RunDetails RunParameters);
+
+		/// <summary>
+		/// The scheduler used when calling RunAlgorithm or Run on a the delegate of the algorithm.
+		/// </summary>
+		public static Scheduler DefaultScheduler = Schedulers.CPUParallel.Scheduler;
+
+		/// <summary>
+		/// Prepares algorithm geometry.
+		/// </summary>
+		/// <param name="Details">Parameters to prepare.</param>
+		/// <param name="Parameters">Input parameters.</param>
+		internal static void PrepareGeometry(RunDetails Details, AlgorithmRunParameters Parameters)
+		{
+			/* Copies common parameters */
+			Details.FillZero = Parameters.FillZero;
+			Details.Xstep = Parameters.Xstep;
+			if (Details.Xstep == 0)
+			{
+				if (Details.OutputImage != null)
+					Details.Xstep = (int) Details.OutputImage.Width;
+				else Details.Xstep = (int) Details.InputImages[0].Width;
+			}
+			Details.Ystep = Parameters.Ystep;
+			Details.InputMargins = Parameters.InputMargins;
+
+			/* Compute block sizes */
+			if (Details.OutputImage != null) { Details.DataHeight = (int) Details.OutputImage.Height; Details.DataWidth = (int) Details.OutputImage.Width; }
+			else { Details.DataHeight = (int) Details.InputImages[0].Height; Details.DataWidth = (int) Details.InputImages[0].Width; }
+		}
 	}
 }

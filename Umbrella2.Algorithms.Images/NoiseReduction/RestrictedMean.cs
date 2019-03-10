@@ -15,7 +15,7 @@ namespace Umbrella2.Algorithms.Images
 		/// Common algorithm parameters for RestrictedMean algorithms.
 		/// </summary>
 		/// <param name="PSFRadius">Radius of the PSF importance distribution.</param>
-		public static ParallelAlgorithmRunner.AlgorithmRunParameters Parameters(int PSFRadius) => new ParallelAlgorithmRunner.AlgorithmRunParameters()
+		public static SchedCore.AlgorithmRunParameters Parameters(int PSFRadius) => new SchedCore.AlgorithmRunParameters()
 		{
 			FillZero = true,
 			InputMargins = PSFRadius,
@@ -26,12 +26,12 @@ namespace Umbrella2.Algorithms.Images
 		/// <summary>
 		/// Filters the input using a restricted mean filter. The argument given is the PSF importance distribution.
 		/// </summary>
-		public static ParallelAlgorithmRunner.SimpleMap<double[]> RestrictedMeanFilter => RestrictedMeanAlgorithm;
+		public static SchedCore.SimpleMap<double[]> RestrictedMeanFilter => RestrictedMeanAlgorithm;
 
 		/// <summary>
 		/// Filters the input using a median filter that also considers the closest neighbor pixel values.
 		/// </summary>
-		public static ParallelAlgorithmRunner.SimpleMap<double[], ImageStatistics> MultiMedianFilter => MultiMedianAlgorithm;
+		public static SchedCore.SimpleMap<double[], ImageStatistics> MultiMedianFilter => MultiMedianAlgorithm;
 
 		/// <summary>
 		/// Computes a weighted mean using a subset of the data.

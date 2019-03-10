@@ -33,15 +33,15 @@ namespace Umbrella2.Visualizers.Winforms
 			InitializeComponent();
 		}
 
-		void ResizeBitmap() { Data = new ByteBitmap(Width, Height); }
+		void ResizeBitmap() { Data = new ByteBitmap(Width - 10, Height - 10); }
 
 		void ReadBitmap()
 		{
-			TopLeft = new Point(Center.X - Width / 2, Center.Y - Height / 2);
-			Display = new Rectangle(TopLeft.X, TopLeft.Y, Width, Height);
+			TopLeft = new Point(Center.X - Data.Width / 2, Center.Y - Data.Height / 2);
+			Display = new Rectangle(TopLeft.X, TopLeft.Y, Data.Width, Data.Height);
 			var ImageData = Image.LockData(Display, true);
-			for (int i = 0; i < Height; i++)
-				for (int j = 0; j < Width; j++)
+			for (int i = 0; i < Data.Height; i++)
+				for (int j = 0; j < Data.Width; j++)
 				{
 					byte Value = Scaler.GetValue(ImageData.Data[i, j]);
 					for (int k = 0; k < 3; k++)
@@ -50,7 +50,7 @@ namespace Umbrella2.Visualizers.Winforms
 			Image.ExitLock(ImageData);
 		}
 
-		void ShowBitmap() { try { pictureBox1.Image = Data.GetWindowsBitmap(); } catch { } }
+		void ShowBitmap() { try { pictureBox1.Image = Data.GetWindowsBitmap(); pictureBox1.Refresh(); } catch { } }
 
 		public override void Refresh()
 		{ base.Refresh(); Reload(); }

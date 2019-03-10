@@ -65,12 +65,12 @@ namespace Umbrella2.Algorithms.Images
 		/// <summary>
 		/// The long trail detection algorithm.
 		/// </summary>
-		public static ParallelAlgorithmRunner.PositionDependentExtractor<LongTrailData> Algorithm = LTD_RLHT;
+		public static SchedCore.PositionDependentExtractor<LongTrailData> Algorithm = LTD_RLHT;
 
 		/// <summary>
 		/// Parameters for the ParallelAlgorithmRunner.
 		/// </summary>
-		public static ParallelAlgorithmRunner.AlgorithmRunParameters Parameters => new ParallelAlgorithmRunner.AlgorithmRunParameters()
+		public static SchedCore.AlgorithmRunParameters Parameters => new SchedCore.AlgorithmRunParameters()
 		{
 			FillZero = true,
 			InputMargins = 50,
@@ -139,7 +139,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="Input">Input data.</param>
 		/// <param name="Position">Position of the input data array in the image.</param>
 		/// <param name="Data">Bag of algorithm parameters and data.</param>
-		static void LTD_RLHT(double[,] Input, ParallelAlgorithmRunner.ImageSegmentPosition Position, LongTrailData Data)
+		static void LTD_RLHT(double[,] Input, SchedCore.ImageSegmentPosition Position, LongTrailData Data)
 		{
 			/* Extracts the size of the input data */
 			int Height = Input.GetLength(0), Width = Input.GetLength(1);

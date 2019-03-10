@@ -4,7 +4,7 @@ using Umbrella2.IO.FITS;
 using Umbrella2.IO.FITS.KnownKeywords;
 using Umbrella2.PropertyModel.CommonProperties;
 using static System.Math;
-using static Umbrella2.Algorithms.Images.ParallelAlgorithmRunner;
+using static Umbrella2.Algorithms.Images.SchedCore;
 
 namespace Umbrella2.Algorithms.Detection
 {

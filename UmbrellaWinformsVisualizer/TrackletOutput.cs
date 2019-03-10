@@ -20,17 +20,36 @@ namespace Umbrella2.Visualizers.Winforms
 		List<Tracklet> m_tracklets;
 		int SelectedTracklet;
 		ImageDetection SelectedDetection;
+		
+		/// <summary>MPC Observatory code.</summary>
 		public string ObservatoryCode;
+		/// <summary>Name of the file to which the report is written.</summary>
 		public string ReportName;
+		/// <summary>Number of the processed CCD.</summary>
 		public int CCDNumber;
+		/// <summary>Name of the processed field.</summary>
 		public string FieldName;
-		readonly string ListName;
-		string CurrentImageName;
-		Dictionary<string, FitsImage> Images;
+		/// <summary>Band of the observations.</summary>
 		public MPCOpticalReportFormat.MagnitudeBand Band;
 
+		/// <summary>Name of the list of tracklets.</summary>
+		readonly string ListName;
+		/// <summary>Name of the currently viewed image in its image set.</summary>
+		string CurrentImageName;
+		/// <summary>Images that can be loaded for viewing.</summary>
+		/// <remarks>Used for selecting between differently processed images of the object. It is a cache of the displayed image's image set.</remarks>
+		Dictionary<string, FitsImage> Images;
+		
+		/// <summary>Disable the object number update callback. Used when updating tracklets to prevent the callback from firing while the list mutates.</summary>
+		bool SuspendObjectsUpdate = false;
+
+
+		/// <summary>
+		/// Displayed tracklets.
+		/// </summary>
 		public List<Tracklet> Tracklets { get { return m_tracklets; } set { m_tracklets = value; RefreshTracklets(); } }
 
+		/// <param name="Name">Shown name of the current list.</param>
 		public TrackletOutput(string Name)
 		{
 			ListName = Name;
@@ -38,6 +57,9 @@ namespace Umbrella2.Visualizers.Winforms
 			ManualIC();
 		}
 
+		/// <summary>
+		/// InitializeComponent for manually-added components.
+		/// </summary>
 		private void ManualIC()
 		{
 			ImageView = new FitsView();
@@ -79,6 +101,7 @@ namespace Umbrella2.Visualizers.Winforms
 		{
 			Tracklet t = m_tracklets[SelectedTracklet];
 			dataGridView1.Rows.Clear();
+			SuspendObjectsUpdate = true;
 			for (int i = 0; i < t.Detections.Length; i++)
 				if (t.Detections[i] != null)
 				{
@@ -86,9 +109,14 @@ namespace Umbrella2.Visualizers.Winforms
 					dataGridView1.Rows.Add(i, det.Barycenter.PP.X.ToString("G6"), det.Barycenter.PP.Y.ToString("G6"), det.Barycenter.EP.FormatToString(Format.MPC_RA),
 						det.Barycenter.EP.FormatToString(Format.MPC_Dec), det.FetchProperty<ObjectSize>().PixelEllipse.ToString());
 				}
+			SuspendObjectsUpdate = false;
 			UpdateProperties();
+			dataGridView1_SelectionChanged(null, null);
 		}
 
+		/// <summary>
+		/// Update the properties grid for the tracklet.
+		/// </summary>
 		void UpdateProperties()
 		{
 			dataGridView2.Rows.Clear();
@@ -105,6 +133,7 @@ namespace Umbrella2.Visualizers.Winforms
 
 		private void dataGridView1_SelectionChanged(object sender, EventArgs e)
 		{
+			if (SuspendObjectsUpdate) return;
 			/* Check if a detection is selected */
 			if (dataGridView1.SelectedRows.Count == 1)
 				SelectObject(dataGridView1.SelectedRows[0].Index);
@@ -197,18 +226,25 @@ namespace Umbrella2.Visualizers.Winforms
 		private void TrackletOutput_KeyPress(object sender, KeyPressEventArgs e)
 		{ HandleKeyPress(e.KeyChar); }
 
+		/// <summary>
+		/// Provides custom navigation according to the key pressed.
+		/// </summary>
+		/// <param name="Key">Pressed key char.</param>
 		private void HandleKeyPress(char Key)
 		{
 			int Index;
 			Key = char.ToUpper(Key);
 			switch (Key)
 			{
+				/* Next tracklet */
 				case 'S':
 					if (checkedListBox1.SelectedIndex + 1 < checkedListBox1.Items.Count) checkedListBox1.SelectedIndex++;
 					break;
+				/* Previous tracklet */
 				case 'W':
 					if (checkedListBox1.SelectedIndex > 0) checkedListBox1.SelectedIndex--;
 					break;
+				/* Next object */
 				case 'D':
 					if (dataGridView1.SelectedRows.Count >= 1)
 					{
@@ -218,6 +254,7 @@ namespace Umbrella2.Visualizers.Winforms
 					}
 					if (dataGridView1.SelectedRows.Count == 0) dataGridView1.Rows[0].Selected = true;
 					break;
+				/* Previous object */
 				case 'A':
 					if (dataGridView1.SelectedRows.Count >= 1)
 					{
@@ -227,18 +264,21 @@ namespace Umbrella2.Visualizers.Winforms
 					}
 					if (dataGridView1.SelectedRows.Count == 0) dataGridView1.Rows[dataGridView1.Rows.Count - 1].Selected = true;
 					break;
+				/* Previous image */
 				case 'Q':
 					var Keys = System.Linq.Enumerable.ToList(Images.Keys);
 					Index = Keys.IndexOf(CurrentImageName);
 					if (Index > 0) CurrentImageName = Keys[Index - 1];
 					UpdateImage();
 					break;
+				/* Next image */
 				case 'E':
 					Keys = System.Linq.Enumerable.ToList(Images.Keys);
 					Index = Keys.IndexOf(CurrentImageName);
 					if (Index < Keys.Count - 1) CurrentImageName = Keys[Index + 1];
 					UpdateImage();
 					break;
+				/* Select for reporting */
 				case ' ':
 					checkedListBox1.SetItemChecked(checkedListBox1.SelectedIndex, !checkedListBox1.GetItemChecked(checkedListBox1.SelectedIndex));
 					break;

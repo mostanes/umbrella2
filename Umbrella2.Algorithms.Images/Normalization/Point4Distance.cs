@@ -2,7 +2,7 @@
 using Umbrella2.Algorithms.Misc;
 using Umbrella2.IO.FITS;
 using static System.Math;
-using static Umbrella2.Algorithms.Images.ParallelAlgorithmRunner;
+using static Umbrella2.Algorithms.Images.SchedCore;
 
 namespace Umbrella2.Algorithms.Images.Normalization
 {

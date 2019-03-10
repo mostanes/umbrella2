@@ -32,7 +32,7 @@ namespace Umbrella2.Algorithms.Images
 			Means = new List<double>();
 			Variances = new List<double>();
 
-			StatAlgorithm.Run(this, Image, new ParallelAlgorithmRunner.AlgorithmRunParameters() { FillZero = false, InputMargins = 0, Xstep = 0, Ystep = 50 });
+			StatAlgorithm.Run(this, Image, new SchedCore.AlgorithmRunParameters() { FillZero = false, InputMargins = 0, Xstep = 0, Ystep = 50 });
 
 			double[] M = Means.ToArray();
 			double[] V = Variances.ToArray();
@@ -45,7 +45,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <summary>
 		/// Accessible form of the computation function.
 		/// </summary>
-		static ParallelAlgorithmRunner.Extractor<ImageStatistics> StatAlgorithm = RunStatistics;
+		static SchedCore.Extractor<ImageStatistics> StatAlgorithm = RunStatistics;
 
 		/// <summary>
 		/// Computation function.

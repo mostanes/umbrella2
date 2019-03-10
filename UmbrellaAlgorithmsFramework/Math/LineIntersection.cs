@@ -11,7 +11,9 @@ namespace Umbrella2.Algorithms.Geometry
 	/// </summary>
 	public struct Vector
 	{
+#pragma warning disable CS1591
 		public double X, Y;
+#pragma warning restore CS1591
 
 		/// <summary>
 		/// Increments the amount of the current vector by the given vector.
@@ -25,7 +27,9 @@ namespace Umbrella2.Algorithms.Geometry
 		/// </summary>
 		public static Vector operator *(double Scalar, Vector Vect) => new Vector() { X = Scalar * Vect.X, Y = Scalar * Vect.Y };
 
+#pragma warning disable CS1591
 		public override string ToString() { return "(" + X.ToString() + ";" + Y.ToString() + ")"; }
+#pragma warning restore CS1591
 	}
 
 	/// <summary>

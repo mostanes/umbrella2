@@ -11,13 +11,13 @@ namespace Umbrella2.Algorithms.Images
 		/// <summary>
 		/// Filters the input using a weighted median filter. The argument is the PSF importance distribution (here it functions as the median weights).
 		/// </summary>
-		public static ParallelAlgorithmRunner.SimpleMap<double[]> WeightedMedian = EstimatorFR.EstimatorFRMedian;
+		public static SchedCore.SimpleMap<double[]> WeightedMedian = EstimatorFR.EstimatorFRMedian;
 
 		/// <summary>
 		/// Algorithm parameters for the weighted median filter.
 		/// </summary>
 		/// <param name="PSFRadius">Radius of the PSF importance distribution.</param>
-		public static ParallelAlgorithmRunner.AlgorithmRunParameters WeightedMedianParameters(int PSFRadius) => new ParallelAlgorithmRunner.AlgorithmRunParameters()
+		public static SchedCore.AlgorithmRunParameters WeightedMedianParameters(int PSFRadius) => new SchedCore.AlgorithmRunParameters()
 		{
 			FillZero = true,
 			InputMargins = PSFRadius,
@@ -32,7 +32,7 @@ namespace Umbrella2.Algorithms.Images
 		/// The algorithm used does not match WCS at file reading, hence it must overscan (InputMargins > 0).
 		/// The implicit InputMargins is 50, corresponding to a maximum displacement of 50px between the same WCS point on 2 different images.
 		/// </remarks>
-		public static ParallelAlgorithmRunner.AlgorithmRunParameters MultiImageMedianParameters => new ParallelAlgorithmRunner.AlgorithmRunParameters()
+		public static SchedCore.AlgorithmRunParameters MultiImageMedianParameters => new SchedCore.AlgorithmRunParameters()
 		{
 			FillZero = true,
 			InputMargins = 50,
@@ -43,7 +43,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <summary>
 		/// Computes the median image of multiple input images. WCS information must be passed to the algorithm.
 		/// </summary>
-		public static ParallelAlgorithmRunner.Combiner<object> MultiImageMedian => MultiImageMedianFilter;
+		public static SchedCore.Combiner<object> MultiImageMedian => MultiImageMedianFilter;
 
 		/// <summary>
 		/// Computes the weighted median of the input.
@@ -80,7 +80,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="InputPositions">Input alignments.</param>
 		/// <param name="OutputPosition">Output alignment.</param>
 		/// <param name="empty">Dummy argument.</param>
-		static void MultiImageMedianFilter(double[][,] Inputs, double[,] Output, ParallelAlgorithmRunner.ImageSegmentPosition[] InputPositions, ParallelAlgorithmRunner.ImageSegmentPosition OutputPosition, object empty)
+		static void MultiImageMedianFilter(double[][,] Inputs, double[,] Output, SchedCore.ImageSegmentPosition[] InputPositions, SchedCore.ImageSegmentPosition OutputPosition, object empty)
 		{
 			PixelPoint[] InputAlignments = InputPositions.Select((x) => x.Alignment).ToArray();
 			PixelPoint OutputAlignment = OutputPosition.Alignment;

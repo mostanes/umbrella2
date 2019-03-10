@@ -48,9 +48,10 @@
     <Compile Include="DataStructures\ConnectedComponentGraph.cs" />
     <Compile Include="DataStructures\MTPool.cs" />
     <Compile Include="DataStructures\QuadTree.cs" />
+    <Compile Include="ImageAlgorithms\CPUParallel.cs" />
     <Compile Include="ImageAlgorithms\ImageStatistics.cs" />
-    <Compile Include="ImageAlgorithms\ParallelAlgorithmBackend.cs" />
-    <Compile Include="ImageAlgorithms\ParallelAlgorithmRunner.cs" />
+    <Compile Include="ImageAlgorithms\SchedCore.cs" />
+    <Compile Include="ImageAlgorithms\SchedUtil.cs" />
     <Compile Include="ImageDetection.cs" />
     <Compile Include="Math\LinearRegression.cs" />
     <Compile Include="Math\LineIntersection.cs" />
