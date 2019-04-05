@@ -39,6 +39,7 @@
     <Compile Include="LineAnalyzer.cs" />
     <Compile Include="LongTrailDetector.cs" />
     <Compile Include="MaskByMedian.cs" />
+    <Compile Include="NoiseReduction\BadpixelFiltering.cs" />
     <Compile Include="NoiseReduction\HardMedians.cs" />
     <Compile Include="NoiseReduction\RestrictedMean.cs" />
     <Compile Include="Normalization\Point4Distance.cs" />

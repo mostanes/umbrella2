@@ -84,6 +84,8 @@ namespace Umbrella2.Visualizers.Winforms
 				double ArcsecVelocity = t.Velocity.EquatorialVelocity * 3600 * 180 / Math.PI * 60;
 				checkedListBox1.Items.Add("Tracklet " + (cnt++) + ", velocity = " + ArcsecVelocity.ToString("G5") + "\"/min");
 			}
+			System.Threading.Tasks.Task tk = new System.Threading.Tasks.Task(() => SkyBotLookupNames(10.0));
+			tk.Start();
 		}
 
 		private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -283,6 +285,22 @@ namespace Umbrella2.Visualizers.Winforms
 					checkedListBox1.SetItemChecked(checkedListBox1.SelectedIndex, !checkedListBox1.GetItemChecked(checkedListBox1.SelectedIndex));
 					break;
 			}
+		}
+
+		/// <summary>
+		/// Function for looking up the names of objects.
+		/// </summary>
+		/// <param name="ArcLengthSec">Lookup radius.</param>
+		private void SkyBotLookupNames(double ArcLengthSec)
+		{
+			double ALength = ArcLengthSec / 3600.0 / 180.0 * Math.PI;
+			foreach(Tracklet tk in Tracklets)
+			{
+				var LookupResults = SkyBoTLookup.GetObjects(tk.Detections[0].Barycenter.EP, ALength, tk.Detections[0].Time.Time);
+				if (LookupResults.Count == 1)
+					tk.AppendProperty(new ObjectIdentity() { Name = LookupResults[0].Name });
+			}
+			for (int i = 0; i < Tracklets.Count; i++) if (Tracklets[i].TryFetchProperty(out ObjectIdentity id)) checkedListBox1.Items[i] = id.Name;
 		}
 	}
 }
