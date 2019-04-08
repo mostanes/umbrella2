@@ -134,7 +134,7 @@ namespace Umbrella2.Algorithms.Images
 				Parameters = new object[] { Argument },
 				Type = AlgorithmType.Extractor,
 			};
-			PrepareGeometry(details, Parameters);
+			PrepareGeometry(ref details, Parameters);
 			DefaultScheduler(details);
 		}
 
@@ -156,7 +156,7 @@ namespace Umbrella2.Algorithms.Images
 				Parameters = new object[] { Argument },
 				Type = AlgorithmType.PositionExtractor,
 			};
-			PrepareGeometry(details, Parameters);
+			PrepareGeometry(ref details, Parameters);
 			DefaultScheduler(details);
 		}
 
@@ -179,7 +179,7 @@ namespace Umbrella2.Algorithms.Images
 				Parameters = new object[] { Argument },
 				Type = AlgorithmType.SimpleMap_T,
 			};
-			PrepareGeometry(details, Parameters);
+			PrepareGeometry(ref details, Parameters);
 			DefaultScheduler(details);
 		}
 
@@ -204,7 +204,7 @@ namespace Umbrella2.Algorithms.Images
 				Parameters = new object[] { Argument1, Argument2 },
 				Type = AlgorithmType.SimpleMap_TU,
 			};
-			PrepareGeometry(details, Parameters);
+			PrepareGeometry(ref details, Parameters);
 			DefaultScheduler(details);
 		}
 
@@ -231,7 +231,7 @@ namespace Umbrella2.Algorithms.Images
 				Parameters = new object[] { Argument1, Argument2, Argument3 },
 				Type = AlgorithmType.SimpleMap_TUV,
 			};
-			PrepareGeometry(details, Parameters);
+			PrepareGeometry(ref details, Parameters);
 			DefaultScheduler(details);
 		}
 
@@ -254,7 +254,7 @@ namespace Umbrella2.Algorithms.Images
 				Parameters = new object[] { Argument },
 				Type = AlgorithmType.PositionMap,
 			};
-			PrepareGeometry(details, Parameters);
+			PrepareGeometry(ref details, Parameters);
 			DefaultScheduler(details);
 		}
 
@@ -277,7 +277,7 @@ namespace Umbrella2.Algorithms.Images
 				Parameters = new object[] { Argument },
 				Type = AlgorithmType.Combiner,
 			};
-			PrepareGeometry(details, Parameters);
+			PrepareGeometry(ref details, Parameters);
 			DefaultScheduler(details);
 		}
 
@@ -364,7 +364,7 @@ namespace Umbrella2.Algorithms.Images
 		/// </summary>
 		/// <param name="Details">Parameters to prepare.</param>
 		/// <param name="Parameters">Input parameters.</param>
-		internal static void PrepareGeometry(RunDetails Details, AlgorithmRunParameters Parameters)
+		internal static void PrepareGeometry(ref RunDetails Details, AlgorithmRunParameters Parameters)
 		{
 			/* Copies common parameters */
 			Details.FillZero = Parameters.FillZero;

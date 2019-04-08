@@ -55,6 +55,7 @@
     <Compile Include="TrackletOutput.Designer.cs">
       <DependentUpon>TrackletOutput.cs</DependentUpon>
     </Compile>
+    <Compile Include="TrackletOutputUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FitsView.resx">
@@ -65,6 +66,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Umbrella2.Pipeline.EIOAlgorithms\Umbrella2.Pipeline.EIOAlgorithms.csproj">
+      <Project>{b6862de7-df63-48a2-a754-7b85a4fcaf88}</Project>
+      <Name>Umbrella2.Pipeline.EIOAlgorithms</Name>
+    </ProjectReference>
     <ProjectReference Include="..\UmbrellaAlgorithmsFramework\UmbrellaAlgorithmsFramework.csproj">
       <Project>{e9384b08-f76c-4096-8bf0-a6515e6b6dea}</Project>
       <Name>UmbrellaAlgorithmsFramework</Name>

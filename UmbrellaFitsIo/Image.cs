@@ -141,7 +141,7 @@ namespace Umbrella2.IO.FITS
 				WCSLinPart linpart;
 				if (RAFirst) linpart = new WCSLinPart(Header["CD1_1"].FloatingPoint, Header["CD1_2"].FloatingPoint, Header["CD2_1"].FloatingPoint, Header["CD2_2"].FloatingPoint, X0, Y0);
 				else linpart = new WCSLinPart(Header["CD2_1"].FloatingPoint, Header["CD2_2"].FloatingPoint, Header["CD1_1"].FloatingPoint, Header["CD1_2"].FloatingPoint, X0, Y0);
-				
+
 
 				if (Header["CUNIT1"].GetFixedString != "deg     " || Header["CUNIT2"].GetFixedString != "deg     ") throw new FITSFormatException("Wrong unit types for axes");
 
@@ -155,7 +155,78 @@ namespace Umbrella2.IO.FITS
 				/* Computes BytesPerPixel and selects reading/writing functions */
 				BytesPerPixel = (byte) Math.Abs((Header["BITPIX"].Int / 8));
 				var RW = GetRW(Header["BITPIX"].Int);
+
+				Reader = RW.Item1;
+				Writer = RW.Item2;
+
+				/* Loads SWarp scaling to the properties dictionary */
+				try { GetProperty<KnownKeywords.SWarpScaling>(); }
+				catch { }
+			}
+			catch (Exception ex) { throw new FITSFormatException("Cannot understand FITS file.", ex); }
+			this.File = File;
+		}
+
+		/// <summary>
+		/// Retrieves an image from a FITS file, with optional WCS headers.
+		/// </summary>
+		/// <param name="File">Input file.</param>
+		/// <param name="Number">Image number in multi-image (MEF) FITS files.</param>
+		/// <param name="SkipWCS">Force ignore image WCS headers.</param>
+		public FitsImage(FitsFile File, bool SkipWCS, int Number = 0) : this()
+		{
+			ImageNumber = Number;
+			if (Number == 0) Header = File.PrimaryTable;
+			else Header = File.MEFHeaderTable[Number - 1];
+			try
+			{
+				/* Parse image size */
+				Width = (uint) Header["NAXIS1"].Int;
+				Height = (uint) Header["NAXIS2"].Int;
+				if (Width > MaxSize || Height > MaxSize) throw new FITSFormatException("Image too large for Umbrella2.");
+
+				if (!SkipWCS)
+				{
+					try
+					{
+						/* Parse axis types and projection algorithm */
+						string Axis1 = Header["CTYPE1"].GetFixedString;
+						string Axis2 = Header["CTYPE2"].GetFixedString;
+						string Algorithm = Axis1.Substring(5, 3);
+						string Nm1 = Axis1.Substring(0, 4);
+						string Nm2 = Axis2.Substring(0, 4);
+
+						/* Parses the order of the axes and checks consistency of projection algorithm between the axes. */
+						if (Nm1.ToUpper() == "RA--" && Nm2.ToUpper() == "DEC-") RAFirst = true;
+						else if (Nm1.ToUpper() == "DEC-" && Nm2.ToUpper() == "RA--") RAFirst = false;
+						else throw new FITSFormatException("Cannot understand axis format");
+						if (Axis2.Substring(5, 3) != Algorithm) throw new Exception("Projection Algorithm Mismatch.");
+						/* Computes the linear transformation part of the WCS projection */
+						double RA0 = (RAFirst ? Header["CRVAL1"] : Header["CRVAL2"]).FloatingPoint;
+						double Dec0 = (RAFirst ? Header["CRVAL2"] : Header["CRVAL1"]).FloatingPoint;
+						double X0 = Header["CRPIX1"].FloatingPoint;
+						double Y0 = Header["CRPIX2"].FloatingPoint;
+						WCSLinPart linpart;
+						if (RAFirst) linpart = new WCSLinPart(Header["CD1_1"].FloatingPoint, Header["CD1_2"].FloatingPoint, Header["CD2_1"].FloatingPoint, Header["CD2_2"].FloatingPoint, X0, Y0);
+						else linpart = new WCSLinPart(Header["CD2_1"].FloatingPoint, Header["CD2_2"].FloatingPoint, Header["CD1_1"].FloatingPoint, Header["CD1_2"].FloatingPoint, X0, Y0);
+
+
+						if (Header["CUNIT1"].GetFixedString != "deg     " || Header["CUNIT2"].GetFixedString != "deg     ") throw new FITSFormatException("Wrong unit types for axes");
+
+						/* Retrieves the projection algorithm */
+						WCSProjectionTransform ipt;
+						try { ipt = Umbrella2.WCS.Projections.WCSProjections.GetProjectionTransform(Algorithm, RA0 * Math.PI / 180, Dec0 * Math.PI / 180); }
+						catch (KeyNotFoundException ex) { throw new FITSFormatException("Cannot understand projection algorithm", ex); }
+
+						Transform = new WCSViaProjection(ipt, linpart);
+					}
+					catch { }
+				}
 				
+				/* Computes BytesPerPixel and selects reading/writing functions */
+				BytesPerPixel = (byte) Math.Abs((Header["BITPIX"].Int / 8));
+				var RW = GetRW(Header["BITPIX"].Int);
+
 				Reader = RW.Item1;
 				Writer = RW.Item2;
 

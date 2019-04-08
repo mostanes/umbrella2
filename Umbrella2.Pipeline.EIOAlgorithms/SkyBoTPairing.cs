@@ -5,7 +5,7 @@ using Umbrella2.Algorithms.Misc;
 using Umbrella2.PropertyModel.CommonProperties;
 using static Umbrella2.Pipeline.ExtraIO.SkyBoTLookup;
 
-namespace Umbrella2.Pipeline.ExtraIO
+namespace Umbrella2.Pipeline.EIOAlgorithms
 {
 	/// <summary>
 	/// Provides an algorithm for pairing SkyBoT objects with tracklets.

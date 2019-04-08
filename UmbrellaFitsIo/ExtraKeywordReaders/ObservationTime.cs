@@ -66,7 +66,7 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 
 		public override List<ElevatedRecord> GetRecords()
 		{
-			ElevatedRecord DATEOBS = new ElevatedRecord("DATE-OBS", " '" + Time.ToString("o") + "'");
+			ElevatedRecord DATEOBS = new ElevatedRecord("DATE-OBS", " '" + Time.ToString("yyyy-MM-ddTHH:mm:ss.fffffff") + "'");
 			ElevatedRecord expTime = new ElevatedRecord("EXPTIME", "  " + Exposure.TotalSeconds.ToString("E"));
 			return new List<ElevatedRecord>() { DATEOBS, expTime };
 		}

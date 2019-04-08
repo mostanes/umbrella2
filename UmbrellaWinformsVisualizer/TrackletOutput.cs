@@ -7,6 +7,7 @@ using Umbrella2.Algorithms.Images;
 using Umbrella2.IO.FITS;
 using Umbrella2.Pipeline.ExtraIO;
 using Umbrella2.PropertyModel.CommonProperties;
+using System.Linq;
 using static Umbrella2.Pipeline.ExtraIO.EquatorialPointStringFormatter;
 
 namespace Umbrella2.Visualizers.Winforms
@@ -84,7 +85,7 @@ namespace Umbrella2.Visualizers.Winforms
 				double ArcsecVelocity = t.Velocity.EquatorialVelocity * 3600 * 180 / Math.PI * 60;
 				checkedListBox1.Items.Add("Tracklet " + (cnt++) + ", velocity = " + ArcsecVelocity.ToString("G5") + "\"/min");
 			}
-			System.Threading.Tasks.Task tk = new System.Threading.Tasks.Task(() => SkyBotLookupNames(10.0));
+			System.Threading.Tasks.Task tk = new System.Threading.Tasks.Task(() => SkyBotLookupNames(15.0));
 			tk.Start();
 		}
 
@@ -293,13 +294,21 @@ namespace Umbrella2.Visualizers.Winforms
 		/// <param name="ArcLengthSec">Lookup radius.</param>
 		private void SkyBotLookupNames(double ArcLengthSec)
 		{
+			
 			double ALength = ArcLengthSec / 3600.0 / 180.0 * Math.PI;
 			foreach(Tracklet tk in Tracklets)
 			{
 				var LookupResults = SkyBoTLookup.GetObjects(tk.Detections[0].Barycenter.EP, ALength, tk.Detections[0].Time.Time);
 				if (LookupResults.Count == 1)
 					tk.AppendProperty(new ObjectIdentity() { Name = LookupResults[0].Name });
+				else if(LookupResults.Count > 1)
+				{
+					Comparison<SkyBoTLookup.SkybotObject> skcompare = (x, y) => (x.Position ^ tk.Detections[0].Barycenter.EP) > (y.Position ^ tk.Detections[0].Barycenter.EP) ? 1 : -1;
+					LookupResults.Sort(skcompare);
+					tk.AppendProperty(new ObjectIdentity() { Name = LookupResults[0].Name });
+				}
 			}
+			
 			for (int i = 0; i < Tracklets.Count; i++) if (Tracklets[i].TryFetchProperty(out ObjectIdentity id)) checkedListBox1.Items[i] = id.Name;
 		}
 	}

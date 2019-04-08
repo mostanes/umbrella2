@@ -15,7 +15,7 @@ namespace Umbrella2.Algorithms.Images
 		/// </summary>
 		public static AlgorithmRunParameters Parameters = new AlgorithmRunParameters()
 		{
-			FillZero = true,
+			FillZero = false,
 			InputMargins = 0,
 			Xstep = 0,
 			Ystep = 50
