@@ -6,6 +6,9 @@ using Umbrella2.Algorithms.Images.Median;
 
 namespace Umbrella2.Algorithms.Images
 {
+	/// <summary>
+	/// Class of strict median filtering algorithms.
+	/// </summary>
 	public static partial class HardMedians
 	{
 		/// <summary>

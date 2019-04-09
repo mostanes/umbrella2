@@ -63,6 +63,18 @@ namespace Umbrella2.Algorithms.Detection
 		}
 
 		/// <summary>
+		/// Detects light sources on the input image. This form can be used on raw images.
+		/// </summary>
+		/// <param name="Input">Input image.</param>
+		/// <returns>A list of the detected blobs.</returns>
+		public List<DotDetection> DetectDots(FitsImage Input)
+		{
+			Detections = new List<DotDetection>();
+			((PositionDependentExtractor<DotDetector>) DetectSources).Run(this, Input, Parameters);
+			return Detections;
+		}
+
+		/// <summary>
 		/// Actual detection function for trailless light sources.
 		/// </summary>
 		/// <param name="Input">Input image data.</param>
@@ -109,13 +121,13 @@ namespace Umbrella2.Algorithms.Detection
 		/// <summary>
 		/// Holds the data of a light source.
 		/// </summary>
-		internal struct DotDetection
+		public struct DotDetection
 		{
-			internal PixelPoint Barycenter;
-			internal List<PixelPoint> Pixels;
-			internal List<double> PixelValues;
-			internal PixelPoint PixelCenter;
-			internal double Flux;
+			public PixelPoint Barycenter;
+			public List<PixelPoint> Pixels;
+			public List<double> PixelValues;
+			public PixelPoint PixelCenter;
+			public double Flux;
 
 			public override string ToString()
 			{

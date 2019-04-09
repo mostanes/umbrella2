@@ -17,7 +17,6 @@ namespace Umbrella2.Visualizers.Winforms
 	/// </summary>
 	public partial class TrackletOutput : Form
 	{
-		FitsView ImageView;
 		List<Tracklet> m_tracklets;
 		int SelectedTracklet;
 		ImageDetection SelectedDetection;
@@ -55,19 +54,6 @@ namespace Umbrella2.Visualizers.Winforms
 		{
 			ListName = Name;
 			InitializeComponent();
-			ManualIC();
-		}
-
-		/// <summary>
-		/// InitializeComponent for manually-added components.
-		/// </summary>
-		private void ManualIC()
-		{
-			ImageView = new FitsView();
-			ImageView.Dock = DockStyle.Fill;
-			this.panel1.Controls.Add(ImageView);
-			ImageView.Show();
-
 			Text = "Tracklet Viewer for " + ListName;
 		}
 

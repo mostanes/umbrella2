@@ -36,6 +36,8 @@
 			this.PropertyValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.button1 = new System.Windows.Forms.Button();
 			this.panel1 = new System.Windows.Forms.Panel();
+			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.ImageView = new Umbrella2.Visualizers.Winforms.FitsView();
 			this.dataGridView1 = new System.Windows.Forms.DataGridView();
 			this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -43,9 +45,9 @@
 			this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Column6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.panel2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
+			this.panel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -118,10 +120,27 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.panel1.ContextMenuStrip = this.contextMenuStrip1;
+			this.panel1.Controls.Add(this.ImageView);
 			this.panel1.Location = new System.Drawing.Point(290, 0);
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(429, 186);
 			this.panel1.TabIndex = 3;
+			// 
+			// contextMenuStrip1
+			// 
+			this.contextMenuStrip1.Name = "contextMenuStrip1";
+			this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
+			// 
+			// ImageView
+			// 
+			this.ImageView.AutoScroll = true;
+			this.ImageView.Center = new System.Drawing.Point(0, 0);
+			this.ImageView.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.ImageView.Image = null;
+			this.ImageView.Location = new System.Drawing.Point(0, 0);
+			this.ImageView.Name = "ImageView";
+			this.ImageView.Size = new System.Drawing.Size(429, 186);
+			this.ImageView.TabIndex = 0;
 			// 
 			// dataGridView1
 			// 
@@ -185,11 +204,6 @@
 			this.Column6.ReadOnly = true;
 			this.Column6.Width = 200;
 			// 
-			// contextMenuStrip1
-			// 
-			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
-			// 
 			// TrackletOutput
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -206,6 +220,7 @@
 			this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TrackletOutput_KeyPress);
 			this.panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).EndInit();
+			this.panel1.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
 			this.ResumeLayout(false);
 
@@ -228,5 +243,6 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Column6;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+		private FitsView ImageView;
 	}
 }

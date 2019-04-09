@@ -55,6 +55,7 @@
     <Compile Include="ImageDetection.cs" />
     <Compile Include="Math\LinearRegression.cs" />
     <Compile Include="Math\LineIntersection.cs" />
+    <Compile Include="Pipeline\Utils\AutoscheduleExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StandardDetectionFactory.cs" />
     <Compile Include="StandardTrackletFactory.cs" />

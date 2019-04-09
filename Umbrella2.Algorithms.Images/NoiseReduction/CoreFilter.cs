@@ -51,11 +51,15 @@ namespace Umbrella2.Algorithms.Images
 							DPSF[cnt] = FilterParameters.PSF[k * Size + l];
 							if (!FilterParameters.Mask[Y][X]) { MedValues[cnt] = Input[i + k, j + l]; cnt++; }
 						}
-					Array.Sort(MedValues, DPSF, 0, cnt);
-					double w;
-					for (s = 0, w = 0, k = Size; k <= cnt - Size; k++)
-					{ s += MedValues[k] * DPSF[k]; w += DPSF[k]; }
-					Output[i, j] = s / w;
+					if (cnt <= 2 * Size + 1) Output[i, j] = 0;
+					else
+					{
+						Array.Sort(MedValues, DPSF, 0, cnt);
+						double w;
+						for (s = 0, w = 0, k = Size; k <= cnt - Size; k++)
+						{ s += MedValues[k] * DPSF[k]; w += DPSF[k]; }
+						Output[i, j] = s / w;
+					}
 				}
 		}
 	}
