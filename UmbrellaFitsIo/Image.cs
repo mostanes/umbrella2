@@ -325,8 +325,7 @@ namespace Umbrella2.IO.FITS
 			rp.Intersect(new Rectangle(0, 0, (int) Width - 1, (int) Height - 1));
 			IntPtr Pointer;
 			var ImPos = GetPositionInFile(rp);
-			if (ImageNumber == 0) Pointer = File.GetDataView(-1, ImPos.Item1, ImPos.Item2);
-			else Pointer = File.GetDataView(ImageNumber, ImPos.Item1, ImPos.Item2);
+			Pointer = File.GetDataView(ImageNumber - 1, ImPos.Item1, ImPos.Item2);
 			Reader(Pointer, imData.Data, rp.Y - imData.Position.Y, rp.Bottom - imData.Position.Y, rp.X - imData.Position.X, rp.Right - imData.Position.X, (int) Width * BytesPerPixel);
 			File.ReleaseView(Pointer);
 
@@ -421,6 +420,14 @@ namespace Umbrella2.IO.FITS
 		/// <returns>A HeaderTable instance for the new FITS image.</returns>
 		HeaderTable GetHeader(int Bitpix)
 		{
+			Dictionary<string, string> records = (Transform == null ? GetHeaderWithoutTransform(Bitpix) : GetHeaderWithTransform(Bitpix));
+			HeaderTable het = records.ToDictionary((x) => x.Key, (x) => new ElevatedRecord(x.Key, x.Value));
+			return het;
+		}
+
+		/// <summary>Computes the headers when the input image has WCS coordinates.</summary>
+		Dictionary<string, string> GetHeaderWithTransform(int Bitpix)
+		{
 			string AlgName = Transform.ProjectionTransform.Name;
 			Transform.ProjectionTransform.GetReferencePoints(out double RA, out double Dec);
 			string T1 = " '" + (RAFirst ? "RA---" : "DEC--") + AlgName + "'";
@@ -436,8 +443,15 @@ namespace Umbrella2.IO.FITS
 				{"CD1_1", "  "+ (RAFirst?Matrix[0]:Matrix[2]).ToString("0.000000000000E+00") }, {"CD1_2", "  "+ (RAFirst?Matrix[1]:Matrix[3]).ToString("0.000000000000E+00") },
 				{"CD2_1", "  "+ (RAFirst?Matrix[2]:Matrix[0]).ToString("0.000000000000E+00") }, {"CD2_2", "  "+ (RAFirst?Matrix[3]:Matrix[1]).ToString("0.000000000000E+00") }
 			};
-			HeaderTable het = records.ToDictionary((x) => x.Key, (x) => new ElevatedRecord(x.Key, x.Value));
-			return het;
+			return records;
+		}
+
+		/// <summary>Computes the headers when the input image has no WCS information.</summary>
+		Dictionary<string, string> GetHeaderWithoutTransform(int Bitpix)
+		{
+			Dictionary<string, string> records = new Dictionary<string, string>()
+			{ {"SIMPLE", "   T" }, {"BITPIX", "   " + Bitpix.ToString()}, {"NAXIS"," 2"}, {"NAXIS1", "  " + Width.ToString()}, {"NAXIS2", "  " + Height.ToString()} };
+			return records;
 		}
 	}
 

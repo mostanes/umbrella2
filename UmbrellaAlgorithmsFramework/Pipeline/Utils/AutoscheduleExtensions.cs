@@ -5,7 +5,7 @@ using Umbrella2.Algorithms.Images;
 using Umbrella2.IO.FITS;
 using Umbrella2.PropertyModel.CommonProperties;
 
-namespace UmbrellaAlgorithmsFramework.Pipeline.Utils
+namespace Umbrella2.Pipeline.Utils
 {
 	/// <summary>
 	/// Provides shortcuts for common pipeline image mapping tasks.

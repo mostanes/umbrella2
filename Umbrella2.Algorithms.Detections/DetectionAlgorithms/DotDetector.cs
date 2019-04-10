@@ -40,7 +40,7 @@ namespace Umbrella2.Algorithms.Detection
 		{
 			FillZero = true,
 			InputMargins = 0,
-			Xstep = 0,
+			Xstep = 200,
 			Ystep = 50
 		};
 
@@ -91,12 +91,13 @@ namespace Umbrella2.Algorithms.Detection
 			/* Local mean & variance computation */
 			double Mean = 0, Var = 0;
 			double NThSq = Instance.NonrepresentativeThreshold * Instance.NonrepresentativeThreshold;
+			int cnt = 0;
 			for (i = 0; i < OH; i++) for (j = 0; j < OW; j++)
 					if (Input[i, j] * Input[i, j] < NThSq)
-					{ Mean += Input[i, j]; Var += Input[i, j] * Input[i, j]; }
-			Mean /= Input.Length;
-			Var /= Input.Length;
-			Var -= Mean;
+					{ Mean += Input[i, j]; Var += Input[i, j] * Input[i, j]; cnt++; }
+			Mean /= cnt;
+			Var /= cnt;
+			Var -= Mean * Mean;
 			double StDev = Sqrt(Var);
 			double HighThreshold = Instance.HighThresholdMultiplier * StDev + Mean;
 			double LowThreshold = Instance.LowThresholdMultiplier * StDev + Mean;
