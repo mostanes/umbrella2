@@ -213,7 +213,7 @@ namespace Umbrella2.Visualizers.Winforms
 		}
 
 		private void TrackletOutput_KeyPress(object sender, KeyPressEventArgs e)
-		{ HandleKeyPress(e.KeyChar); }
+		{ try { HandleKeyPress(e.KeyChar); } catch { } }
 
 		/// <summary>
 		/// Provides custom navigation according to the key pressed.
