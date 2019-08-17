@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Umbrella2.IO.FITS;
+using Umbrella2.IO;
 using static Umbrella2.Algorithms.Images.SchedCore;
 
 namespace Umbrella2.Algorithms.Images
@@ -25,7 +25,7 @@ namespace Umbrella2.Algorithms.Images
 		/// Creates a new BadPixel filter from a badpixel image.
 		/// </summary>
 		/// <param name="BadpixelFile">Badpixel input image: masked pixels are non-zero.</param>
-		public static BitArray[] CreateFilter(FitsImage BadpixelFile)
+		public static BitArray[] CreateFilter(Image BadpixelFile)
 		{
 			PositionDependentExtractor<BitArray[]> Algo = DetectSources;
 			BitArray[] Mask = new BitArray[BadpixelFile.Height];

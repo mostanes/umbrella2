@@ -1,6 +1,6 @@
 ﻿using System;
 using Umbrella2.Algorithms.Misc;
-using Umbrella2.IO.FITS;
+using Umbrella2.IO;
 using static System.Math;
 using static Umbrella2.Algorithms.Images.SchedCore;
 
@@ -16,14 +16,14 @@ namespace Umbrella2.Algorithms.Images.Normalization
 		/// <summary>Mesh of medians.</summary>
 		double[,] MedianPoints;
 		private MTPool<double[]> Cached;
-		FitsImage Input;
-		FitsImage Output;
+		Image Input;
+		Image Output;
 		ImageStatistics InputStat;
 
 		PositionDependentExtractor<Point4Distance> MedianMesh = RunMesh;
 		PositionDependentMap<Point4Distance> Normalizer = Normalize;
 
-		public Point4Distance(FitsImage Input, FitsImage Output, int MeshSize)
+		public Point4Distance(Image Input, Image Output, int MeshSize)
 		{
 			this.Input = Input;
 			this.Output = Output;

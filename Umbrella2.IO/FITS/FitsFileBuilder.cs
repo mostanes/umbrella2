@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HeaderTable = System.Collections.Generic.Dictionary<string, Umbrella2.IO.FITS.ElevatedRecord>;
+using HeaderTable = System.Collections.Generic.Dictionary<string, Umbrella2.IO.MetadataRecord>;
 
 namespace Umbrella2.IO.FITS
 {
@@ -11,12 +11,12 @@ namespace Umbrella2.IO.FITS
 	{
 		class FitsFileBuilder
 		{
-			internal List<ElevatedRecord> PrimaryHeader;
+			internal List<MetadataRecord> PrimaryHeader;
 			internal HeaderTable PrimaryTable;
 			internal int PrimaryDataPointer;
-			internal List<List<ElevatedRecord>> ExtensionHeaders;
+			internal List<List<MetadataRecord>> ExtensionHeaders;
 			internal List<int> ExtensionDataPointers;
-			internal Dictionary<int, List<ElevatedRecord>> MEFImagesHeaders;
+			internal Dictionary<int, List<MetadataRecord>> MEFImagesHeaders;
 			internal Dictionary<int, HeaderTable> MEFHeaderTable;
 			internal Dictionary<int, int> MEFDataPointers;
 		}

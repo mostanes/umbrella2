@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Umbrella2.IO.FITS;
+using Umbrella2.IO;
 using Umbrella2.IO.FITS.KnownKeywords;
 using Umbrella2.PropertyModel.CommonProperties;
 using static System.Math;
@@ -50,7 +50,7 @@ namespace Umbrella2.Algorithms.Detection
 		/// <param name="Input">Input image.</param>
 		/// <param name="ObservationTime">Input image time of observation.</param>
 		/// <returns>A list of detections.</returns>
-		public List<ImageDetection> DetectDots(FitsImage Input, ObservationTime ObservationTime)
+		public List<ImageDetection> DetectDots(Image Input, ObservationTime ObservationTime)
 		{
 			Detections = new List<DotDetection>();
 			PositionDependentExtractor<DotDetector> Extractor = DetectSources;
@@ -67,7 +67,7 @@ namespace Umbrella2.Algorithms.Detection
 		/// </summary>
 		/// <param name="Input">Input image.</param>
 		/// <returns>A list of the detected blobs.</returns>
-		public List<DotDetection> DetectDots(FitsImage Input)
+		public List<DotDetection> DetectDots(Image Input)
 		{
 			Detections = new List<DotDetection>();
 			((PositionDependentExtractor<DotDetector>) DetectSources).Run(this, Input, Parameters);

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using HeaderTable = System.Collections.Generic.Dictionary<string, Umbrella2.IO.FITS.ElevatedRecord>;
+using HeaderTable = System.Collections.Generic.Dictionary<string, Umbrella2.IO.MetadataRecord>;
 
 namespace Umbrella2.IO.FITS
 {
@@ -18,12 +18,12 @@ namespace Umbrella2.IO.FITS
 		MemoryMappedFile mmap;
 		internal readonly string Path;
 
-		public readonly List<ElevatedRecord> PrimaryHeader;
+		public readonly List<MetadataRecord> PrimaryHeader;
 		public readonly HeaderTable PrimaryTable;
 		public int PrimaryDataPointer;
-		public readonly List<List<ElevatedRecord>> ExtensionHeaders;
+		public readonly List<List<MetadataRecord>> ExtensionHeaders;
 		public readonly List<int> ExtensionDataPointers;
-		public readonly Dictionary<int, List<ElevatedRecord>> MEFImagesHeaders;
+		public readonly Dictionary<int, List<MetadataRecord>> MEFImagesHeaders;
 		public readonly Dictionary<int, HeaderTable> MEFHeaderTable;
 		public readonly Dictionary<int, int> MEFDataPointers;
 
@@ -89,7 +89,7 @@ namespace Umbrella2.IO.FITS
 
 			mmap = MemoryMappedFile.CreateFromFile(Path, FileMode.Create, Guid.NewGuid().ToString(), FLength, MemoryMappedFileAccess.ReadWrite);
 			Stream s = mmap.CreateViewStream();
-			foreach (var w in Headers) { PrimaryTable.Add(w.Key, w.Value); s.Write(w.Value.ToRawRecord(), 0, 80); }
+			foreach (var w in Headers) { PrimaryTable.Add(w.Key, w.Value); s.Write(((FITSMetadataRecord)w.Value).ToRawRecord(), 0, 80); }
 			s.Write(Encoding.UTF8.GetBytes("END".PadRight(80)), 0, 80);
 			PrimaryDataPointer = HLength;
 			s.Dispose();
@@ -105,7 +105,7 @@ namespace Umbrella2.IO.FITS
 		{
 			lock (OpenViews)
 			{
-				int MP = Position - Position % 65536;
+				int MP = Position - Position % 65536; /* Working around weird Windows things... */
 				MemoryMappedViewAccessor va = mmap.CreateViewAccessor(MP, Length + Position % 65536);
 				byte* pr = (byte*) 0;
 				va.SafeMemoryMappedViewHandle.AcquirePointer(ref pr);

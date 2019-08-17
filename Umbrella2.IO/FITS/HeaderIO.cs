@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HeaderTable = System.Collections.Generic.Dictionary<string, Umbrella2.IO.FITS.ElevatedRecord>;
+using HeaderTable = System.Collections.Generic.Dictionary<string, Umbrella2.IO.MetadataRecord>;
 
 namespace Umbrella2.IO.FITS
 {
@@ -44,20 +44,20 @@ namespace Umbrella2.IO.FITS
 			/// </summary>
 			/// <param name="Header">The header for which to compute the array length.</param>
 			/// <returns>Array length in bytes.</returns>
-			public static int ComputeDataArrayLength(Dictionary<string, ElevatedRecord> Header)
+			public static int ComputeDataArrayLength(Dictionary<string, MetadataRecord> Header)
 			{
 				try
 				{
-					ElevatedRecord bp = Header["BITPIX"];
-					ElevatedRecord naxr = Header["NAXIS"];
+					MetadataRecord bp = Header["BITPIX"];
+					MetadataRecord naxr = Header["NAXIS"];
 					int nax = naxr.Int;
 					if (nax != 2)
 					{
 						if (nax == 0) return 0;
 						else throw new NotSupportedException("Umbrella2 can only read 2D images.");
 					}
-					ElevatedRecord n1 = Header["NAXIS1"];
-					ElevatedRecord n2 = Header["NAXIS2"];
+					MetadataRecord n1 = Header["NAXIS1"];
+					MetadataRecord n2 = Header["NAXIS2"];
 
 					return Math.Abs(bp.Int) * n1.Int * n2.Int / 8;
 				}
@@ -70,25 +70,25 @@ namespace Umbrella2.IO.FITS
 			/// </summary>
 			/// <param name="stream">Input stream.</param>
 			/// <returns>A tuple containing a list and a dictionary of the header records.</returns>
-			internal static Tuple<List<ElevatedRecord>, HeaderTable> ReadHeaderFromStream(Stream stream)
+			internal static Tuple<List<MetadataRecord>, HeaderTable> ReadHeaderFromStream(Stream stream)
 			{
 				/* Read the headers and create the ElevatedRecord entries. */
 				List<KeywordRecord> prirec = ReadHeader(stream);
-				List<ElevatedRecord> PrimaryHeader = new List<ElevatedRecord>();
-				foreach (KeywordRecord kr in prirec) if (kr.HasEqual) PrimaryHeader.Add(ElevatedRecord.ToElevated(kr));
+				List<MetadataRecord> PrimaryHeader = new List<MetadataRecord>();
+				foreach (KeywordRecord kr in prirec) if (kr.HasEqual) PrimaryHeader.Add(KeywordRecord.Elevate(kr));
 
 				/* Give easy access to the metadata in the headers via the PrimaryTable. */
 				Dictionary<string, bool> Unique = new Dictionary<string, bool>();
-				HeaderTable PrimaryTable = new Dictionary<string, ElevatedRecord>();
-				foreach (ElevatedRecord ere in PrimaryHeader)
+				HeaderTable PrimaryTable = new Dictionary<string, MetadataRecord>();
+				foreach (MetadataRecord ere in PrimaryHeader)
 				{
 					if (Unique.ContainsKey(ere.Name)) { Unique[ere.Name] = false; continue; }
 					Unique.Add(ere.Name, true);
 					PrimaryTable.Add(ere.Name, ere);
 				}
-				foreach (ElevatedRecord ere in PrimaryHeader) if (!Unique[ere.Name]) PrimaryTable.Remove(ere.Name);
+				foreach (MetadataRecord ere in PrimaryHeader) if (!Unique[ere.Name]) PrimaryTable.Remove(ere.Name);
 
-				return new Tuple<List<ElevatedRecord>, HeaderTable>(PrimaryHeader, PrimaryTable);
+				return new Tuple<List<MetadataRecord>, HeaderTable>(PrimaryHeader, PrimaryTable);
 			}
 
 			/// <summary>
@@ -116,10 +116,10 @@ namespace Umbrella2.IO.FITS
 				if (stream.Position != Length)
 				{
 					if (numberGetter == null) numberGetter = DefaultGetter;
-					builder.ExtensionHeaders = new List<List<ElevatedRecord>>();
+					builder.ExtensionHeaders = new List<List<MetadataRecord>>();
 					builder.ExtensionDataPointers = new List<int>();
 					builder.MEFDataPointers = new Dictionary<int, int>();
-					builder.MEFImagesHeaders = new Dictionary<int, List<ElevatedRecord>>();
+					builder.MEFImagesHeaders = new Dictionary<int, List<MetadataRecord>>();
 					builder.MEFHeaderTable = new Dictionary<int, HeaderTable>();
 
 					/* Read extension headers. */
@@ -131,9 +131,9 @@ namespace Umbrella2.IO.FITS
 						builder.ExtensionHeaders.Add(R2.Item1);
 						builder.ExtensionDataPointers.Add(Loc);
 						
-						ElevatedRecord img;
+						MetadataRecord img;
 						try { img = R2.Item2["XTENSION"]; } catch (Exception ex) { throw new FITSFormatException("Extension headers do not follow standard.", ex); }
-						if (img.GetFixedString == "IMAGE   ")
+						if (img.AsString == "IMAGE   ")
 						{
 							int ImNr = numberGetter(exn, R2.Item2);
 							builder.MEFImagesHeaders.Add(ImNr, R2.Item1);

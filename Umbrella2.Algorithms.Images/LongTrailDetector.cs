@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Umbrella2.Algorithms.Geometry;
-using Umbrella2.IO.FITS;
+using Umbrella2.IO;
 
 namespace Umbrella2.Algorithms.Images
 {
@@ -55,7 +55,7 @@ namespace Umbrella2.Algorithms.Images
 			/// <summary>
 			/// Currently processed image.
 			/// </summary>
-			public FitsImage RunningImage;
+			public Image RunningImage;
 			/// <summary>
 			/// The results of the algorithm run.
 			/// </summary>
@@ -123,7 +123,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="Image">Input image.</param>
 		/// <param name="Stats">Input image statistical information.</param>
 		/// <param name="Data">Algorithm data bag.</param>
-		public static void PrepareAlgorithmForImage(FitsImage Image, ImageStatistics Stats, ref LongTrailData Data)
+		public static void PrepareAlgorithmForImage(Image Image, ImageStatistics Stats, ref LongTrailData Data)
 		{
 			Data.Results = new List<ImageDetection>();
 			Data.RunningImage = Image;
