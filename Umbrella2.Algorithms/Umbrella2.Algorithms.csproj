@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E9384B08-F76C-4096-8BF0-A6515E6B6DEA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Umbrella2.Algorithms</RootNamespace>
+    <AssemblyName>UmbrellaAlgorithmsFramework</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\UmbrellaAlgorithmsFramework.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\UmbrellaAlgorithmsFramework.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CommonProperties\ImageSource.cs" />
+    <Compile Include="CommonProperties\ObjectIdentity.cs" />
+    <Compile Include="CommonProperties\ObjectPhotometry.cs" />
+    <Compile Include="CommonProperties\ObjectPoints.cs" />
+    <Compile Include="CommonProperties\ObjectSize.cs" />
+    <Compile Include="CommonProperties\PairingProperties.cs" />
+    <Compile Include="CommonProperties\Position.cs" />
+    <Compile Include="CommonProperties\TrackletVelocity.cs" />
+    <Compile Include="CommonProperties\TrackletVelocityRegression.cs" />
+    <Compile Include="DataStructures\ConnectedComponentGraph.cs" />
+    <Compile Include="DataStructures\MTPool.cs" />
+    <Compile Include="DataStructures\QuadTree.cs" />
+    <Compile Include="Images\CPUParallel.cs" />
+    <Compile Include="Images\ImageStatistics.cs" />
+    <Compile Include="Images\SchedCore.cs" />
+    <Compile Include="Images\SchedUtil.cs" />
+    <Compile Include="ImageDetection.cs" />
+    <Compile Include="Math\LinearRegression.cs" />
+    <Compile Include="Math\LineIntersection.cs" />
+    <Compile Include="Pipeline\Utils\AutoscheduleExtensions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StandardDetectionFactory.cs" />
+    <Compile Include="StandardTrackletFactory.cs" />
+    <Compile Include="StarData.cs" />
+    <Compile Include="Tracklet.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Umbrella2.SharedBase\Umbrella2.SharedBase.csproj">
+      <Project>{1F30DC02-4ACB-4E11-85CB-827EC6F9CDCB}</Project>
+      <Name>Umbrella2.SharedBase</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Umbrella2.IO\Umbrella2.IO.csproj">
+      <Project>{9837FA6B-B7B7-49A1-A33F-CFB557652814}</Project>
+      <Name>Umbrella2.IO</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
