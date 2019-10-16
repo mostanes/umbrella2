@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.MemoryMappedFiles;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using HeaderTable = System.Collections.Generic.Dictionary<string, Umbrella2.IO.MetadataRecord>;
 
 namespace Umbrella2.IO.FITS
@@ -13,40 +10,31 @@ namespace Umbrella2.IO.FITS
 	/// <summary>
 	/// A handle to a FITS File on the disk. Used to read/write data.
 	/// </summary>
-	public partial class FitsFile
+	public abstract class FitsFile
 	{
-		MemoryMappedFile mmap;
 		internal readonly string Path;
 
-		public readonly List<MetadataRecord> PrimaryHeader;
 		public readonly HeaderTable PrimaryTable;
-		public int PrimaryDataPointer;
-		public readonly List<List<MetadataRecord>> ExtensionHeaders;
-		public readonly List<int> ExtensionDataPointers;
-		public readonly Dictionary<int, List<MetadataRecord>> MEFImagesHeaders;
+		protected int PrimaryDataPointer;
+		protected readonly List<int> ExtensionDataPointers;
 		public readonly Dictionary<int, HeaderTable> MEFHeaderTable;
-		public readonly Dictionary<int, int> MEFDataPointers;
+		protected readonly Dictionary<int, int> MEFDataPointers;
 
-		readonly Dictionary<IntPtr, MemoryMappedViewAccessor> OpenViews;
-		readonly bool OutputFile;
+		protected readonly bool OutputFile;
 
 		public delegate int MEFImageNumberGetter(int ExtensionNumber, HeaderTable Header);
 
-		static int DefaultGetter(int ExtensionNumber, HeaderTable Header)
+		internal static int DefaultGetter(int ExtensionNumber, HeaderTable Header)
 		{ if (Header.ContainsKey("IMAGEID")) return Header["IMAGEID"].Int - 1; else return ExtensionNumber; }
 
-		private FitsFile()
-		{
-			OpenViews = new Dictionary<IntPtr, MemoryMappedViewAccessor>();
-		}
-
+#if NEVER
 		/// <summary>
 		/// Opens a FITS File handle from a file on a local disk.
 		/// </summary>
 		/// <param name="Path">Path to where the image is stored.</param>
 		/// <param name="OutputImage">Specifies whether the image is an input or an output one.</param>
 		/// <param name="numberGetter">Delegate that generates the image numbers in a MEF FITS.</param>
-		public FitsFile(string Path, bool OutputImage, MEFImageNumberGetter numberGetter = null) : this()
+		public FitsFile(string Path, bool OutputImage, MEFImageNumberGetter numberGetter = null)
 		{
 			OutputFile = OutputImage;
 			this.Path = Path;
@@ -58,11 +46,8 @@ namespace Umbrella2.IO.FITS
 				Stream stream = mmap.CreateViewStream();
 				FitsFileBuilder builder = HeaderIO.ReadFileHeaders(stream, info.Length, numberGetter);
 				PrimaryTable = builder.PrimaryTable;
-				PrimaryHeader = builder.PrimaryHeader;
 				PrimaryDataPointer = builder.PrimaryDataPointer;
-				ExtensionHeaders = builder.ExtensionHeaders;
 				ExtensionDataPointers = builder.ExtensionDataPointers;
-				MEFImagesHeaders = builder.MEFImagesHeaders;
 				MEFHeaderTable = builder.MEFHeaderTable;
 				MEFDataPointers = builder.MEFDataPointers;
 				stream.Dispose();
@@ -74,25 +59,18 @@ namespace Umbrella2.IO.FITS
 				MEFDataPointers = new Dictionary<int, int>();
 			}
 		}
-		
-		/// <summary>
-		/// Sets the primary headers for an output file.
-		/// </summary>
-		public void SetPrimaryHeaders(HeaderTable Headers)
+#endif
+
+		protected FitsFile(string Path, bool OutputImage, MEFImageNumberGetter numberGetter, FitsFileBuilder Headers)
 		{
-			if (!OutputFile) throw new InvalidOperationException("Attempted writing to an input file.");
+			OutputFile = OutputImage;
+			this.Path = Path;
 
-			int HLength = ((Headers.Count * 80) + 2879) / 2880 * 2880;
-			int DLength = HeaderIO.ComputeDataArrayLength(Headers) + 2879;
-			DLength = DLength / 2880 * 2880;
-			int FLength = HLength + DLength;
-
-			mmap = MemoryMappedFile.CreateFromFile(Path, FileMode.Create, Guid.NewGuid().ToString(), FLength, MemoryMappedFileAccess.ReadWrite);
-			Stream s = mmap.CreateViewStream();
-			foreach (var w in Headers) { PrimaryTable.Add(w.Key, w.Value); s.Write(((FITSMetadataRecord)w.Value).ToRawRecord(), 0, 80); }
-			s.Write(Encoding.UTF8.GetBytes("END".PadRight(80)), 0, 80);
-			PrimaryDataPointer = HLength;
-			s.Dispose();
+			PrimaryTable = Headers.PrimaryTable;
+			PrimaryDataPointer = Headers.PrimaryDataPointer;
+			ExtensionDataPointers = Headers.ExtensionDataPointers;
+			MEFHeaderTable = Headers.MEFHeaderTable;
+			MEFDataPointers = Headers.MEFDataPointers;
 		}
 
 		/// <summary>
@@ -101,20 +79,7 @@ namespace Umbrella2.IO.FITS
 		/// <param name="Position">Position in the file where the view should start.</param>
 		/// <param name="Length">Length of the mapped file view.</param>
 		/// <returns>Pointer to the memory mapped view.</returns>
-		internal unsafe IntPtr GetView(int Position, int Length)
-		{
-			lock (OpenViews)
-			{
-				int MP = Position - Position % 65536; /* Working around weird Windows things... */
-				MemoryMappedViewAccessor va = mmap.CreateViewAccessor(MP, Length + Position % 65536);
-				byte* pr = (byte*) 0;
-				va.SafeMemoryMappedViewHandle.AcquirePointer(ref pr);
-				pr += (Position % 65536); /* Working around weird Windows things... */
-				IntPtr ptr = (IntPtr) pr;
-				OpenViews.Add(ptr, va);
-				return ptr;
-			}
-		}
+		internal abstract unsafe IntPtr GetView(int Position, int Length);
 
 		/// <summary>
 		/// Memory maps image data.
@@ -146,15 +111,6 @@ namespace Umbrella2.IO.FITS
 		/// Releases the memory mapped file view (and associated resources).
 		/// </summary>
 		/// <param name="View">Pointer to the memory mapped file view.</param>
-		internal void ReleaseView(IntPtr View)
-		{
-			lock (OpenViews)
-			{
-				OpenViews[View].SafeMemoryMappedViewHandle.ReleasePointer();
-				OpenViews[View].Flush();
-				OpenViews[View].Dispose();
-				OpenViews.Remove(View);
-			}
-		}
+		internal abstract void ReleaseView(IntPtr View);
 	}
 }

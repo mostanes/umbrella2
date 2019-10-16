@@ -28,7 +28,7 @@ namespace Umbrella2.Pipeline.Utils
 		public static Image EnsureImage(Action<Image> Algorithm, Image Model, string OutputName, int BitPix = 0, List<ImageProperties> ExtraProperties = null)
 		{
 #warning Not Implemented; Bug.
-			//if (File.Exists(OutputName)) return new FitsImage(new FitsFile(OutputName, false));
+			if (File.Exists(OutputName)) return new FitsImage(MMapFitsFile.OpenReadFile(OutputName));
 			if (BitPix == 0) BitPix = DefaultBitPix;
 			Image Image = null; //new FitsImage(new FitsFile(OutputName, true), Model.Width, Model.Height, Model.Transform, BitPix, ExtraProperties);
 			Algorithm(Image);

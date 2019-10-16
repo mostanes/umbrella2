@@ -71,8 +71,18 @@ namespace Umbrella2.IO
 		/// <summary>
 		/// Extra Image Properties.
 		/// </summary>
-		readonly Dictionary<Type, ImageProperties> PropertiesDictionary;
-		
+		protected readonly Dictionary<Type, ImageProperties> PropertiesDictionary;
+
+		protected Image(int ImageNumber, IWCSProjection Transform, HeaderTable Header, uint Width, uint Height)
+		{
+			this.ImageNumber = ImageNumber;
+			this.Transform = Transform;
+			this.Header = Header;
+			this.Width = Width;
+			this.Height = Height;
+			this.PropertiesDictionary = new Dictionary<Type, ImageProperties>();
+		}
+
 		/// <summary>
 		/// Fetches the image properties of given type for the image. Caches the instance.
 		/// </summary>

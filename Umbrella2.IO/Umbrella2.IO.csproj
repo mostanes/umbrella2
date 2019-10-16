@@ -52,11 +52,14 @@
     <Compile Include="WCS\ProjectionsSupport.cs" />
     <Compile Include="WCS\TAN.cs" />
     <Compile Include="FITS\FitsFile.cs" />
-    <Compile Include="FITS\FitsFileBuilder.cs" />
     <Compile Include="FITS\FitsRecords.cs" />
     <Compile Include="FITS\HeaderIO.cs" />
     <Compile Include="MetadataRecord.cs" />
     <Compile Include="FITS\FITSMetadataRecord.cs" />
+    <Compile Include="FITS\FitsImage.cs" />
+    <Compile Include="FITS\FICHV.cs" />
+    <Compile Include="FITS\MMapFitsFile.cs" />
+    <Compile Include="FITS\FitsBuilder.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
