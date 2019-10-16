@@ -16,8 +16,10 @@ namespace Umbrella2.Algorithms.Images.Schedulers
 			int Parallelism = Environment.ProcessorCount;
 			ThreadDetails[] thDetails = new ThreadDetails[Parallelism];
 
-			/* Compute block sizes */
+			/* Compute block sizes. Make sure block sizes are multiples of Ystep (except for last block). */
 			int StepSize = (Details.DataHeight + Parallelism - 1) / Parallelism;
+			if (Details.Ystep != 0)
+				StepSize = (StepSize + Details.Ystep - 1) / Details.Ystep * Details.Ystep;
 
 			/* Update blocks */
 			for (int i = 0; i < Parallelism; i++)

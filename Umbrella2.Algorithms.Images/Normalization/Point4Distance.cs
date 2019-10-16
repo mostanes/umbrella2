@@ -45,7 +45,7 @@ namespace Umbrella2.Algorithms.Images.Normalization
 			/* In very bright regions, keep image's zero level as the median, thus avoiding background stretching by stars */
 			if (Abs(V[V.Length / 2] - Mesh.InputStat.ZeroLevel) > 10 * Mesh.InputStat.StDev) V[V.Length / 2] = Mesh.InputStat.ZeroLevel;
 			/* Load the median as a mesh point */
-			Mesh.MedianPoints[(int) Round(Position.Alignment.Y / Mesh.MeshSize), (int) Round(Position.Alignment.X / Mesh.MeshSize)] = V[V.Length / 2];
+			Mesh.MedianPoints[(int) Round(Position.Alignment.Y) / Mesh.MeshSize, (int) Round(Position.Alignment.X) / Mesh.MeshSize] = V[V.Length / 2];
 		}
 
 		/// <summary>
