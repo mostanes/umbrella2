@@ -24,7 +24,9 @@ namespace Umbrella2.Algorithms.Images.Schedulers
 			/* Update blocks */
 			for (int i = 0; i < Parallelism; i++)
 				thDetails[i] = new ThreadDetails() { CurrentPositionX = 0, CurrentPositionY = i * StepSize, StartPosition = i * StepSize, EndPosition = (i + 1) * StepSize };
-			thDetails[Parallelism - 1].EndPosition = Details.DataHeight;
+			for (int i = 0; i < Parallelism; i++)
+				if (thDetails[i].EndPosition > Details.DataHeight)
+					thDetails[i].EndPosition = Details.DataHeight;
 
 			/* Run in parallel */
 			Parallel.For(0, Parallelism, (i) => ProcessBlock(Details, ref thDetails[i]));
@@ -40,6 +42,8 @@ namespace Umbrella2.Algorithms.Images.Schedulers
 			/* Initialized inputs and outputs */
 			ImageData[] Dataset = new ImageData[RunDetails.InputImages.Length];
 			ImageData OutputData = default(ImageData);
+			/* Check for cases where split produces no data for current CPU. */
+			if (ThDetails.CurrentPositionY > ThDetails.EndPosition) return;
 			/* While there is data to process */
 			while (ThDetails.CurrentPositionY < ThDetails.EndPosition)
 			{
