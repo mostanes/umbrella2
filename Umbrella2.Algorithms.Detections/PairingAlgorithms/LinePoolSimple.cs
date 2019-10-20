@@ -8,12 +8,19 @@ namespace Umbrella2.Algorithms.Pairing
 {
 	public class LinePoolSimple : MDPoolCore
 	{
-		public double MaxLinErrorArcSec = 4.0;
+		public double MaxLinErrorArcSec = 2.0;
+		public double SearchExtra = 5.0;
 
 		List<ImageDetection[][]> CandidatePairings;
 
 		bool VerifyPair(ImageDetection a, ImageDetection b)
 		{
+			if (a.TryFetchProperty(out PairingProperties ppa) && b.TryFetchProperty(out PairingProperties ppb))
+				if (ppa.StarPolluted | ppb.StarPolluted)
+					return false;
+
+			double ErrRad = MaxLinErrorArcSec * Math.PI / 180 / 3600;
+
 			double MsizeLD = (a.FetchProperty<ObjectSize>().PixelEllipse.SemiaxisMajor + b.FetchProperty<ObjectSize>().PixelEllipse.SemiaxisMajor) * 2;
 			MsizeLD *= a.ParentImage.Transform.GetEstimatedWCSChainDerivative();
 			double Mdistance = (a.Barycenter.EP ^ b.Barycenter.EP);
@@ -21,7 +28,7 @@ namespace Umbrella2.Algorithms.Pairing
 			double TExpTime = a.Time.Exposure.TotalSeconds + b.Time.Exposure.TotalSeconds;
 
 			/* If the distance is too large for light sources too small, no need to check further */
-			if ((MsizeLD + MaxLinErrorArcSec) * DeltaABTimeS < Mdistance * TExpTime) return false;
+			if ((MsizeLD + ErrRad) * DeltaABTimeS < Mdistance * TExpTime) return false;
 
 			return true;
 		}
@@ -35,7 +42,9 @@ namespace Umbrella2.Algorithms.Pairing
 			double DecT = LineFit.ComputeResidualSqSum(new double[] { 0, BSec, CSec },
 				new double[] { a.Barycenter.EP.Dec, b.Barycenter.EP.Dec, c.Barycenter.EP.Dec });
 
-			if (RAT + DecT > MaxLinErrorArcSec * MaxLinErrorArcSec) return false;
+			double ErrRad = MaxLinErrorArcSec * Math.PI / 180 / 3600;
+
+			if (RAT + DecT > ErrRad * ErrRad) return false;
 			else return true;
 		}
 
@@ -53,11 +62,12 @@ namespace Umbrella2.Algorithms.Pairing
 			{
 				TimeSpan tsp = dt - a.Time.Time;
 				EquatorialPoint eqp = new EquatorialPoint() { RA = RAT.Intercept + RAT.Slope * tsp.TotalSeconds, Dec = DecT.Intercept + DecT.Slope * tsp.TotalSeconds };
-				double Radius = tsp.TotalSeconds * MaxLinErrorArcSec / SepSec + MaxLinErrorArcSec;
+				double RadiusArcSec = tsp.TotalSeconds * MaxLinErrorArcSec / SepSec + SearchExtra;
+				double RadiusRad = RadiusArcSec * Math.PI / 180 / 3600;
 
-				var ImDL = DetectionPool.Query(eqp.RA, eqp.Dec, Radius);
+				var ImDL = DetectionPool.Query(eqp.Dec, eqp.RA, RadiusRad);
 
-				ImDL.RemoveAll((x) => ((x.Barycenter.EP ^ eqp) > Radius) || (x.Time.Time != dt) || !Line3Way(a, b, x));
+				ImDL.RemoveAll((x) => ((x.Barycenter.EP ^ eqp) > RadiusRad) || (x.Time.Time != dt) || !Line3Way(a, b, x) || (x.TryFetchProperty(out PairingProperties px) && px.IsPaired));
 				//DetectedInPool.Add(DetectionsList);
 				Dects.Add(ImDL.ToArray());
 			}
