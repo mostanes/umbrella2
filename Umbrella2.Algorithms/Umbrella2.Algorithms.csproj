@@ -61,6 +61,7 @@
     <Compile Include="StandardTrackletFactory.cs" />
     <Compile Include="StarData.cs" />
     <Compile Include="Tracklet.cs" />
+    <Compile Include="Math\LineFit.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Umbrella2.SharedBase\Umbrella2.SharedBase.csproj">

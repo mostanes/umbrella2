@@ -42,9 +42,9 @@
     <Compile Include="Filtering\MedianDetectionFilters.cs" />
     <Compile Include="Filtering\TrackletFilters.cs" />
     <Compile Include="PairingAlgorithms\MDPoolCore.cs" />
-    <None Include="PairingAlgorithms\PoolPairwiseAnalyzer.cs" />
     <Compile Include="PairingAlgorithms\PrePair.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PairingAlgorithms\LinePoolSimple.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Umbrella2.Algorithms\Umbrella2.Algorithms.csproj">

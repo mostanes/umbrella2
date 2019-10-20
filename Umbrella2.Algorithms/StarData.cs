@@ -27,11 +27,11 @@ namespace Umbrella2.Algorithms.Filtering
 		/// </summary>
 		/// <param name="Detections">List of the detections to analyze.</param>
 		/// <param name="StarMultiplier">Ratio between the radius of star pollution marking and the star radius.</param>
-		public void MarkStarCrossed(IEnumerable<ImageDetection> Detections, double StarMultiplier)
+		public void MarkStarCrossed(IEnumerable<ImageDetection> Detections, double StarMultiplier, double MinStarFlux)
 		{
 			foreach (ImageDetection d in Detections)
 				foreach (Star s in FixedStarList)
-					if ((s.PixCenter ^ d.Barycenter.PP) < s.PixRadius * StarMultiplier) { d.FetchOrCreate<PairingProperties>().StarPolluted = true; break; }
+					if (s.Flux > MinStarFlux && (s.PixCenter ^ d.Barycenter.PP) < s.PixRadius * StarMultiplier) { d.FetchOrCreate<PairingProperties>().StarPolluted = true; break; }
 		}
 	}
 }
