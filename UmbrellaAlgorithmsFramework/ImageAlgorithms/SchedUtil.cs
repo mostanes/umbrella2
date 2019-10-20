@@ -50,9 +50,7 @@ namespace Umbrella2.Algorithms.Images.Schedulers
 
 		static void LockDataNofill(RunDetails RD, ThreadDetails TD, FitsImage Image, ref ImageData Data, bool Readonly)
 		{
-			/* Not initialized */
-			if (TD.CurrentPositionY == TD.StartPosition && TD.CurrentPositionX == 0)
-				Data = Image.LockData(new System.Drawing.Rectangle(TD.CurrentPositionX, TD.CurrentPositionY, RD.Xstep, RD.Ystep), false, Readonly);
+			bool NotInitialized = TD.CurrentPositionY == TD.StartPosition && TD.CurrentPositionX == 0;
 
 			/* Compute required height and width */
 			int NWidth = RD.Xstep;
@@ -63,9 +61,10 @@ namespace Umbrella2.Algorithms.Images.Schedulers
 				NHeight = TD.EndPosition - TD.CurrentPositionY;
 
 			/* If window size must be changed */
-			if (NWidth != Data.Position.Width || NHeight != Data.Position.Height)
+			if (NWidth != Data.Position.Width || NHeight != Data.Position.Height || NotInitialized)
 			{
-				Image.ExitLock(Data);
+				if (!NotInitialized)
+					Image.ExitLock(Data);
 				Data = Image.LockData(new System.Drawing.Rectangle(TD.CurrentPositionX, TD.CurrentPositionY, NWidth, NHeight), false, Readonly);
 			}
 			/* Just swap otherwise */
