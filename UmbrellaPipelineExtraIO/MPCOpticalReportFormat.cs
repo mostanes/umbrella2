@@ -101,9 +101,9 @@ namespace Umbrella2.Pipeline.ExtraIO
 			public bool DetectionAsterisk;
 			public PublishingNote PubNote;
 			public Note2 N2;
-			public DateTime ObsTime;
-			public EquatorialPoint Coordinates;
-			public double Mag;
+			public DateTime? ObsTime;
+			public EquatorialPoint? Coordinates;
+			public double? Mag;
 			public MagnitudeBand MagBand;
 			public string ObservatoryCode;
 		}
@@ -124,30 +124,128 @@ namespace Umbrella2.Pipeline.ExtraIO
 			Line[2] = MPCSpace;
 			Line[3] = MPCSpace;
 			Line[4] = MPCSpace;
+
+			if (ObservedObject.ObjectDesignation == null)
+				ObservedObject.ObjectDesignation = new string(' ', 7);
 			if (ObservedObject.ObjectDesignation.Length != 7)
 				throw new InvalidFieldException(InvalidFieldException.FieldType.ObjectDesignation);
 			Line.Insert(5, ObservedObject.ObjectDesignation);
+
 			Line[12] = ObservedObject.DetectionAsterisk ? '*' : MPCSpace;
 			Line[13] = (char) ((byte) ObservedObject.PubNote);
 			Line[14] = (char) ((byte) ObservedObject.N2);
-			string DateString = ObservedObject.ObsTime.ToString("yyyy MM dd");
 
-			DateString += ObservedObject.ObsTime.TimeOfDay.TotalDays.ToString(".00000");
+			string DateString = new string(' ', 16);
+			if (ObservedObject.ObsTime.HasValue)
+			{
+				DateString = ObservedObject.ObsTime.Value.ToString("yyyy MM dd");
+				DateString += ObservedObject.ObsTime.Value.TimeOfDay.TotalDays.ToString(".00000");
+			}
+
 			Line.Insert(15, DateString);
 			Line.Insert(31, MPCSpace);
-			Line.Insert(32, ObservedObject.Coordinates.FormatToString(Format.MPC_RA));
-			Line.Insert(44, ObservedObject.Coordinates.FormatToString(Format.MPC_Dec));
+			if (ObservedObject.Coordinates.HasValue)
+			{
+				Line.Insert(32, ObservedObject.Coordinates.Value.FormatToString(Format.MPC_RA));
+				Line.Insert(44, ObservedObject.Coordinates.Value.FormatToString(Format.MPC_Dec));
+			}
+			else Line.Insert(32, new string(' ', 24));
+
 			int i;
 			for (i = 56; i < 65; i++)
 				Line[i] = MPCSpace;
-			Line.Insert(65, ObservedObject.Mag.ToString("00.0 "));
+
+			if (ObservedObject.Mag.HasValue)
+				Line.Insert(65, ObservedObject.Mag.Value.ToString("00.0 "));
+			else Line.Insert(65, new string(' ', 5));
+
 			Line[70] = (char) ((byte) ObservedObject.MagBand);
 			for (i = 71; i < 77; i++)
 				Line[i] = MPCSpace;
+
+			if (ObservedObject.ObservatoryCode == null) ObservedObject.ObservatoryCode = new string(' ', 3);
 			if (ObservedObject.ObservatoryCode.Length != 3)
 				throw new InvalidFieldException(InvalidFieldException.FieldType.ObservatoryCode);
 			Line.Insert(77, ObservedObject.ObservatoryCode);
+
 			return Line.ToString().Substring(0, 80);
+		}
+
+		/// <summary>
+		/// Parses a MPC record line.
+		/// </summary>
+		/// <param name="Line">A string containing the MPC report. Must be exactly 80 ASCII8 characters long.</param>
+		/// <returns>An object observation instance.</returns>
+		public static ObsInstance ParseLine(string Line)
+		{
+			if (Line.Length != 80)
+				throw new ArgumentException("The line is too short. Expecting 80-character lines.", nameof(Line));
+
+			ObsInstance instance = new ObsInstance();
+			string Designation = Line.Substring(5, 7);
+			if (string.IsNullOrWhiteSpace(Designation))
+				instance.ObjectDesignation = null;
+			else
+				instance.ObjectDesignation = Designation;
+
+			switch(Line[12])
+			{
+				case '*': instance.DetectionAsterisk = true; break;
+				case MPCSpace: instance.DetectionAsterisk = false; break;
+				default: throw new InvalidFieldException(InvalidFieldException.FieldType.DetectionAsterisk);
+			}
+
+			byte PubNote = (byte)Line[13];
+			byte N2 = (byte)Line[14];
+			instance.PubNote = (PublishingNote)PubNote;
+			instance.N2 = (Note2)N2;
+
+			string Date = Line.Substring(15, 10);
+			string Time = Line.Substring(25, 6);
+			var IC = System.Globalization.CultureInfo.InvariantCulture;
+			if (string.IsNullOrWhiteSpace(Date) | string.IsNullOrWhiteSpace(Time))
+				instance.ObsTime = null;
+			else
+			{
+				try
+				{
+					DateTime dt = DateTime.ParseExact(Date, "yyyy MM dd", IC);
+					double tval = double.Parse(Time, System.Globalization.NumberStyles.AllowDecimalPoint);
+					instance.ObsTime = dt.AddDays(tval);
+				}
+				catch (Exception ex) { throw new InvalidFieldException(InvalidFieldException.FieldType.ObsTime); }
+			}
+
+			string RA = Line.Substring(32, 12);
+			string Dec = Line.Substring(44, 12);
+			if (string.IsNullOrWhiteSpace(RA) | string.IsNullOrWhiteSpace(Dec))
+				instance.Coordinates = null;
+			else
+			{
+				try
+				{ EquatorialPoint eqp = ParseFromMPCString(RA + " " + Dec); instance.Coordinates = eqp; }
+				catch (Exception ex) { throw new InvalidFieldException(InvalidFieldException.FieldType.Coordinates)}
+			}
+
+			string Mag = Line.Substring(65, 4);
+			if (string.IsNullOrWhiteSpace(Mag))
+				instance.Mag = null;
+			else
+			{
+				if (double.TryParse(Mag, out double M))
+					instance.Mag = M;
+				else throw new InvalidFieldException(InvalidFieldException.FieldType.Magnitude);
+			}
+
+			byte MagBand = (byte)Line[70];
+			instance.MagBand = (MagnitudeBand)MagBand;
+
+			string ObsCode = Line.Substring(77, 3);
+			if (string.IsNullOrWhiteSpace(ObsCode))
+				instance.ObservatoryCode = null;
+			else instance.ObservatoryCode = ObsCode;
+
+			return instance;
 		}
 
 #pragma warning disable 1591
@@ -160,7 +258,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 			/// Represents the fields that could have failed.
 			/// </summary>
 			public enum FieldType
-			{ PublishingNote, MagnitudeBand, Note2, ObjectDesignation, Time, RADEC, Magnitude, ObservatoryCode }
+			{ PublishingNote, MagnitudeBand, Note2, ObjectDesignation, Time, RADEC, Magnitude, ObservatoryCode, DetectionAsterisk, ObsTime, Coordinates }
 
 			/// <summary>
 			/// The field that failed.

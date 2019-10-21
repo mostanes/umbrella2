@@ -64,7 +64,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 				case Format.RadExplicit:
 					return "RA=" + Point.RA.ToString() + " " + "Dec=" + Point.Dec.ToString();
 				default:
-					throw new ArgumentOutOfRangeException("OutputFormat");
+					throw new ArgumentOutOfRangeException(nameof(OutputFormat));
 			}
 		}
 

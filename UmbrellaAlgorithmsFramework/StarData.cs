@@ -27,6 +27,7 @@ namespace Umbrella2.Algorithms.Filtering
 		/// </summary>
 		/// <param name="Detections">List of the detections to analyze.</param>
 		/// <param name="StarMultiplier">Ratio between the radius of star pollution marking and the star radius.</param>
+		/// <param name="MinStarFlux">Minimum flux of a fixed object before it marks nearby objects as star-crossing.</param>
 		public void MarkStarCrossed(IEnumerable<ImageDetection> Detections, double StarMultiplier, double MinStarFlux)
 		{
 			foreach (ImageDetection d in Detections)
