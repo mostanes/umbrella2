@@ -6,13 +6,20 @@ using Umbrella2.PropertyModel.CommonProperties;
 
 namespace Umbrella2.Algorithms.Pairing
 {
+	/// <summary>
+	/// A <see cref="MDPoolCore"/> algorithm that works by considering line fitting residuals.
+	/// </summary>
 	public class LinePoolSimple : MDPoolCore
 	{
+		/// <summary>The maximum sum of residuals in arcsec.</summary>
 		public double MaxLinErrorArcSec = 2.0;
+		/// <summary>Amount added to the search radius to ensure the detections are properly found.</summary>
 		public double SearchExtra = 5.0;
 
+		/// <summary>Object pairings. To be later processed into <see cref="Tracklet"/>s.</summary>
 		List<ImageDetection[][]> CandidatePairings;
 
+		/// <summary>Checks whether a pair of detections makes reasonable sense to become a candidate object.</summary>
 		bool VerifyPair(ImageDetection a, ImageDetection b)
 		{
 			if (a.TryFetchProperty(out PairingProperties ppa) && b.TryFetchProperty(out PairingProperties ppb))
@@ -33,6 +40,7 @@ namespace Umbrella2.Algorithms.Pairing
 			return true;
 		}
 
+		/// <summary>Checks whether 3 points are collinear.</summary>
 		bool Line3Way(ImageDetection a, ImageDetection b, ImageDetection c)
 		{
 			double BSec = (b.Time.Time - a.Time.Time).TotalSeconds;
@@ -48,8 +56,10 @@ namespace Umbrella2.Algorithms.Pairing
 			else return true;
 		}
 
+		/// <summary>Attempts to find a tracklet given 2 image detections (from separate images).</summary>
 		void AnalyzePair(ImageDetection a, ImageDetection b)
 		{
+			/* Figure out line vector */
 			double SepSec = (b.Time.Time - a.Time.Time).TotalSeconds;
 
 			LinearRegression.LinearRegressionParameters RAT = LinearRegression.ComputeLinearRegression(new double[] { 0, SepSec },
@@ -57,20 +67,24 @@ namespace Umbrella2.Algorithms.Pairing
 			LinearRegression.LinearRegressionParameters DecT = LinearRegression.ComputeLinearRegression(new double[] { 0, SepSec },
 				new double[] { a.Barycenter.EP.Dec, b.Barycenter.EP.Dec });
 
+			/* Search for objects */
 			List<ImageDetection[]> Dects = new List<ImageDetection[]>();
 			foreach (DateTime dt in ObsTimes)
 			{
+				/* Compute estimated position */
 				TimeSpan tsp = dt - a.Time.Time;
 				EquatorialPoint eqp = new EquatorialPoint() { RA = RAT.Intercept + RAT.Slope * tsp.TotalSeconds, Dec = DecT.Intercept + DecT.Slope * tsp.TotalSeconds };
+				/* Limit is given by a triangle with the maximum residuals */
 				double RadiusArcSec = tsp.TotalSeconds * MaxLinErrorArcSec / SepSec + SearchExtra;
 				double RadiusRad = RadiusArcSec * Math.PI / 180 / 3600;
 
 				var ImDL = DetectionPool.Query(eqp.Dec, eqp.RA, RadiusRad);
 
 				ImDL.RemoveAll((x) => ((x.Barycenter.EP ^ eqp) > RadiusRad) || (x.Time.Time != dt) || !Line3Way(a, b, x) || (x.TryFetchProperty(out PairingProperties px) && px.IsPaired));
-				//DetectedInPool.Add(DetectionsList);
 				Dects.Add(ImDL.ToArray());
 			}
+
+			/* If it can be found on at least 3 images, consider it a detection */
 			int i, c = 0;
 			for (i = 0; i < Dects.Count; i++) if (Dects[i].Length != 0) c++;
 			if (c >= 3)
@@ -80,7 +94,10 @@ namespace Umbrella2.Algorithms.Pairing
 			}
 		}
 
-
+		/// <summary>
+		/// Pairs the sources into tracklets.
+		/// </summary>
+		/// <returns>The list of tracklets found by the algorithm.</returns>
 		public override List<Tracklet> FindTracklets()
 		{
 			int i, j;
