@@ -8,7 +8,8 @@ namespace Umbrella2.IO.FITS.Formats
 	/// </summary>
 	public static class IntegerDataset
     {
-        public static unsafe void Read8(IntPtr Pointer, double[,] Data, int Hstart, int Hend, int Wstart, int Wend, int Stride)
+#pragma warning disable 1591 
+		public static unsafe void Read8(IntPtr Pointer, double[,] Data, int Hstart, int Hend, int Wstart, int Wend, int Stride)
 		{
 			int Width = Wend-Wstart;
 			int i, j;
@@ -143,5 +144,6 @@ namespace Umbrella2.IO.FITS.Formats
 				b += Stride - Data.GetLength(1) * 8;
 			}
 		}
+#pragma warning restore 1591
 	}
 }

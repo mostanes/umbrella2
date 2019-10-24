@@ -9,6 +9,9 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 	/// </summary>
 	public class SWarpScaling : ImageProperties
 	{
+		/// <summary>If <code>true</code>, throw if SWarp headeres are not present in the image.
+		/// If <code>false</code>, set scaling (<see cref="XScale"/>) to identity.</summary>
+		public static bool ThrowSwarpHeaders = false;
 		/// <summary>SWarp FLXSCALE parameter.</summary>
 		public readonly double FlxScale;
 		/// <summary>Background mean - SWarp BACKMEAN parameter.</summary>
@@ -29,9 +32,24 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 		public SWarpScaling(Image File) : base(File)
 		{
 			HeaderTable ht = File.Header;
-			ht.CheckRecord("FLXSCALE");
-			ht.CheckRecord("BACKMEAN");
-			ht.CheckRecord("BACKSIG");
+			if (ThrowSwarpHeaders)
+			{
+				ht.CheckThrowRecord("FLXSCALE");
+				ht.CheckThrowRecord("BACKMEAN");
+				ht.CheckThrowRecord("BACKSIG");
+			}
+			else
+			{
+				if (!ht.ContainsKey("FLXSCALE") || !ht.ContainsKey("BACKMEAN") || !ht.ContainsKey("BACKSIG"))
+				{
+					FlxScale = 0;
+					BackMean = 0;
+					BackSig = 0;
+					XScale = 1;
+					return;
+				}
+			}
+
 			FlxScale = ht["FLXSCALE"].FloatingPoint;
 			BackMean = ht["BACKMEAN"].FloatingPoint;
 			BackSig = ht["BACKSIG"].FloatingPoint;

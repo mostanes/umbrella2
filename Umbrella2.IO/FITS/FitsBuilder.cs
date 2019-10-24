@@ -36,7 +36,7 @@ namespace Umbrella2.IO.FITS
 		/// </summary>
 		/// <param name="Core">Header values.</param>
 		/// <returns>A HeaderTable instance for the new FITS image.</returns>
-		static HeaderTable GetHeader(FICHV Core)
+		public static HeaderTable GetHeader(FICHV Core)
 		{
 			Dictionary<string, string> records = (Core.WCS == null ? GetHeaderWithoutTransform(Core) : GetHeaderWithTransform(Core, true));
 			HeaderTable het = records.ToDictionary((x) => x.Key, (x) => (MetadataRecord)new FITSMetadataRecord(x.Key, x.Value));

@@ -14,9 +14,13 @@ namespace Umbrella2.IO
     [Serializable]
 	public struct ImageData
 	{
+		/// <summary>The position in the image of the current data.</summary>
 		readonly public Rectangle Position;
+		/// <summary>The pixel values in the image. First index is the Y axis.</summary>
 		public double[,] Data;
+		/// <summary>The image to which this data belongs.</summary>
 		readonly public Image Parent;
+		/// <summary>Whether the data is readonly or not.</summary>
 		readonly public bool ReadOnly;
 		readonly internal Guid FDGuid;
 

@@ -21,7 +21,7 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 		public ObservationTime(Image File) : base(File)
 		{
 			HeaderTable ht = File.Header;
-			ht.CheckRecord("DATE-OBS");
+			ht.CheckThrowRecord("DATE-OBS");
 			string ObsDString;
 			try
 			{ ObsDString = ht["DATE-OBS"].AsString; }
@@ -44,7 +44,7 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 			else
 			{
 				/* No time in DATE-OBS, hence the rest should be in the UT tag. */
-				ht.CheckRecord("UT");
+				ht.CheckThrowRecord("UT");
 				TimeSpan ts;
 				try
 				{
@@ -59,7 +59,7 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 				tm += ts;
 			}
 			Time = tm;
-			ht.CheckRecord("EXPTIME");
+			ht.CheckThrowRecord("EXPTIME");
 			double SecLen = ht["EXPTIME"].FloatingPoint;
 			Exposure = TimeSpan.FromSeconds(SecLen);
 		}

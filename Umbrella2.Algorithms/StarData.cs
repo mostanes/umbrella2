@@ -8,10 +8,15 @@ namespace Umbrella2.Algorithms.Filtering
 	/// </summary>
 	public struct Star
 	{
+		/// <summary>Star position in equatorial coordinates.</summary>
 		public EquatorialPoint EqCenter;
+		/// <summary>Star position in pixel coordinates.</summary>
 		public PixelPoint PixCenter;
+		/// <summary>Star radius in pixels.</summary>
 		public double PixRadius;
+		/// <summary>Elliptic fit of the star.</summary>
 		public SourceEllipse Shape;
+		/// <summary>Star flux.</summary>
 		public double Flux;
 	}
 

@@ -7,8 +7,8 @@
     <ProjectGuid>{E8302E15-520F-4812-A824-E05FC3831CDD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UmbrellaPipelineExtraIO</RootNamespace>
-    <AssemblyName>UmbrellaPipelineExtraIO</AssemblyName>
+    <RootNamespace>Umbrella2.Pipeline.ExtraIO</RootNamespace>
+    <AssemblyName>Umbrella2.Pipeline.ExtraIO</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -20,7 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\UmbrellaPipelineExtraIO.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\Umbrella2.Pipeline.ExtraIO.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,7 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\UmbrellaPipelineExtraIO.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\Umbrella2.Pipeline.ExtraIO.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

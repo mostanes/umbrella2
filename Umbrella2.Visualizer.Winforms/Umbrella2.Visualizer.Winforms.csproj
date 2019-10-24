@@ -7,8 +7,8 @@
     <ProjectGuid>{4F21CBA3-0DF0-4F59-B4AD-117B73B4184E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UmbrellaWinformsVisualizer</RootNamespace>
-    <AssemblyName>UmbrellaWinformsVisualizer</AssemblyName>
+    <RootNamespace>Umbrella2.Visualizer.Winforms</RootNamespace>
+    <AssemblyName>Umbrella2.Visualizer.Winforms</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -20,7 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\UmbrellaWinformsVisualizer.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\Umbrella2.Visualizer.Winforms.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,7 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\UmbrellaWinformsVisualizer.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\Umbrella2.Visualizer.Winforms.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

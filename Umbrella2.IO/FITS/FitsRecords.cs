@@ -41,7 +41,7 @@ namespace Umbrella2.IO.FITS
 
 	public static class HeaderTableUtil
 	{
-		public static void CheckRecord(this Dictionary<string, MetadataRecord> Table, string Key)
+		public static void CheckThrowRecord(this Dictionary<string, MetadataRecord> Table, string Key)
 		{ if (!Table.ContainsKey(Key)) throw new FormatException("FITS Image does not implement " + Key + " record."); }
 	}
 }

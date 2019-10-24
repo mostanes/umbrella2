@@ -64,6 +64,7 @@ namespace Umbrella2.IO.FITS
 				Writer = RW.Item2;
 
 				/* Loads SWarp scaling to the properties dictionary */
+
 				try { GetProperty<KnownKeywords.SWarpScaling>(); }
 				catch { }
 			}
@@ -214,6 +215,7 @@ namespace Umbrella2.IO.FITS
 		public static FICHV ParseHeaderTable(HeaderTable Header, bool SkipWCS)
 		{
 			FICHV data = new FICHV();
+			data.Header = Header;
 			try
 			{
 				/* Parse image size */
@@ -266,6 +268,14 @@ namespace Umbrella2.IO.FITS
 			catch (KeyNotFoundException ex) { throw new FITSFormatException("Cannot understand projection algorithm", ex); }
 
 			return new WCSViaProjection(ipt, linpart);
+		}
+
+
+		public FICHV CopyHeader()
+		{
+			int BitPix = Header["BITPIX"].Int;
+			FICHV f = new FICHV() { BitPix = BitPix, Width = Width, Height = Height, WCS = Transform };
+			return f;
 		}
 	}
 }

@@ -34,10 +34,7 @@ namespace Umbrella2.PropertyModel.CommonProperties
 		/// <summary>Retrieves the image's <see cref="ImageSet"/>.</summary>
 		public static explicit operator ImageSet(ImageSource Source) => Source.Set;
 
-		public override List<MetadataRecord> GetRecords()
-		{
-			throw new NotImplementedException();
-		}
+		public override List<MetadataRecord> GetRecords() => throw new NotImplementedException();
 	}
 
 	/// <summary>

@@ -224,7 +224,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 			{
 				try
 				{ EquatorialPoint eqp = ParseFromMPCString(RA + " " + Dec); instance.Coordinates = eqp; }
-				catch (Exception ex) { throw new InvalidFieldException(InvalidFieldException.FieldType.Coordinates)}
+				catch (Exception ex) { throw new InvalidFieldException(InvalidFieldException.FieldType.Coordinates); }
 			}
 
 			string Mag = Line.Substring(65, 4);
