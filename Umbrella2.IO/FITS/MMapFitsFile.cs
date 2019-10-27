@@ -54,13 +54,13 @@ namespace Umbrella2.IO.FITS
 		public static MMapFitsFile OpenWriteFile(string Path, HeaderTable Headers)
 		{
 			FileInfo info = new FileInfo(Path);
-			MemoryMappedFile mmap = MemoryMappedFile.CreateFromFile(Path, FileMode.Open, Guid.NewGuid().ToString(), 0, MemoryMappedFileAccess.ReadWrite);
 
 			int HLength = ((Headers.Count * 80) + 2879) / 2880 * 2880;
 			int DLength = HeaderIO.ComputeDataArrayLength(Headers) + 2879;
 			DLength = DLength / 2880 * 2880;
 			int FLength = HLength + DLength;
 
+			MemoryMappedFile mmap = MemoryMappedFile.CreateFromFile(Path, FileMode.Create, Guid.NewGuid().ToString(), FLength, MemoryMappedFileAccess.ReadWrite);
 			Stream s = mmap.CreateViewStream();
 			FitsFileBuilder builder = new FitsFileBuilder() { PrimaryTable = new HeaderTable() };
 			foreach (var w in Headers) { builder.PrimaryTable.Add(w.Key, w.Value); s.Write(((FITSMetadataRecord)w.Value).ToRawRecord(), 0, 80); }

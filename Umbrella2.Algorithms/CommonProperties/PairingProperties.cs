@@ -26,5 +26,18 @@ namespace Umbrella2.PropertyModel.CommonProperties
 		/// <summary>The Pearson R correlation coefficient of the object's pixels.</summary>
 		[PropertyDescription(true)]
 		public double PearsonR;
+
+		/// <summary>Which algorithm(s) produced the detection.</summary>
+		[PropertyDescription(true)]
+		public DetectionAlgorithm Algorithm;
+	}
+
+	[Flags]
+	public enum DetectionAlgorithm : uint
+	{
+		Unknown = 0,
+		Blob = 1,
+		Trail = 2,
+		SourceExtractor = 4
 	}
 }
