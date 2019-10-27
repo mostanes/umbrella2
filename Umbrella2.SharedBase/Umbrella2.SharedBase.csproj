@@ -45,6 +45,7 @@
     <Compile Include="Units\DistanceFunctions.cs" />
     <Compile Include="Units\WCSTransform.cs" />
     <Compile Include="Units\WCSLinPart.cs" />
+    <Compile Include="Velocities.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

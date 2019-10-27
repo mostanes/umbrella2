@@ -18,22 +18,11 @@ namespace Umbrella2
 		/// <summary>
 		/// Represents the velocity in equatorial coordinates.
 		/// </summary>
-		public double EquatorialVelocity;
+		public EquatorialVelocity EquatorialVelocity;
 
 		/// <summary>
 		/// Equatorial velocity in arcsec per minute.
 		/// </summary>
-		public double ArcSecMin => EquatorialVelocity * 3600 * 60 * 180 / Math.PI;
-	}
-
-	/// <summary>
-	/// Represents a velocity in pixel coordinates.
-	/// </summary>
-	public struct PixelVelocity
-	{
-		public double Xvel;
-		public double Yvel;
-
-		public static explicit operator double(PixelVelocity Velocity) => Math.Sqrt(Velocity.Xvel * Velocity.Xvel + Velocity.Yvel * Velocity.Yvel);
+		public double ArcSecMin => ((double)EquatorialVelocity) * 3600 * 60 * 180 / Math.PI;
 	}
 }

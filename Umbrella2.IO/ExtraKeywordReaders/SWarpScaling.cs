@@ -10,7 +10,7 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 	public class SWarpScaling : ImageProperties
 	{
 		/// <summary>If <code>true</code>, throw if SWarp headeres are not present in the image.
-		/// If <code>false</code>, set scaling (<see cref="XScale"/>) to identity.</summary>
+		/// If <code>false</code>, set scaling (<see cref="FlxScale"/>) to identity.</summary>
 		public static bool ThrowSwarpHeaders = false;
 		/// <summary>SWarp FLXSCALE parameter.</summary>
 		public readonly double FlxScale;
@@ -18,10 +18,6 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 		public readonly double BackMean;
 		/// <summary>Background standard deviation - SWarp BACKSIG parameter.</summary>
 		public readonly double BackSig;
-		/* FIXME: I don't know what this constant was supposed to do and thus why its value is 60... */
-#warning Unexplained code: Constant with unknown value.
-		const double Rescale = 60;
-		readonly double XScale;
 
 		/// <summary>
 		/// Switch for turning on/off SWarpScaling compensations.
@@ -42,10 +38,9 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 			{
 				if (!ht.ContainsKey("FLXSCALE") || !ht.ContainsKey("BACKMEAN") || !ht.ContainsKey("BACKSIG"))
 				{
-					FlxScale = 0;
+					FlxScale = 1;
 					BackMean = 0;
 					BackSig = 0;
-					XScale = 1;
 					return;
 				}
 			}
@@ -53,7 +48,6 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 			FlxScale = ht["FLXSCALE"].FloatingPoint;
 			BackMean = ht["BACKMEAN"].FloatingPoint;
 			BackSig = ht["BACKSIG"].FloatingPoint;
-			XScale = FlxScale * Rescale;
 		}
 
 		public override List<MetadataRecord> GetRecords()
@@ -69,7 +63,7 @@ namespace Umbrella2.IO.FITS.KnownKeywords
 		{
 			if (ApplyTransform)
 				for (int i = 0; i < Input.GetLength(0); i++) for (int j = 0; j < Input.GetLength(1); j++)
-						Input[i, j] = (Input[i, j] - BackMean) * XScale;
+						Input[i, j] = (Input[i, j] - BackMean) * FlxScale;
 		}
 	}
 }

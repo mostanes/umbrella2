@@ -68,7 +68,7 @@ namespace Umbrella2.Visualizers.Winforms
 			checkedListBox1.Items.Clear();
 			foreach(Tracklet t in m_tracklets)
 			{
-				double ArcsecVelocity = t.Velocity.EquatorialVelocity * 3600 * 180 / Math.PI * 60;
+				double ArcsecVelocity = (double)t.Velocity.EquatorialVelocity * 3600 * 180 / Math.PI * 60;
 				checkedListBox1.Items.Add("Tracklet " + (cnt++) + ", velocity = " + ArcsecVelocity.ToString("G5") + "\"/min");
 			}
 			System.Threading.Tasks.Task tk = new System.Threading.Tasks.Task(() => SkyBotLookupNames(15.0));

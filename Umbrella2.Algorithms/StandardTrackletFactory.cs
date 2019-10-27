@@ -53,13 +53,13 @@ namespace Umbrella2
 				ZeroTime = ValidTimes[i];
 				Projection = Detections[i].ParentImage.Transform;
 			}
+#warning This is incorrect. Higly incorrect.
 			var Xreg = LinearRegression.ComputeLinearRegression(ValidPP.Select((x) => x.X).ToArray(), ValidTimes.Select((x) => (x - ZeroTime).TotalSeconds).ToArray());
 			var Yreg = LinearRegression.ComputeLinearRegression(ValidPP.Select((x) => x.Y).ToArray(), ValidTimes.Select((x) => (x - ZeroTime).TotalSeconds).ToArray());
 			var XYreg = LinearRegression.ComputeLinearRegression(ValidPP);
 			PixelVelocity pv = new PixelVelocity() { Xvel = 1 / Xreg.Slope, Yvel = 1 / Yreg.Slope };
 			TrackletVelocityRegression tvr = new TrackletVelocityRegression() { R_TX = Xreg.PearsonR, R_TY = Yreg.PearsonR, R_XY = XYreg.PearsonR };
-			double Velocity = Math.Sqrt(pv.Xvel * pv.Xvel + pv.Yvel * pv.Yvel) * Projection.GetEstimatedWCSChainDerivative();
-			TrackletVelocity tvel = new TrackletVelocity() { PixelVelocity = pv, EquatorialVelocity = Velocity };
+			TrackletVelocity tvel = new TrackletVelocity() { PixelVelocity = pv, EquatorialVelocity = Detections[0].ParentImage.Transform.GetEquatorialVelocity(pv) };
 
 			return new Tracklet(Detections, tvel, tvr);
 		}

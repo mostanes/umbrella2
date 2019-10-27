@@ -11,10 +11,13 @@ namespace Umbrella2.WCS
         EquatorialPoint GetEquatorialPoint(PixelPoint Point);
         EquatorialPoint[] GetEquatorialPoints(PixelPoint[] Points);
         List<EquatorialPoint> GetEquatorialPoints(IEnumerable<PixelPoint> Points);
+		[Obsolete]
         double GetEstimatedWCSChainDerivative();
         PixelPoint GetPixelPoint(EquatorialPoint Point);
         PixelPoint[] GetPixelPoints(EquatorialPoint[] Points);
         List<PixelPoint> GetPixelPoints(IEnumerable<EquatorialPoint> Points);
+		EquatorialVelocity GetEquatorialVelocity(PixelVelocity PV);
+		PixelVelocity GetPixelVelocity(EquatorialVelocity EV);
     }
 #pragma warning disable 1591
     /// <summary>
@@ -48,9 +51,15 @@ namespace Umbrella2.WCS
 
         public double GetEstimatedWCSChainDerivative()
         { return LinearTransform.WCSChainDerivative * ProjectionTransform.GetEstimatedWCSChainDerivative(); }
-    }
 
-    public abstract class WCSProjectionTransform
+		public EquatorialVelocity GetEquatorialVelocity(PixelVelocity PV)
+		{ return ProjectionTransform.GetEquatorialVelocity(LinearTransform.GetProjectionVelocity(PV)); }
+
+		public PixelVelocity GetPixelVelocity(EquatorialVelocity EV)
+		{ return LinearTransform.GetPixelVelocity(ProjectionTransform.GetProjectionVelocity(EV)); }
+	}
+
+	public abstract class WCSProjectionTransform
 	{
 		/// <summary>
 		/// Reference point Right Ascension.
@@ -70,11 +79,14 @@ namespace Umbrella2.WCS
 		public abstract ProjectionPoint GetProjectionPoint(EquatorialPoint Point);
 		public abstract ProjectionPoint[] GetProjectionPoints(EquatorialPoint[] Points);
 		public abstract List<ProjectionPoint> GetProjectionPoints(IEnumerable<EquatorialPoint> Points);
+		public abstract EquatorialVelocity GetEquatorialVelocity(ProjectionVelocity PV);
+		public abstract ProjectionVelocity GetProjectionVelocity(EquatorialVelocity EV);
 		
 		/// <summary>
 		/// Estimated linear distance derivative for quick computation of image distances and velocities.
 		/// </summary>
 		/// <returns></returns>
+		[Obsolete]
 		public abstract double GetEstimatedWCSChainDerivative();
 
 		/// <summary>

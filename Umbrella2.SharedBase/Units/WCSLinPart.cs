@@ -15,6 +15,7 @@ namespace Umbrella2.WCS
 		/// <summary>
 		/// Average scaling from pixel coordinates to projection plane coordinates.
 		/// </summary>
+		[Obsolete]
 		public readonly double WCSChainDerivative;
 
 		/// <summary>
@@ -43,14 +44,14 @@ namespace Umbrella2.WCS
 		public ProjectionPoint[] GetProjectionPoints(PixelPoint[] Points)
 		{
 			ProjectionPoint[] pps = new ProjectionPoint[Points.Length];
-			for (int i = 0; i < Points.Length; i++) pps[i] = new ProjectionPoint() { X = C11 * (Points[i].X + Ref1) + C12 * (Points[i].Y + Ref2), Y = C21 * (Points[i].X + Ref1) + C22 * (Points[i].Y + Ref2) };
+			for (int i = 0; i < Points.Length; i++) pps[i] = new ProjectionPoint() { X = C11 * (Points[i].X - Ref1) + C12 * (Points[i].Y - Ref2), Y = C21 * (Points[i].X - Ref1) + C22 * (Points[i].Y - Ref2) };
 			return pps;
 		}
 
 		public List<ProjectionPoint> GetProjectionPoints(IEnumerable<PixelPoint> Points)
 		{
 			List<ProjectionPoint> pps = new List<ProjectionPoint>();
-			foreach (PixelPoint pp in Points) pps.Add(new ProjectionPoint() { X = C11 * (pp.X + Ref1) + C12 * (pp.Y + Ref2), Y = C21 * (pp.X + Ref1) + C22 * (pp.Y + Ref2) });
+			foreach (PixelPoint pp in Points) pps.Add(new ProjectionPoint() { X = C11 * (pp.X - Ref1) + C12 * (pp.Y - Ref2), Y = C21 * (pp.X - Ref1) + C22 * (pp.Y - Ref2) });
 			return pps;
 		}
 
@@ -70,6 +71,13 @@ namespace Umbrella2.WCS
 			foreach (ProjectionPoint pp in Points) pps.Add(new PixelPoint() { X = R11 * pp.X + R12 * pp.Y + Ref1, Y = R21 * pp.X + R22 * pp.Y + Ref2 });
 			return pps;
 		}
+
+		public ProjectionVelocity GetProjectionVelocity(PixelVelocity PV)
+		{ return new ProjectionVelocity() { X = C11 * PV.Xvel + C12 * PV.Yvel, Y = C21 * PV.Xvel + C22 * PV.Yvel }; }
+
+		public PixelVelocity GetPixelVelocity(ProjectionVelocity PV)
+		{ return new PixelVelocity() { Xvel = R11 * PV.X + R12 * PV.Y, Yvel = R21 * PV.X + R22 * PV.Y }; }
+
 #pragma warning restore 1591
 
 		/// <summary>
