@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Umbrella2.Algorithms.Misc;
 
 namespace Umbrella2.Algorithms.Pairing
@@ -42,7 +43,7 @@ namespace Umbrella2.Algorithms.Pairing
 				if (ep.Dec > Lowermost) Lowermost = ep.Dec;
 				if (ep.RA < Leftmost) Leftmost = ep.RA;
 				if (ep.RA > Rightmost) Rightmost = ep.RA;
-				if (!ObsTimes.Contains(md.Time.Time)) ObsTimes.Add(md.Time.Time);
+				if (!ObsTimes.Any((x) => Math.Abs((md.Time.Time - x).TotalSeconds) < .1)) ObsTimes.Add(md.Time.Time);
 			}
 		}
 

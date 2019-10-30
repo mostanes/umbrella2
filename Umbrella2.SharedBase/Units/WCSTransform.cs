@@ -11,7 +11,6 @@ namespace Umbrella2.WCS
         EquatorialPoint GetEquatorialPoint(PixelPoint Point);
         EquatorialPoint[] GetEquatorialPoints(PixelPoint[] Points);
         List<EquatorialPoint> GetEquatorialPoints(IEnumerable<PixelPoint> Points);
-		[Obsolete]
         double GetEstimatedWCSChainDerivative();
         PixelPoint GetPixelPoint(EquatorialPoint Point);
         PixelPoint[] GetPixelPoints(EquatorialPoint[] Points);
@@ -86,7 +85,6 @@ namespace Umbrella2.WCS
 		/// Estimated linear distance derivative for quick computation of image distances and velocities.
 		/// </summary>
 		/// <returns></returns>
-		[Obsolete]
 		public abstract double GetEstimatedWCSChainDerivative();
 
 		/// <summary>

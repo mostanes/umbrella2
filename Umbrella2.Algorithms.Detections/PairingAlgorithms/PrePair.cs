@@ -36,17 +36,20 @@ namespace Umbrella2.Algorithms.Pairing
 
 					bool FlagAnyCond = false;
 					/* If there are MinPix overlapping pixels, merge detections */
-					if (PixPi.Overlaps(PixPj))
-						FlagAnyCond = true;
-					if (!FlagAnyCond)
+					if (PixPi != null & PixPj != null)
 					{
-						/* Detections that are somewhat linear are checked for colinearity with others */
-						IEnumerable<PixelPoint> Plist = PixPi.Concat(PixPj);
-						LinearRegression.LinearRegressionParameters pc = LinearRegression.ComputeLinearRegression(Plist);
-						LinearRegression.LinearRegressionParameters p1 = LinearRegression.ComputeLinearRegression(PixPi);
-						LinearRegression.LinearRegressionParameters p2 = LinearRegression.ComputeLinearRegression(PixPj);
-						if (Math.Abs(pc.PearsonR) > Math.Abs(p1.PearsonR) && Math.Abs(pc.PearsonR) > Math.Abs(p2.PearsonR)
-							&& Math.Abs(pc.PearsonR) < Math.Abs(p1.PearsonR) + Math.Abs(p2.PearsonR)) FlagAnyCond = true;
+						if (PixPi.Overlaps(PixPj))
+							FlagAnyCond = true;
+						if (!FlagAnyCond)
+						{
+							/* Detections that are somewhat linear are checked for colinearity with others */
+							IEnumerable<PixelPoint> Plist = PixPi.Concat(PixPj);
+							LinearRegression.LinearRegressionParameters pc = LinearRegression.ComputeLinearRegression(Plist);
+							LinearRegression.LinearRegressionParameters p1 = LinearRegression.ComputeLinearRegression(PixPi);
+							LinearRegression.LinearRegressionParameters p2 = LinearRegression.ComputeLinearRegression(PixPj);
+							if (Math.Abs(pc.PearsonR) > Math.Abs(p1.PearsonR) && Math.Abs(pc.PearsonR) > Math.Abs(p2.PearsonR)
+								&& Math.Abs(pc.PearsonR) < Math.Abs(p1.PearsonR) + Math.Abs(p2.PearsonR)) FlagAnyCond = true;
+						}
 					}
 					if (D0 < PSFMatch)
 						FlagAnyCond = true;

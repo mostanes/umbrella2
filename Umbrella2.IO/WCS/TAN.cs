@@ -63,8 +63,9 @@ namespace Umbrella2.WCS.Projections
 			return EqP;
 		}
 
+#warning Only 0-th order approximation to Jacobian here. This might not be enough.
 		public override EquatorialVelocity GetEquatorialVelocity(ProjectionVelocity PV)
-		{ return new EquatorialVelocity() { RAvel = PV.X / Cos(Dec), Decvel = PV.Y * Cos(Dec) }; }
+		{ return new EquatorialVelocity() { RAvel = PV.X / Cos(Dec), Decvel = PV.Y }; }
 
 		public override double GetEstimatedWCSChainDerivative()
 		{ return 1; }
@@ -104,8 +105,9 @@ namespace Umbrella2.WCS.Projections
 			return EqP;
 		}
 
+#warning Only 0-th order approximation to Jacobian here. This might not be enough.
 		public override ProjectionVelocity GetProjectionVelocity(EquatorialVelocity EV)
-		{ return new ProjectionVelocity() { X = EV.RAvel * Cos(Dec), Y = EV.Decvel / Cos(Dec) }; }
+		{ return new ProjectionVelocity() { X = EV.RAvel * Cos(Dec), Y = EV.Decvel }; }
 
 		public override void GetReferencePoints(out double RA, out double Dec) { RA = this.RA; Dec = this.Dec; }
 	}

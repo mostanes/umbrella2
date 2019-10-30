@@ -15,7 +15,6 @@ namespace Umbrella2.WCS
 		/// <summary>
 		/// Average scaling from pixel coordinates to projection plane coordinates.
 		/// </summary>
-		[Obsolete]
 		public readonly double WCSChainDerivative;
 
 		/// <summary>

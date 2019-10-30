@@ -37,15 +37,10 @@ namespace Umbrella2
 		/// <summary>Dec velocity in radians per second.</summary>
 		public double Decvel;
 
-		public double Magnitude => Math.Sqrt(RAvel * RAvel + Decvel * Decvel);
-		public double Angle => Math.Atan2(Decvel, RAvel);
-
 		public override string ToString()
 		{
 			return "RAvel=" + (RAvel * 38880000 / Math.PI).ToString("G6") + "\"/min, Decvel=" + (Decvel * 38880000 / Math.PI).ToString("G6") + "\"/min";
 		}
-
-		public static explicit operator double(EquatorialVelocity ev) => ev.Magnitude;
 	}
 
 	/// <summary>
