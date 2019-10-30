@@ -24,11 +24,15 @@ namespace Umbrella2
 			PairingProperties KeptProp = null;
 			foreach(ImageDetection imd in Detections)
 			{
-				ObjectPoints ojp = imd.FetchProperty<ObjectPoints>();
-				Pixels.AddRange(ojp.PixelPoints);
-				Values.AddRange(ojp.PixelValues);
-				imd.TryFetchProperty<PairingProperties>(out KeptProp);
+				if (imd.TryFetchProperty(out ObjectPoints ojp))
+				{
+					Pixels.AddRange(ojp.PixelPoints);
+					Values.AddRange(ojp.PixelValues);
+					imd.TryFetchProperty<PairingProperties>(out KeptProp);
+				}
 			}
+#warning This is not fine.
+			if (Pixels.Count == 0) return Detections[0];
 			ImageDetection Result = StandardDetectionFactory.CreateDetection(Detections[0].ParentImage, Pixels, Values);
 			if (KeptProp != null) Result.SetResetProperty(KeptProp);
 			return Result;
@@ -41,25 +45,31 @@ namespace Umbrella2
 		/// <returns>A new Tracklet instance.</returns>
 		public static Tracklet CreateTracklet(ImageDetection[] Detections)
 		{
-			List<ImageDetection> DetectionsList = new List<ImageDetection>();
-			PixelPoint[] ValidPP = new PixelPoint[Detections.Length];
-			DateTime[] ValidTimes = new DateTime[Detections.Length];
-			DateTime ZeroTime = DateTime.Now;
-			WCS.IWCSProjection Projection = null;
+			Array.Sort(Detections, (x, y) => (int)(x.Time.Time.Ticks - y.Time.Time.Ticks));
+
+			EquatorialPoint[] ValidEP = new EquatorialPoint[Detections.Length];
+			double[] ValidTimes = new double[Detections.Length];
+			DateTime ZeroTime = Detections[0].Time.Time;
+			WCS.IWCSProjection Projection = Detections[0].ParentImage.Transform;
+
 			for (int i = 0; i < Detections.Length; i++)
 			{
-				ValidPP[i] = Detections[i].Barycenter.PP;
-				ValidTimes[i] = Detections[i].Time.Time;
-				ZeroTime = ValidTimes[i];
-				Projection = Detections[i].ParentImage.Transform;
+				ValidEP[i] = Detections[i].Barycenter.EP;
+				ValidTimes[i] = (Detections[i].Time.Time - ZeroTime).TotalSeconds;
 			}
-#warning This is incorrect. Higly incorrect.
-			var Xreg = LinearRegression.ComputeLinearRegression(ValidPP.Select((x) => x.X).ToArray(), ValidTimes.Select((x) => (x - ZeroTime).TotalSeconds).ToArray());
-			var Yreg = LinearRegression.ComputeLinearRegression(ValidPP.Select((x) => x.Y).ToArray(), ValidTimes.Select((x) => (x - ZeroTime).TotalSeconds).ToArray());
-			var XYreg = LinearRegression.ComputeLinearRegression(ValidPP);
-			PixelVelocity pv = new PixelVelocity() { Xvel = 1 / Xreg.Slope, Yvel = 1 / Yreg.Slope };
-			TrackletVelocityRegression tvr = new TrackletVelocityRegression() { R_TX = Xreg.PearsonR, R_TY = Yreg.PearsonR, R_XY = XYreg.PearsonR };
-			TrackletVelocity tvel = new TrackletVelocity() { PixelVelocity = pv, EquatorialVelocity = Detections[0].ParentImage.Transform.GetEquatorialVelocity(pv) };
+
+			var XRA = ValidEP.Select((x) => x.RA).ToArray();
+			var XDec = ValidEP.Select((x) => x.Dec).ToArray();
+			var RAreg = LinearRegression.ComputeLinearRegression(ValidTimes, XRA);
+			var Decreg = LinearRegression.ComputeLinearRegression(ValidTimes, XDec);
+			var RADecreg = LinearRegression.ComputeLinearRegression(XRA, XDec);
+			double ResRA = LineFit.ComputeResidualSqSum(RAreg, ValidTimes, XRA);
+			double ResDec = LineFit.ComputeResidualSqSum(Decreg, ValidTimes, XDec);
+			EquatorialVelocity ev = new EquatorialVelocity() { RAvel = RAreg.Slope, Decvel = Decreg.Slope };
+			TrackletVelocityRegression tvr = new TrackletVelocityRegression() { R_TR = RAreg.PearsonR, R_TD = Decreg.PearsonR, R_RD = RADecreg.PearsonR,
+				S_TR = ResRA, S_TD = ResDec };
+			TrackletVelocity tvel = new TrackletVelocity() { EquatorialVelocity = ev, PixelVelocity = Projection.GetPixelVelocity(ev) };
+			tvel.SphericalVelocity = tvel.PixelVelocity.Magnitude * Projection.GetEstimatedWCSChainDerivative();
 
 			return new Tracklet(Detections, tvel, tvr);
 		}

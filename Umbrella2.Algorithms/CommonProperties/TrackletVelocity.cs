@@ -21,8 +21,13 @@ namespace Umbrella2
 		public EquatorialVelocity EquatorialVelocity;
 
 		/// <summary>
+		/// Represents the velocity in radians per second on the sphere.
+		/// </summary>
+		public double SphericalVelocity;
+
+		/// <summary>
 		/// Equatorial velocity in arcsec per minute.
 		/// </summary>
-		public double ArcSecMin => ((double)EquatorialVelocity) * 3600 * 60 * 180 / Math.PI;
+		public double ArcSecMin => SphericalVelocity * 3600 * 60 * 180 / Math.PI;
 	}
 }
