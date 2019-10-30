@@ -39,12 +39,14 @@
   <ItemGroup>
     <Compile Include="DetectionAlgorithms\DotDetector.cs" />
     <Compile Include="DetectionAlgorithms\PoolMDMerger.cs" />
-    <Compile Include="Filtering\MedianDetectionFilters.cs" />
+    <Compile Include="Filtering\ImageDetectionFilters.cs" />
     <Compile Include="Filtering\TrackletFilters.cs" />
     <Compile Include="PairingAlgorithms\MDPoolCore.cs" />
     <Compile Include="PairingAlgorithms\PrePair.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PairingAlgorithms\LinePoolSimple.cs" />
+    <Compile Include="PairingAlgorithms\DetectionReducer.cs" />
+    <Compile Include="Filtering\Badzone.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Umbrella2.Algorithms\Umbrella2.Algorithms.csproj">
