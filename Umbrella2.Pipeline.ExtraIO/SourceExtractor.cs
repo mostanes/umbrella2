@@ -107,6 +107,11 @@ namespace Umbrella2.Pipeline.ExtraIO
 				Algorithm = DetectionAlgorithm.SourceExtractor
 			};
 			det.AppendProperty(pprop);
+			if (Entry.Flux.HasValue)
+			{
+				ObjectPhotometry oph = new ObjectPhotometry() { Flux = Entry.Flux.Value };
+				det.AppendProperty(oph);
+			}
 
 			return det;
 		}

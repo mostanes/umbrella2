@@ -43,6 +43,14 @@ namespace Umbrella2.Algorithms.Images
 		}
 
 		/// <summary>
+		/// Creates an artificial set of statistics for an image.
+		/// </summary>
+		/// <param name="Image">Image.</param>
+		/// <param name="ZeroLevel">Background level.</param>
+		/// <param name="StDev">Standard deviation.</param>
+		public ImageStatistics(Image Image, double ZeroLevel, double StDev) : base(Image) { this.ZeroLevel = ZeroLevel; this.StDev = StDev; }
+
+		/// <summary>
 		/// Accessible form of the computation function.
 		/// </summary>
 		static SchedCore.Extractor<ImageStatistics> StatAlgorithm = RunStatistics;
