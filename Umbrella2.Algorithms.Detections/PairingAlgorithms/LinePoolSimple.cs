@@ -80,7 +80,7 @@ namespace Umbrella2.Algorithms.Pairing
 
 				var ImDL = DetectionPool.Query(eqp.Dec, eqp.RA, RadiusRad);
 
-				ImDL.RemoveAll((x) => ((x.Barycenter.EP ^ eqp) > RadiusRad) || (x.Time.Time != dt) || !Line3Way(a, b, x) || (x.TryFetchProperty(out PairingProperties px) && px.IsPaired));
+				ImDL.RemoveAll((x) => ((x.Barycenter.EP ^ eqp) > RadiusRad) || Math.Abs((x.Time.Time - dt).TotalSeconds) > .1 || !Line3Way(a, b, x));
 				Dects.Add(ImDL.ToArray());
 			}
 
