@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Umbrella2.IO.FITS;
+using Umbrella2.IO;
 using Umbrella2.PropertyModel.CommonProperties;
 using Umbrella2.WCS;
 using static Umbrella2.Algorithms.Images.SchedCore;
@@ -31,7 +31,7 @@ namespace Umbrella2.Algorithms.Images
 			FillZero = true,
 			InputMargins = 0,
 			Xstep = 0,
-			Ystep = 50
+			Ystep = 150
 		};
 
 		/// <summary>
@@ -58,7 +58,7 @@ namespace Umbrella2.Algorithms.Images
 			/// <summary>
 			/// WCS Transform of the mask.
 			/// </summary>
-			public WCSViaProjection MaskTransform;
+			public IWCSProjection MaskTransform;
 			/// <summary>
 			/// Mask for the image.
 			/// </summary>
@@ -98,6 +98,9 @@ namespace Umbrella2.Algorithms.Images
 				{
 					pxp.X = j + Position.Alignment.X;
 					pxp.Y = i + Position.Alignment.Y;
+
+					if (pxp.Y >= Properties.MaskData.Length) break;
+					if (pxp.X >= Properties.MaskData[(int)pxp.Y].Length) break;
 
 					if (Properties.MaskData[(int) pxp.Y][(int) pxp.X]) continue;
 
@@ -175,7 +178,7 @@ namespace Umbrella2.Algorithms.Images
 			if (Shape.SemiaxisMajor < 3 * Shape.SemiaxisMinor)
 			{
 				FillMarginsExtra(Mask, new PixelPoint() { X = XMean, Y = YMean }, Radius * RadiusMultiplier + ExtraRadius);
-				Star = new Filtering.Star() { Shape = Shape, PixCenter = new PixelPoint() { X = XMean, Y = YMean }, PixRadius = Radius };
+				Star = new Filtering.Star() { Shape = Shape, PixCenter = new PixelPoint() { X = XMean, Y = YMean }, PixRadius = Radius, Flux = Flux };
 			}
 			else Star = null;
 		}
@@ -237,7 +240,7 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="Input">Input image.</param>
 		/// <param name="Output">Output image.</param>
 		/// <param name="Properties">Masking data.</param>
-		public static void MaskImage(FitsImage Input, FitsImage Output, MaskProperties Properties)
+		public static void MaskImage(Image Input, Image Output, MaskProperties Properties)
 		{ Masker.Run(Properties, Input, Output, Parameters); }
 
 		/// <summary>
@@ -247,12 +250,12 @@ namespace Umbrella2.Algorithms.Images
 		/// <param name="Input">Input image.</param>
 		/// <param name="Properties">Masking data and parameters. The masking thresholds should be set; the other parameters are automatically filled in.</param>
 		/// <param name="Stats">Image statistical information.</param>
-		public static void CreateMasker(FitsImage Input, MaskProperties Properties, ImageStatistics Stats)
+		public static void CreateMasker(Image Input, MaskProperties Properties, ImageStatistics Stats)
 		{
 			Properties.Mean = Stats.ZeroLevel; Properties.StDev = Stats.StDev;
 			Properties.MaskData = new BitArray[Input.Height]; Properties.MaskTransform = Input.Transform;
 			for (int i = 0; i < Input.Height; i++) Properties.MaskData[i] = new BitArray((int) Input.Width);
-			var p = Parameters; p.FillZero = false;
+			var p = Parameters; /*p.FillZero = false;*/
 			MaskGenerator.Run(Properties, Input, p);
 		}
 	}

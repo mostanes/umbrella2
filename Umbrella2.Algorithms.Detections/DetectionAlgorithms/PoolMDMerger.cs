@@ -12,6 +12,7 @@ namespace Umbrella2.Algorithms.Detection
 	/// This code is a first-fit solution to the problem of detection merging.
 	/// In particular, the search function and associates should be reimplemented with a carefully designed algorithm.
 	/// </remarks>
+	[Obsolete]
 	public class PoolMDMerger
 	{
 		const int PoolDepth = 10;

@@ -22,42 +22,51 @@ namespace Umbrella2.Algorithms.Filtering
 		}
 	}
 
+	public interface ITrackletFilter
+	{
+		bool Filter(Tracklet Input);
+	}
+
 	/// <summary>
 	/// Linearity filter for tracklets.
 	/// </summary>
-	public class LinearityTest
+	public class LinearityTest : ITrackletFilter
 	{
 		const double LineRsquared = 0.8;
 		const double TimeRsquared = 0.8;
 		const double IndividualRsquared = 0.5;
 
-		bool Filter(Tracklet Input) { double R = ComputePearsonR(Input); return (R * R > LineRsquared); }
+		public bool Filter(Tracklet Input) { double R = ComputePearsonR(Input); return (R * R > LineRsquared); }
 
 		double ComputePearsonR(Tracklet Input)
 		{
-			if (Input.VelReg.R_TX * Input.VelReg.R_TX < TimeRsquared) return 0;
-			if (Input.VelReg.R_TY * Input.VelReg.R_TY < TimeRsquared) return 0;
+			if (Input.VelReg.R_TR * Input.VelReg.R_TR < TimeRsquared) return 0;
+			if (Input.VelReg.R_TD * Input.VelReg.R_TD < TimeRsquared) return 0;
 
-			List<PixelPoint> Points = new List<PixelPoint>();
+			List<EquatorialPoint> Points = new List<EquatorialPoint>();
 			double MeanR = 0;
 			int count = 0;
 			bool IsDot = false;
 			/* Computes the PearsonR for each source and takes the mean */
 			foreach (ImageDetection md in Input.Detections) if (md != null)
 				{
-					var PixP = md.FetchProperty<ObjectPoints>().PixelPoints;
-					Points.AddRange(PixP);
-					var mlinr = Misc.LinearRegression.ComputeLinearRegression(PixP);
+					if (md.TryFetchProperty(out ObjectPoints op))
+					{
+						var EqP = op.EquatorialPoints;
+						Points.AddRange(EqP);
+						var mlinr = Misc.LinearRegression.ComputeLinearRegression(EqP.Select((x) => x.RA).ToArray(), EqP.Select((x) => x.Dec).ToArray());
 
-					MeanR += Math.Abs(mlinr.PearsonR);
-					count++;
-					if (md.TryFetchProperty(out PairingProperties PairProp))
-						if (PairProp.IsDotDetection) IsDot = true;
+						MeanR += Math.Abs(mlinr.PearsonR);
+						count++;
+						if (md.TryFetchProperty(out PairingProperties PairProp))
+							if (PairProp.IsDotDetection) IsDot = true;
+					}
+					else { IsDot = true; count++; Points.Add(md.Barycenter.EP); }
 				}
 			MeanR /= count;
 			/* If not line-like but not a dot detection, drop */
 			if (!IsDot && MeanR < IndividualRsquared) return 0;
-			var LRP = Misc.LinearRegression.ComputeLinearRegression(Points);
+			var LRP = Misc.LinearRegression.ComputeLinearRegression(Points.Select((x) => x.RA).ToArray(), Points.Select((x) => x.Dec).ToArray());
 			double RR = Math.Abs(LRP.PearsonR);
 			if (IsDot) RR += (1 - Math.Abs(MeanR)) / Input.Velocity.ArcSecMin;
 			return RR;

@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4F21CBA3-0DF0-4F59-B4AD-117B73B4184E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Umbrella2.Visualizer.Winforms</RootNamespace>
+    <AssemblyName>Umbrella2.Visualizer.Winforms</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Umbrella2.Visualizer.Winforms.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Umbrella2.Visualizer.Winforms.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Bitmap.cs" />
+    <Compile Include="FitsView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FitsView.Designer.cs">
+      <DependentUpon>FitsView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FitsViewScalers.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TrackletOutput.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TrackletOutput.Designer.cs">
+      <DependentUpon>TrackletOutput.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TrackletOutput.Navigation.cs" />
+    <Compile Include="TrackletOutput.Filtering.cs" />
+    <Compile Include="TrackletOutput.TrackletUtil.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="FitsView.resx">
+      <DependentUpon>FitsView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TrackletOutput.resx">
+      <DependentUpon>TrackletOutput.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Umbrella2.SharedBase\Umbrella2.SharedBase.csproj">
+      <Project>{1F30DC02-4ACB-4E11-85CB-827EC6F9CDCB}</Project>
+      <Name>Umbrella2.SharedBase</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Umbrella2.Pipeline.ExtraIO\Umbrella2.Pipeline.ExtraIO.csproj">
+      <Project>{E8302E15-520F-4812-A824-E05FC3831CDD}</Project>
+      <Name>Umbrella2.Pipeline.ExtraIO</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Umbrella2.Pipeline.EIOAlgorithms\Umbrella2.Pipeline.EIOAlgorithms.csproj">
+      <Project>{B6862DE7-DF63-48A2-A754-7B85A4FCAF88}</Project>
+      <Name>Umbrella2.Pipeline.EIOAlgorithms</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Umbrella2.IO\Umbrella2.IO.csproj">
+      <Project>{9837FA6B-B7B7-49A1-A33F-CFB557652814}</Project>
+      <Name>Umbrella2.IO</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Umbrella2.Algorithms\Umbrella2.Algorithms.csproj">
+      <Project>{E9384B08-F76C-4096-8BF0-A6515E6B6DEA}</Project>
+      <Name>Umbrella2.Algorithms</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

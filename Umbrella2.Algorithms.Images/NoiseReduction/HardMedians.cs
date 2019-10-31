@@ -87,8 +87,8 @@ namespace Umbrella2.Algorithms.Images
 		{
 			PixelPoint[] InputAlignments = InputPositions.Select((x) => x.Alignment).ToArray();
 			PixelPoint OutputAlignment = OutputPosition.Alignment;
-			WCSViaProjection[] InputImagesTransforms = InputPositions.Select((x) => x.WCS).ToArray();
-			WCSViaProjection OutputImageTransform = OutputPosition.WCS;
+			IWCSProjection[] InputImagesTransforms = InputPositions.Select((x) => x.WCS).ToArray();
+			IWCSProjection OutputImageTransform = OutputPosition.WCS;
 
 			int OW = Output.GetLength(1);
 			int OH = Output.GetLength(0);

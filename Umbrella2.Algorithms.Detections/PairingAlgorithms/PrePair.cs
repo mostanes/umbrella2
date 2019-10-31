@@ -17,10 +17,11 @@ namespace Umbrella2.Algorithms.Pairing
 		/// <param name="RawDetections">Input set of detections.</param>
 		/// <param name="MaxDistance">Maximum distance possible between two detections part of the same object.</param>
 		/// <param name="MixMatch">Number of overlapping pixels before two detections are considered part of the same object.</param>
-		public static void MatchDetections(List<ImageDetection> RawDetections, double MaxDistance, int MixMatch)
+		/// <param name="PSFMatch">Distance between the barycenters of 2 detections before they are considered the same (for external detections mostly).</param>
+		public static void MatchDetections(List<ImageDetection> RawDetections, double MaxDistance, int MixMatch, double PSFMatch)
 		{
 			int i, j;
-			List<HashSet<PixelPoint>> LHP = RawDetections.Select((x) => new HashSet<PixelPoint>(x.FetchProperty<ObjectPoints>().PixelPoints)).ToList();
+			List<HashSet<PixelPoint>> LHP = RawDetections.Select((x) => x.TryFetchProperty(out ObjectPoints op) ? new HashSet<PixelPoint>(op.PixelPoints) : null).ToList();
 			List<PairingProperties> PairPropList = RawDetections.Select((x) => x.TryFetchProperty(out PairingProperties Prop) ? Prop : null).ToList();
 			for (i = 0; i < RawDetections.Count; i++) for (j = i + 1; j < RawDetections.Count; j++)
 				{
@@ -35,22 +36,31 @@ namespace Umbrella2.Algorithms.Pairing
 
 					bool FlagAnyCond = false;
 					/* If there are MinPix overlapping pixels, merge detections */
-					if (PixPi.Overlaps(PixPj))
-						FlagAnyCond = true;
-					if (!FlagAnyCond)
+					if (PixPi != null & PixPj != null)
 					{
-						/* Detections that are somewhat linear are checked for colinearity with others */
-						IEnumerable<PixelPoint> Plist = PixPi.Concat(PixPj);
-						LinearRegression.LinearRegressionParameters pc = LinearRegression.ComputeLinearRegression(Plist);
-						LinearRegression.LinearRegressionParameters p1 = LinearRegression.ComputeLinearRegression(PixPi);
-						LinearRegression.LinearRegressionParameters p2 = LinearRegression.ComputeLinearRegression(PixPj);
-						if (Math.Abs(pc.PearsonR) > Math.Abs(p1.PearsonR) && Math.Abs(pc.PearsonR) > Math.Abs(p2.PearsonR)
-							&& Math.Abs(pc.PearsonR) < Math.Abs(p1.PearsonR) + Math.Abs(p2.PearsonR)) FlagAnyCond = true;
+						if (PixPi.Overlaps(PixPj))
+							FlagAnyCond = true;
+						if (!FlagAnyCond)
+						{
+							/* Detections that are somewhat linear are checked for colinearity with others */
+							IEnumerable<PixelPoint> Plist = PixPi.Concat(PixPj);
+							LinearRegression.LinearRegressionParameters pc = LinearRegression.ComputeLinearRegression(Plist);
+							LinearRegression.LinearRegressionParameters p1 = LinearRegression.ComputeLinearRegression(PixPi);
+							LinearRegression.LinearRegressionParameters p2 = LinearRegression.ComputeLinearRegression(PixPj);
+							if (Math.Abs(pc.PearsonR) > Math.Abs(p1.PearsonR) && Math.Abs(pc.PearsonR) > Math.Abs(p2.PearsonR)
+								&& Math.Abs(pc.PearsonR) < Math.Abs(p1.PearsonR) + Math.Abs(p2.PearsonR)) FlagAnyCond = true;
+						}
 					}
+					if (D0 < PSFMatch)
+						FlagAnyCond = true;
 					/* If any merging condition is satisfied, merge the detections */
 					if (FlagAnyCond)
 					{
-						LHP[i].UnionWith(LHP[j]);
+						if (LHP[i] != null & LHP[j] != null)
+							LHP[i].UnionWith(LHP[j]);
+						else if (LHP[i] == null) LHP[i] = LHP[j];
+						if (PairPropList[i] != null && PairPropList[j] != null)
+							PairPropList[i].Algorithm |= PairPropList[i].Algorithm;
 						LHP.RemoveAt(j);
 						RawDetections.RemoveAt(j);
 						PairPropList.RemoveAt(j);
@@ -59,12 +69,15 @@ namespace Umbrella2.Algorithms.Pairing
 				}
 			for (i = 0; i < LHP.Count; i++)
 			{
-				try
+				if (LHP[i] != null)
 				{
-					RawDetections[i] = StandardDetectionFactory.CreateDetection(RawDetections[i].ParentImage, LHP[i]);
-					if (PairPropList[i] != null) RawDetections[i].SetResetProperty(PairPropList[i]);
+					try
+					{
+						RawDetections[i] = StandardDetectionFactory.CreateDetection(RawDetections[i].ParentImage, LHP[i]);
+						if (PairPropList[i] != null) RawDetections[i].SetResetProperty(PairPropList[i]);
+					}
+					catch { RawDetections.RemoveAt(i); PairPropList.RemoveAt(i); LHP.RemoveAt(i); i--; }
 				}
-				catch { RawDetections.RemoveAt(i); PairPropList.RemoveAt(i); LHP.RemoveAt(i); i--; }
 			}
 		}
 	}
