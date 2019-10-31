@@ -27,40 +27,6 @@ namespace Umbrella2.IO.FITS
 		internal static int DefaultGetter(int ExtensionNumber, HeaderTable Header)
 		{ if (Header.ContainsKey("IMAGEID")) return Header["IMAGEID"].Int - 1; else return ExtensionNumber; }
 
-#if NEVER
-		/// <summary>
-		/// Opens a FITS File handle from a file on a local disk.
-		/// </summary>
-		/// <param name="Path">Path to where the image is stored.</param>
-		/// <param name="OutputImage">Specifies whether the image is an input or an output one.</param>
-		/// <param name="numberGetter">Delegate that generates the image numbers in a MEF FITS.</param>
-		public FitsFile(string Path, bool OutputImage, MEFImageNumberGetter numberGetter = null)
-		{
-			OutputFile = OutputImage;
-			this.Path = Path;
-			if (!OutputImage)
-			{
-				/* Open file. We use mmaped files for IO. Use a stream to load metadata. */
-				FileInfo info = new FileInfo(Path);
-				mmap = MemoryMappedFile.CreateFromFile(Path, FileMode.Open, Guid.NewGuid().ToString(), 0, MemoryMappedFileAccess.ReadWrite);
-				Stream stream = mmap.CreateViewStream();
-				FitsFileBuilder builder = HeaderIO.ReadFileHeaders(stream, info.Length, numberGetter);
-				PrimaryTable = builder.PrimaryTable;
-				PrimaryDataPointer = builder.PrimaryDataPointer;
-				ExtensionDataPointers = builder.ExtensionDataPointers;
-				MEFHeaderTable = builder.MEFHeaderTable;
-				MEFDataPointers = builder.MEFDataPointers;
-				stream.Dispose();
-			}
-			else
-			{ 
-				PrimaryTable = new HeaderTable();
-				MEFHeaderTable = new Dictionary<int, HeaderTable>();
-				MEFDataPointers = new Dictionary<int, int>();
-			}
-		}
-#endif
-
 		protected FitsFile(string Path, bool OutputImage, MEFImageNumberGetter numberGetter, FitsFileBuilder Headers)
 		{
 			OutputFile = OutputImage;

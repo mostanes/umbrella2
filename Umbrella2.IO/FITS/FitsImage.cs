@@ -270,7 +270,9 @@ namespace Umbrella2.IO.FITS
 			return new WCSViaProjection(ipt, linpart);
 		}
 
-
+		/// <summary>
+		/// Creates a deep copy of the image's shallow header (FICHV defined headers).
+		/// </summary>
 		public FICHV CopyHeader()
 		{
 			int BitPix = Header["BITPIX"].Int;

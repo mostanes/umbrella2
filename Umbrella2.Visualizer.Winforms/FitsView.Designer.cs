@@ -1,4 +1,4 @@
-﻿namespace Umbrella2.Visualizers.Winforms
+﻿namespace Umbrella2.Visualizer.Winforms
 {
 	partial class FitsView
 	{

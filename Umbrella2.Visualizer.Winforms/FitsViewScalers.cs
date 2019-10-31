@@ -1,4 +1,4 @@
-﻿namespace Umbrella2.Visualizers.Winforms
+﻿namespace Umbrella2.Visualizer.Winforms
 {
 	/// <summary>
 	/// Represents an image scaling algorithm, for compressing the double precision floating point input to an 8-bit pixel value.

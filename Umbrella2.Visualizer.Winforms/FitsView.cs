@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using ImagingToolkit.ImageIO;
 using Umbrella2.IO;
 
-namespace Umbrella2.Visualizers.Winforms
+namespace Umbrella2.Visualizer.Winforms
 {
 	/// <summary>
 	/// WinForms control to display a FITS image (or a portion of it).

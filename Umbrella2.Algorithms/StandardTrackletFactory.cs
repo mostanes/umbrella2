@@ -45,7 +45,8 @@ namespace Umbrella2
 		/// <returns>A new Tracklet instance.</returns>
 		public static Tracklet CreateTracklet(ImageDetection[] Detections)
 		{
-			Array.Sort(Detections, (x, y) => (int)(x.Time.Time.Ticks - y.Time.Time.Ticks));
+			long[] Ticks = Detections.Select((x) => x.Time.Time.Ticks).ToArray();
+			Array.Sort(Ticks, Detections);
 
 			EquatorialPoint[] ValidEP = new EquatorialPoint[Detections.Length];
 			double[] ValidTimes = new double[Detections.Length];
@@ -68,8 +69,12 @@ namespace Umbrella2
 			EquatorialVelocity ev = new EquatorialVelocity() { RAvel = RAreg.Slope, Decvel = Decreg.Slope };
 			TrackletVelocityRegression tvr = new TrackletVelocityRegression() { R_TR = RAreg.PearsonR, R_TD = Decreg.PearsonR, R_RD = RADecreg.PearsonR,
 				S_TR = ResRA, S_TD = ResDec };
-			TrackletVelocity tvel = new TrackletVelocity() { EquatorialVelocity = ev, PixelVelocity = Projection.GetPixelVelocity(ev) };
-			tvel.SphericalVelocity = tvel.PixelVelocity.Magnitude * Projection.GetEstimatedWCSChainDerivative();
+			TrackletVelocity tvel = new TrackletVelocity()
+			{
+				EquatorialVelocity = ev,
+				PixelVelocity = Projection.GetPixelVelocity(ev),
+				SphericalVelocity = Math.Sqrt(ev.Decvel * ev.Decvel + ev.RAvel * ev.RAvel * Math.Cos(XRA[0]) * Math.Cos(XRA[0]))
+			};
 
 			return new Tracklet(Detections, tvel, tvr);
 		}

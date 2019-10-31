@@ -28,7 +28,7 @@ namespace Umbrella2.Pipeline.EIOAlgorithms
 		/// Creates a QuadTree of SkyBoT objects for quick lookup.
 		/// </summary>
 		/// <param name="NamesList">List of SkyBoT objects.</param>
-		public static QuadTree<SkybotObject> CreateTreeFromList(List<SkybotObject> NamesList)
+		public static QuadTree<SkybotObject> CreateTreeFromList(IEnumerable<SkybotObject> NamesList)
 		{
 			double T = double.MinValue, B = double.MaxValue, L = double.MaxValue, R = double.MinValue;
 			foreach (SkybotObject obj in NamesList)
@@ -59,5 +59,5 @@ namespace Umbrella2.Pipeline.EIOAlgorithms
 					if (Selected.Count == 1) m.SetResetProperty(new ObjectIdentity() { Name = Objects[0].Name });
 				}
 		}
-    }
+	}
 }
