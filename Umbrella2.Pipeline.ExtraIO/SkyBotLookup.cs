@@ -30,12 +30,22 @@ namespace Umbrella2.Pipeline.ExtraIO
 			/// Time at which the object is at the specified position.
 			/// </summary>
 			public readonly DateTime TimeCoordinate;
+			/// <summary>
+			/// The object's permanent designation.
+			/// </summary>
+			public readonly int? PermanentDesignation;
+			/// <summary>
+			/// The object's asteroid class.
+			/// </summary>
+			public readonly string Class;
 
-			public SkybotObject(string Name, string Position, DateTime Time)
+			public SkybotObject(string Name, string Position, DateTime Time, int? PermDesignation, string Class)
 			{
 				this.Name = Name;
 				this.Position = EquatorialPointStringFormatter.ParseFromMPCString(Position);
 				this.TimeCoordinate = Time;
+				this.PermanentDesignation = PermDesignation;
+				this.Class = Class;
 			}
 		}
 
@@ -64,10 +74,10 @@ namespace Umbrella2.Pipeline.ExtraIO
 				return new List<SkybotObject>();
 			}
 			/* Parsing Skybot output: specific selection of vot:TABLEDATA and namespace cleanup */
-			int sel1 = result.IndexOf("<vot:TABLEDATA>");
+			int sel1 = result.IndexOf("<vot:TABLEDATA>", StringComparison.InvariantCulture);
 			if (sel1 == -1) return new List<SkybotObject>();
 			string data = result.Substring(sel1);
-			int sel2 = data.IndexOf("</vot:TABLEDATA>");
+			int sel2 = data.IndexOf("</vot:TABLEDATA>", StringComparison.InvariantCulture);
 			data = data.Substring(0, sel2 + 16);
 			data = data.Replace("vot:", "");
 			/* Parsing xml output */
@@ -76,11 +86,15 @@ namespace Umbrella2.Pipeline.ExtraIO
 			XElement key = xdoc.Elements().ToArray()[0];
 			foreach (XElement xe in key.Elements())
 			{
+#warning Manually parsed. Does not verify API headers.
 				var z = xe.Elements().ToArray();
+				string permdes = z[0].Value;
 				string name = z[1].Value;
 				string ra = z[2].Value;
 				string dec = z[3].Value;
-				SkybotObject oj = new SkybotObject(name, ra + " " + dec, Time);
+				string cls = z[4].Value;
+				int? pd = int.TryParse(permdes, out int pdi) ? (int?)pdi : null;
+				SkybotObject oj = new SkybotObject(name, ra + " " + dec, Time, pd, cls);
 				objs.Add(oj);
 			}
 			return objs;

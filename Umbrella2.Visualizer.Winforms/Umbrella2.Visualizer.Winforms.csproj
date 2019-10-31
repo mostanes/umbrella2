@@ -55,6 +55,9 @@
     <Compile Include="TrackletOutput.Designer.cs">
       <DependentUpon>TrackletOutput.cs</DependentUpon>
     </Compile>
+    <Compile Include="TrackletOutput.Navigation.cs" />
+    <Compile Include="TrackletOutput.Filtering.cs" />
+    <Compile Include="TrackletOutput.TrackletUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FitsView.resx">

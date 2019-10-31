@@ -1,4 +1,4 @@
-﻿namespace Umbrella2.Visualizers.Winforms
+﻿namespace Umbrella2.Visualizer.Winforms
 {
 	partial class TrackletOutput
 	{
@@ -37,7 +37,8 @@
 			this.button1 = new System.Windows.Forms.Button();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.ImageView = new Umbrella2.Visualizers.Winforms.FitsView();
+			this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.ImageView = new Umbrella2.Visualizer.Winforms.FitsView();
 			this.dataGridView1 = new System.Windows.Forms.DataGridView();
 			this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -45,6 +46,7 @@
 			this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Column6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Column7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.panel2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
 			this.panel1.SuspendLayout();
@@ -131,6 +133,11 @@
 			this.contextMenuStrip1.Name = "contextMenuStrip1";
 			this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
 			// 
+			// contextMenuStrip1
+			// 
+			this.contextMenuStrip2.Name = "contextMenuStrip2";
+			this.contextMenuStrip2.Size = new System.Drawing.Size(61, 4);
+			// 
 			// ImageView
 			// 
 			this.ImageView.AutoScroll = true;
@@ -153,7 +160,9 @@
             this.Column3,
             this.Column4,
             this.Column5,
-            this.Column6});
+            this.Column6,
+            this.Column7});
+			this.dataGridView1.ContextMenuStrip = this.contextMenuStrip2;
 			this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Bottom;
 			this.dataGridView1.Location = new System.Drawing.Point(290, 192);
 			this.dataGridView1.Name = "dataGridView1";
@@ -204,6 +213,13 @@
 			this.Column6.ReadOnly = true;
 			this.Column6.Width = 200;
 			// 
+			// Column7
+			// 
+			this.Column7.HeaderText = "DeltaTime";
+			this.Column7.Name = "Column7";
+			this.Column7.ReadOnly = true;
+			this.Column7.Width = 200;
+			// 
 			// TrackletOutput
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -242,7 +258,9 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Column6;
+		private System.Windows.Forms.DataGridViewTextBoxColumn Column7;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+		private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
 		private FitsView ImageView;
 	}
 }

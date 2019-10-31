@@ -93,10 +93,12 @@ namespace Umbrella2.Pipeline.ExtraIO
 		}
 
 		/// <summary>
-		/// Instance of an observed object. Provides the object equivalent of a <a href="https://www.minorplanetcenter.net/iau/info/OpticalObs.html">MPC optical report format</a> record.
+		/// Instance of an observed object. Provides the object equivalent of a
+		/// <a href="https://www.minorplanetcenter.net/iau/info/OpticalObs.html">MPC optical report format</a> record.
 		/// </summary>
 		public struct ObsInstance
 		{
+			public string PackedMPN;
 			public string ObjectDesignation;
 			public bool DetectionAsterisk;
 			public PublishingNote PubNote;
@@ -119,16 +121,17 @@ namespace Umbrella2.Pipeline.ExtraIO
 			StringBuilder Line = new StringBuilder();
 			Line.EnsureCapacity(100);
 			Line.Length = 80;
-			Line[0] = MPCSpace;
-			Line[1] = MPCSpace;
-			Line[2] = MPCSpace;
-			Line[3] = MPCSpace;
-			Line[4] = MPCSpace;
 
+			if (ObservedObject.PackedMPN == null)
+				ObservedObject.PackedMPN = new string(' ', 5);
+			if (ObservedObject.PackedMPN.Length != 5)
+				throw new InvalidFieldException(InvalidFieldException.FieldType.PackedMPN);
 			if (ObservedObject.ObjectDesignation == null)
 				ObservedObject.ObjectDesignation = new string(' ', 7);
 			if (ObservedObject.ObjectDesignation.Length != 7)
 				throw new InvalidFieldException(InvalidFieldException.FieldType.ObjectDesignation);
+
+			Line.Insert(0, ObservedObject.PackedMPN);
 			Line.Insert(5, ObservedObject.ObjectDesignation);
 
 			Line[12] = ObservedObject.DetectionAsterisk ? '*' : MPCSpace;
@@ -182,6 +185,11 @@ namespace Umbrella2.Pipeline.ExtraIO
 				throw new ArgumentException("The line is too short. Expecting 80-character lines.", nameof(Line));
 
 			ObsInstance instance = new ObsInstance();
+			string PermanentID = Line.Substring(0, 5);
+			if (string.IsNullOrWhiteSpace(PermanentID))
+				instance.PackedMPN = null;
+			else
+				instance.PackedMPN = PermanentID;
 			string Designation = Line.Substring(5, 7);
 			if (string.IsNullOrWhiteSpace(Designation))
 				instance.ObjectDesignation = null;
@@ -258,7 +266,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 			/// Represents the fields that could have failed.
 			/// </summary>
 			public enum FieldType
-			{ PublishingNote, MagnitudeBand, Note2, ObjectDesignation, Time, RADEC, Magnitude, ObservatoryCode, DetectionAsterisk, ObsTime, Coordinates }
+			{ PublishingNote, MagnitudeBand, Note2, ObjectDesignation, Time, RADEC, Magnitude, ObservatoryCode, DetectionAsterisk, ObsTime, Coordinates, PackedMPN }
 
 			/// <summary>
 			/// The field that failed.
