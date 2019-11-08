@@ -4,61 +4,14 @@ using System.Drawing;
 using Umbrella2.WCS;
 using HeaderTable = System.Collections.Generic.Dictionary<string, Umbrella2.IO.MetadataRecord>;
 
-
 namespace Umbrella2.IO
 {
-    /// <summary>
-    /// Image data from a FITS File.
-    /// The data is in the form [y, x].
-    /// </summary>
-    [Serializable]
-	public struct ImageData
-	{
-		/// <summary>The position in the image of the current data.</summary>
-		readonly public Rectangle Position;
-		/// <summary>The pixel values in the image. First index is the Y axis.</summary>
-		public double[,] Data;
-		/// <summary>The image to which this data belongs.</summary>
-		readonly public Image Parent;
-		/// <summary>Whether the data is readonly or not.</summary>
-		readonly public bool ReadOnly;
-		readonly internal Guid FDGuid;
-
-		public ImageData(Rectangle Location, double[,] ImageData, Image Image, bool Readonly, Guid UID)
-		{
-			Position = Location;
-			Data = ImageData;
-			Parent = Image;
-			ReadOnly = Readonly;
-			FDGuid = UID;
-		}
-	}
-
-	/// <summary>
-	/// Represents a set of image properties that can be parsed from image metadata.
-	/// </summary>
-	public abstract class ImageProperties
-	{
-		/// <summary>
-		/// Creates a new instance of the image properties for the given image.
-		/// </summary>
-		/// <param name="Image">The image for which the properties are extracted.</param>
-		public ImageProperties(Image Image)
-		{ }
-
-		/// <summary>
-		/// Gets the list of metadata records associated with the property.
-		/// </summary>
-		/// <returns>A list of metadata records.</returns>
-		public abstract List<MetadataRecord> GetRecords();
-	}
-
 	public abstract class Image
 	{
 		public readonly uint Width, Height;
 
 		/// <summary>
-		/// The number of the image in the FITS file.
+		/// The number of the image in a multi-image file.
 		/// </summary>
 		public readonly int ImageNumber;
 
@@ -86,6 +39,30 @@ namespace Umbrella2.IO
 			this.Height = Height;
 			this.PropertiesDictionary = new Dictionary<Type, ImageProperties>();
 		}
+
+		/// <summary>
+		/// Creates a new instance from a set of headers.
+		/// </summary>
+		/// <param name="Headers">Image headers.</param>
+		protected Image(ICHV Headers) : this(Headers.ImageNumber, Headers.WCS, Headers.Header, Headers.Width, Headers.Height)
+		{ }
+
+		/// <summary>
+		/// Creates a new instance from a set of headers and properties.
+		/// </summary>
+		/// <param name="Headers">Image headers.</param>
+		/// <param name="Properties">Image properties.</param>
+		protected Image(ICHV Headers, Dictionary<Type, ImageProperties> Properties) : this(Headers)
+		{ PropertiesDictionary = Properties; }
+
+		/// <summary>
+		/// Returns all associated image properties.
+		/// </summary>
+		/// <returns>All image properties.</returns>
+		public Dictionary<Type, ImageProperties> GetAllProperties() => PropertiesDictionary;
+
+		/// <summary>Gets the Image's headers.</summary>
+		public ICHV GetICHV() => new ICHV() { Header = Header, Height = Height, ImageNumber = ImageNumber, WCS = Transform, Width = Width };
 
 		/// <summary>
 		/// Fetches the image properties of given type for the image. Caches the instance.

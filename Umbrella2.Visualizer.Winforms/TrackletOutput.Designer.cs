@@ -32,8 +32,10 @@
 			this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
 			this.panel2 = new System.Windows.Forms.Panel();
 			this.dataGridView2 = new System.Windows.Forms.DataGridView();
-			this.PropertyName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.PropertyValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.PropertyName1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.PropertyValue1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.PropertyName2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.PropertyValue2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.button1 = new System.Windows.Forms.Button();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -47,6 +49,7 @@
 			this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Column6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Column7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.dataGridView3 = new System.Windows.Forms.DataGridView();
 			this.panel2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
 			this.panel1.SuspendLayout();
@@ -59,7 +62,7 @@
 			this.checkedListBox1.FormattingEnabled = true;
 			this.checkedListBox1.Location = new System.Drawing.Point(0, 0);
 			this.checkedListBox1.Name = "checkedListBox1";
-			this.checkedListBox1.Size = new System.Drawing.Size(290, 481);
+			this.checkedListBox1.Size = new System.Drawing.Size(290, 500);
 			this.checkedListBox1.TabIndex = 0;
 			this.checkedListBox1.SelectedIndexChanged += new System.EventHandler(this.checkedListBox1_SelectedIndexChanged);
 			// 
@@ -67,6 +70,7 @@
 			// 
 			this.panel2.Controls.Add(this.dataGridView2);
 			this.panel2.Controls.Add(this.button1);
+			this.panel2.Controls.Add(this.dataGridView3);
 			this.panel2.Dock = System.Windows.Forms.DockStyle.Right;
 			this.panel2.Location = new System.Drawing.Point(719, 0);
 			this.panel2.Name = "panel2";
@@ -81,28 +85,58 @@
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.dataGridView2.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 			this.dataGridView2.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.PropertyName,
-            this.PropertyValue});
-			this.dataGridView2.Location = new System.Drawing.Point(0, 33);
+            this.PropertyName1,
+            this.PropertyValue1});
+			this.dataGridView2.Location = new System.Drawing.Point(0, 0);
 			this.dataGridView2.Name = "dataGridView2";
 			this.dataGridView2.ReadOnly = true;
 			this.dataGridView2.RowHeadersVisible = false;
-			this.dataGridView2.Size = new System.Drawing.Size(254, 150);
+			this.dataGridView2.Size = new System.Drawing.Size(254, 200);
 			this.dataGridView2.TabIndex = 1;
 			// 
-			// PropertyName
+			// dataGridView3
 			// 
-			this.PropertyName.HeaderText = "Name";
-			this.PropertyName.Name = "PropertyName";
-			this.PropertyName.ReadOnly = true;
-			this.PropertyName.Width = 125;
+			this.dataGridView3.AllowUserToAddRows = false;
+			this.dataGridView3.AllowUserToDeleteRows = false;
+			this.dataGridView3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+			| System.Windows.Forms.AnchorStyles.Right)));
+			this.dataGridView3.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.dataGridView3.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+			this.PropertyName2,
+			this.PropertyValue2});
+			this.dataGridView3.Location = new System.Drawing.Point(0, 200);
+			this.dataGridView3.Name = "dataGridView2";
+			this.dataGridView3.ReadOnly = true;
+			this.dataGridView3.RowHeadersVisible = false;
+			this.dataGridView3.Size = new System.Drawing.Size(254, 200);
 			// 
-			// PropertyValue
+			// PropertyName1
 			// 
-			this.PropertyValue.HeaderText = "Value";
-			this.PropertyValue.Name = "PropertyValue";
-			this.PropertyValue.ReadOnly = true;
-			this.PropertyValue.Width = 125;
+			this.PropertyName1.HeaderText = "Name";
+			this.PropertyName1.Name = "PropertyName1";
+			this.PropertyName1.ReadOnly = true;
+			this.PropertyName1.Width = 125;
+			// 
+			// PropertyValue1
+			// 
+			this.PropertyValue1.HeaderText = "Value";
+			this.PropertyValue1.Name = "PropertyValue1";
+			this.PropertyValue1.ReadOnly = true;
+			this.PropertyValue1.Width = 125;
+			// 
+			// PropertyName2
+			// 
+			this.PropertyName2.HeaderText = "Name";
+			this.PropertyName2.Name = "PropertyName2";
+			this.PropertyName2.ReadOnly = true;
+			this.PropertyName2.Width = 125;
+			// 
+			// PropertyValue2
+			// 
+			this.PropertyValue2.HeaderText = "Value";
+			this.PropertyValue2.Name = "PropertyValue2";
+			this.PropertyValue2.ReadOnly = true;
+			this.PropertyValue2.Width = 125;
 			// 
 			// button1
 			// 
@@ -121,11 +155,10 @@
 			this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.panel1.ContextMenuStrip = this.contextMenuStrip1;
 			this.panel1.Controls.Add(this.ImageView);
 			this.panel1.Location = new System.Drawing.Point(290, 0);
 			this.panel1.Name = "panel1";
-			this.panel1.Size = new System.Drawing.Size(429, 186);
+			this.panel1.Size = new System.Drawing.Size(429, 300);
 			this.panel1.TabIndex = 3;
 			// 
 			// contextMenuStrip1
@@ -142,6 +175,7 @@
 			// 
 			this.ImageView.AutoScroll = true;
 			this.ImageView.Center = new System.Drawing.Point(0, 0);
+			this.ImageView.ContextMenuStrip = this.contextMenuStrip1;
 			this.ImageView.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.ImageView.Image = null;
 			this.ImageView.Location = new System.Drawing.Point(0, 0);
@@ -164,21 +198,21 @@
             this.Column7});
 			this.dataGridView1.ContextMenuStrip = this.contextMenuStrip2;
 			this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.dataGridView1.Location = new System.Drawing.Point(290, 192);
+			this.dataGridView1.Location = new System.Drawing.Point(290, 300);
 			this.dataGridView1.Name = "dataGridView1";
 			this.dataGridView1.ReadOnly = true;
 			this.dataGridView1.RowHeadersVisible = false;
 			this.dataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-			this.dataGridView1.Size = new System.Drawing.Size(429, 289);
+			this.dataGridView1.Size = new System.Drawing.Size(429, 181);
 			this.dataGridView1.TabIndex = 4;
 			this.dataGridView1.SelectionChanged += new System.EventHandler(this.dataGridView1_SelectionChanged);
 			// 
 			// Column1
 			// 
-			this.Column1.HeaderText = "Image Number";
+			this.Column1.HeaderText = "Img #";
 			this.Column1.Name = "Column1";
 			this.Column1.ReadOnly = true;
-			this.Column1.Width = 50;
+			this.Column1.Width = 30;
 			// 
 			// Column2
 			// 
@@ -208,17 +242,17 @@
 			// 
 			// Column6
 			// 
-			this.Column6.HeaderText = "Size";
+			this.Column6.HeaderText = "Size (A, B)";
 			this.Column6.Name = "Column6";
 			this.Column6.ReadOnly = true;
-			this.Column6.Width = 200;
+			this.Column6.Width = 100;
 			// 
 			// Column7
 			// 
-			this.Column7.HeaderText = "DeltaTime";
+			this.Column7.HeaderText = "ΔT";
 			this.Column7.Name = "Column7";
 			this.Column7.ReadOnly = true;
-			this.Column7.Width = 200;
+			this.Column7.Width = 60;
 			// 
 			// TrackletOutput
 			// 
@@ -250,8 +284,11 @@
 		private System.Windows.Forms.DataGridView dataGridView1;
 		private System.Windows.Forms.Button button1;
 		private System.Windows.Forms.DataGridView dataGridView2;
-		private System.Windows.Forms.DataGridViewTextBoxColumn PropertyName;
-		private System.Windows.Forms.DataGridViewTextBoxColumn PropertyValue;
+		private System.Windows.Forms.DataGridView dataGridView3;
+		private System.Windows.Forms.DataGridViewTextBoxColumn PropertyName1;
+		private System.Windows.Forms.DataGridViewTextBoxColumn PropertyValue1;
+		private System.Windows.Forms.DataGridViewTextBoxColumn PropertyName2;
+		private System.Windows.Forms.DataGridViewTextBoxColumn PropertyValue2;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Column3;

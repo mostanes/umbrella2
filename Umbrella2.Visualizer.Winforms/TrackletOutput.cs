@@ -84,8 +84,10 @@ namespace Umbrella2.Visualizer.Winforms
 				{
 					ImageDetection det = t.Detections[i];
 					if (tm == null) tm = det.Time.Time;
-					dataGridView1.Rows.Add(i, det.Barycenter.PP.X.ToString("G6"), det.Barycenter.PP.Y.ToString("G6"), det.Barycenter.EP.FormatToString(Format.MPC_RA),
-						det.Barycenter.EP.FormatToString(Format.MPC_Dec), det.FetchProperty<ObjectSize>().PixelEllipse.ToString(),
+					var PE = det.FetchProperty<ObjectSize>().PixelEllipse;
+					dataGridView1.Rows.Add(i, det.Barycenter.PP.X.ToString("G6"), det.Barycenter.PP.Y.ToString("G6"),
+						det.Barycenter.EP.FormatToString(Format.MPC_RA), det.Barycenter.EP.FormatToString(Format.MPC_Dec),
+						PE.SemiaxisMajor.ToString("G4") + ";" + PE.SemiaxisMinor.ToString("G4"),
 						(det.Time.Time - tm.Value).TotalSeconds);
 				}
 			SuspendObjectsUpdate = false;
@@ -168,8 +170,28 @@ namespace Umbrella2.Visualizer.Winforms
 				}
 			}
 
+			UpdateDetectionProperties();
+
 			ImageView.Image = Image;
 			UpdateImage();
+		}
+
+		private void UpdateDetectionProperties()
+		{
+			dataGridView3.Rows.Clear();
+			if (SelectedDetection.TryFetchProperty(out PairingProperties pp))
+			{
+				dataGridView3.Rows.Add("Star polluted", pp.StarPolluted);
+				dataGridView3.Rows.Add("Detection Algorithm(s)", pp.Algorithm);
+			}
+			if(SelectedDetection.TryFetchProperty(out ObjectPhotometry photo))
+			{
+				dataGridView3.Rows.Add("Flux", photo.Flux);
+			}
+			if(SelectedDetection.TryFetchProperty(out ObjectPoints px))
+			{
+				dataGridView3.Rows.Add("Pixel count", px.PixelPoints.Length);
+			}
 		}
 
 		/// <summary>Ensures that the detection <see cref="ContextMenuStrip"/> is populated.</summary>

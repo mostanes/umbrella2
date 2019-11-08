@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Umbrella2")]
-[assembly: AssemblyCopyright("Copyright © Mălin Stănescu 2018")]
+[assembly: AssemblyCopyright("Copyright © Mălin Stănescu 2018-2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

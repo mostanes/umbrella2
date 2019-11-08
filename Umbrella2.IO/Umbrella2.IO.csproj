@@ -61,6 +61,7 @@
     <Compile Include="FITS\MMapFitsFile.cs" />
     <Compile Include="FITS\FitsBuilder.cs" />
     <Compile Include="FITS\NSStreamFitsFile.cs" />
+    <Compile Include="ImageExtra.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

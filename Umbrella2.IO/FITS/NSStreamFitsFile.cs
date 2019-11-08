@@ -8,30 +8,55 @@ namespace Umbrella2.IO.FITS
 	public class NSStreamFitsFile : FitsFile
 	{
 		byte[] Data;
-		Dictionary<IntPtr, GCHandle> OpenHandles = new Dictionary<IntPtr, GCHandle>();
+		int CC;
+		GCHandle Handle;
 
-		protected NSStreamFitsFile(Stream str, string Path, bool OutputImage, MEFImageNumberGetter numberGetter, FitsFileBuilder Headers) :
+		protected NSStreamFitsFile(byte[] Data, string Path, bool OutputImage, MEFImageNumberGetter numberGetter, FitsFileBuilder Headers) :
 			base(Path, OutputImage, numberGetter, Headers)
 		{
-			Data = new byte[str.Length];
-			str.Read(Data, 0, (int)str.Length);
+			this.Data = Data;
+		}
+
+		public static NSStreamFitsFile OpenFile(Stream str, int Length, string Path, MEFImageNumberGetter numberGetter = null)
+		{
+			byte[] Data = new byte[Length];
+			str.Read(Data, 0, Data.Length);
+
+			FitsFileBuilder Headers;
+			using (MemoryStream ms = new MemoryStream(Data))
+				Headers = HeaderIO.ReadFileHeaders(ms, Length, numberGetter);
+
+			return new NSStreamFitsFile(Data, Path, false, numberGetter, Headers);
+
 		}
 
 		internal override IntPtr GetView(int Position, int Length)
 		{
-			GCHandle gch = GCHandle.Alloc(Data, GCHandleType.Pinned);
+			GCHandle gch;
+			lock (Data)
+			{
+				if (CC == 0)
+					Handle = GCHandle.Alloc(Data, GCHandleType.Pinned);
+				gch = Handle;
+				CC++;
+			}
 			IntPtr ptr = gch.AddrOfPinnedObject();
-			OpenHandles.Add(ptr, gch);
-			return ptr;
+			return (ptr + Position);
 		}
 
 		internal override void ReleaseView(IntPtr View)
 		{
-			if (!OpenHandles.ContainsKey(View))
-				throw new ArgumentException("Not an open view", nameof(View));
-			GCHandle gch = OpenHandles[View];
-			gch.Free();
-			OpenHandles.Remove(View);
+			lock(Data)
+			{
+				CC--;
+				if (CC == 0)
+					Handle.Free();
+			}
+		}
+
+		public void Close()
+		{
+			Data = null;
 		}
 	}
 }

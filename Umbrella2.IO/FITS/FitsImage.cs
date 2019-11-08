@@ -42,7 +42,7 @@ namespace Umbrella2.IO.FITS
 		{ }
 
 		/// <summary>Expansion of FICHV to pass-through constructor.</summary>
-		protected FitsImage(int Number, FICHV data) : base(Number, data.WCS, data.Header, data.Width, data.Height)
+		protected FitsImage(FICHV data) : base(data)
 		{ ImageLock = new RWLockArea(); }
 
 		/// <summary>
@@ -52,7 +52,7 @@ namespace Umbrella2.IO.FITS
 		/// <param name="Number">Image number in multi-image (MEF) FITS files.</param>
 		/// <param name="SkipWCS">Whether to parse the WCS headers.</param>
 		public FitsImage(FitsFile File, int Number = 0, bool SkipWCS = false) :
-			this(Number, ParseHeaderTable(Number == 0 ? File.PrimaryTable : File.MEFHeaderTable[Number - 1], SkipWCS))
+			this(ParseHeaderTable(Number, Number == 0 ? File.PrimaryTable : File.MEFHeaderTable[Number - 1], SkipWCS))
 		{
 			try
 			{
@@ -210,12 +210,14 @@ namespace Umbrella2.IO.FITS
 		/// Parses a <see cref="FICHV"/> out of the raw header table.
 		/// </summary>
 		/// <returns>The <see cref="FICHV"/> header table.</returns>
+		/// <param name="ImageNumber">Image's number in the file.</param>
 		/// <param name="Header">Image's raw header.</param>
 		/// <param name="SkipWCS">If set to <c>true</c>, skip reading the WCS.</param>
-		public static FICHV ParseHeaderTable(HeaderTable Header, bool SkipWCS)
+		public static FICHV ParseHeaderTable(int ImageNumber, HeaderTable Header, bool SkipWCS)
 		{
 			FICHV data = new FICHV();
 			data.Header = Header;
+			data.ImageNumber = ImageNumber;
 			try
 			{
 				/* Parse image size */
@@ -276,7 +278,7 @@ namespace Umbrella2.IO.FITS
 		public FICHV CopyHeader()
 		{
 			int BitPix = Header["BITPIX"].Int;
-			FICHV f = new FICHV() { BitPix = BitPix, Width = Width, Height = Height, WCS = Transform };
+			FICHV f = new FICHV() { BitPix = BitPix, Width = Width, Height = Height, WCS = Transform, ImageNumber = ImageNumber };
 			return f;
 		}
 	}

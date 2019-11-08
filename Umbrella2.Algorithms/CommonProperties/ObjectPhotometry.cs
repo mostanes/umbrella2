@@ -14,5 +14,7 @@ namespace Umbrella2.PropertyModel.CommonProperties
 		/// <summary>The object's flux as measured on the image.</summary>
 		[PropertyDescription(true)]
 		public double Flux;
+		/// <summary>The object's magnitude. Zero or <see cref="double.NaN"/> values represent no magnitude.</summary>
+		public double Magnitude;
 	}
 }

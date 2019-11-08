@@ -5,32 +5,11 @@ using HeaderTable = System.Collections.Generic.Dictionary<string, Umbrella2.IO.M
 
 namespace Umbrella2.IO.FITS
 {
+	/// <summary>
+	/// Provides functions for building FITS Images
+	/// </summary>
 	public static class FitsBuilder
 	{
-		/*/// <summary>
-		/// Creates a new FITS image.
-		/// </summary>
-		/// <param name="File">File backing the image.</param>
-		/// <param name="Header">Entries in the FITS image header.</param>
-		/// <param name="ExtraProperties">Extra image properties to write in the header.</param>
-		/// <param name="ReverseAxis">Reverses the order of the axis in the header.</param>
-		public FitsImage(FitsFile File, FICHV Header, List<ImageProperties> ExtraProperties = null, bool ReverseAxis = false) :
-		this(0, Header)
-		{
-			if (Width > MaxSize || Height > MaxSize) throw new FITSFormatException("Image too large for Umbrella2.");
-			this.File = File;
-			BytesPerPixel = (byte)Math.Abs(Header.BitPix / 8);
-			var RW = GetRW(Header.BitPix);
-			Reader = RW.Item1;
-			Writer = RW.Item2;
-			RAFirst = !ReverseAxis;
-			this.Header = FitsBuilder.GetHeader(this, Header.BitPix);
-			if (ExtraProperties != null)
-				foreach (ImageProperties prop in ExtraProperties) foreach (MetadataRecord er in prop.GetRecords()) Header.Add(er.Name, er);
-			File.SetPrimaryHeaders(Header);
-		}*/
-
-
 		/// <summary>
 		/// Computes the headers for a new FITS image.
 		/// </summary>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C0D0150F-C367-4EBC-B0CB-BE1A7EFF8818}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Umbrella2.Pipeline.Serialization</RootNamespace>
+    <AssemblyName>Umbrella2.Pipeline.Serialization</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Umbrella2.Pipeline.Serialization.xml</DocumentationFile>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="FitsStoredSurrogate.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Remoting\LocalImageWrapper.cs" />
+    <Compile Include="Remoting\RemoteImageSurrogate.cs" />
+    <Compile Include="Remoting\RemoteImaging.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Umbrella2.IO\Umbrella2.IO.csproj">
+      <Project>{9837FA6B-B7B7-49A1-A33F-CFB557652814}</Project>
+      <Name>Umbrella2.IO</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Umbrella2.SharedBase\Umbrella2.SharedBase.csproj">
+      <Project>{1F30DC02-4ACB-4E11-85CB-827EC6F9CDCB}</Project>
+      <Name>Umbrella2.SharedBase</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Remoting\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>

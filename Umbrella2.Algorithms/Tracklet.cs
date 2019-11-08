@@ -44,6 +44,11 @@ namespace Umbrella2
 		}
 
 		/// <summary>
+		/// Empty constructor, for easier use with reflection.
+		/// </summary>
+		public Tracklet() { }
+
+		/// <summary>
 		/// Fetches a property of the ImageDetection. Not thread-safe when also appending properties concurrently.
 		/// </summary>
 		/// <typeparam name="T">Property type.</typeparam>

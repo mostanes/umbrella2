@@ -34,6 +34,7 @@ namespace Umbrella2.Pipeline.EIOAlgorithms
 			PixelPoint Corner2 = new PixelPoint() { X = Image.Width, Y = Image.Height };
 			EquatorialPoint CEP = Image.Transform.GetEquatorialPoint(CPP);
 			double Radius = Image.Transform.GetEquatorialPoint(Corner1) ^ Image.Transform.GetEquatorialPoint(Corner2);
+			Radius *= 0.55;
 
 			ShotTime = Image.GetProperty<ObservationTime>().Time;
 			Exposure = Image.GetProperty<ObservationTime>().Exposure;
