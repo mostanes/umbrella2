@@ -103,7 +103,7 @@ namespace Umbrella2.Algorithms.Detection
 				double EstDistance = PairEstimatedVelocity * tsp.TotalSeconds;
 				double EstDistError = Math.Abs(PairEstimatedVelocityError * tsp.TotalSeconds) + PairEstimatedDistanceError;
 				EquatorialPoint EstimatedPoint = Line + EstDistance;
-				var DetectionsList = DetectionPool.Query(EstimatedPoint.Dec, EstimatedPoint.RA, EstDistError);
+				var DetectionsList = DetectionPool.Query(EstimatedPoint.RA, EstimatedPoint.Dec, EstDistError);
 				DetectionsList.RemoveAll((x) => ((x.Barycenter.EP ^ EstimatedPoint) > EstDistError) || (x.Time.Time != dt) || x.FetchOrCreate<PairingProperties>().IsDotDetection);
 				//DetectedInPool.Add(DetectionsList);
 				DIPAr.Add(DetectionsList.ToArray());
@@ -137,7 +137,7 @@ namespace Umbrella2.Algorithms.Detection
 				double EstDistance = PairEstimatedVelocity * tsp.TotalSeconds;
 				double EstDistError = Math.Abs(PairEstimatedVelocityError * tsp.TotalSeconds) + PairEstimatedDistanceError;
 				EquatorialPoint EstimatedPoint = Line + EstDistance;
-				var DetectionsList = DetectionPool.Query(EstimatedPoint.Dec, EstimatedPoint.RA, EstDistError);
+				var DetectionsList = DetectionPool.Query(EstimatedPoint.RA, EstimatedPoint.Dec, EstDistError);
 				DetectionsList.RemoveAll((x) => ((x.Barycenter.EP ^ EstimatedPoint) > EstDistError) || (x.Time.Time != dt) || !x.FetchProperty<PairingProperties>().IsDotDetection);
 				//DetectedInPool.Add(DetectionsList);
 				DIPAr.Add(DetectionsList.ToArray());

@@ -30,13 +30,13 @@ namespace Umbrella2.Pipeline.EIOAlgorithms
 		/// <param name="NamesList">List of SkyBoT objects.</param>
 		public static QuadTree<SkybotObject> CreateTreeFromList(IEnumerable<SkybotObject> NamesList)
 		{
-			double T = double.MinValue, B = double.MaxValue, L = double.MaxValue, R = double.MinValue;
+			double T = double.MaxValue, B = double.MinValue, L = double.MaxValue, R = double.MinValue;
 			foreach (SkybotObject obj in NamesList)
 			{
-				if (obj.Position.RA > T) T = obj.Position.RA;
-				if (obj.Position.RA < B) B = obj.Position.RA;
-				if (obj.Position.Dec > R) R = obj.Position.Dec;
-				if (obj.Position.Dec < L) L = obj.Position.Dec;
+				if (obj.Position.Dec < T) T = obj.Position.Dec;
+				if (obj.Position.Dec > B) B = obj.Position.Dec;
+				if (obj.Position.RA > R) R = obj.Position.RA;
+				if (obj.Position.RA < L) L = obj.Position.RA;
 			}
 			QuadTree<SkybotObject> Tree = new QuadTree<SkybotObject>(8, T, B, L, R);
 			foreach (SkybotObject obj in NamesList) Tree.Add(obj, obj.Position.RA, obj.Position.Dec);
