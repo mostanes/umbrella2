@@ -48,7 +48,7 @@ namespace Umbrella2.Pipeline.EIOAlgorithms
 		/// </summary>
 		/// <param name="t">Tracklet to process.</param>
 		/// <param name="NamesTree">QuadTree of SkyBoT objects.</param>
-		/// <param name="Separation">Maximum distance between SkyBoT object and detection at which they are considered the same object.</param>
+		/// <param name="Separation">Maximum distance between SkyBoT object and detection at which they are considered the same object. Value in radians.</param>
 		static void PairTracklet(Tracklet t, QuadTree<SkybotObject> NamesTree, double Separation)
 		{
 			foreach (ImageDetection m in t.Detections)

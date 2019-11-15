@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Umbrella2.Algorithms.Misc;
 using Umbrella2.PropertyModel;
 
 namespace Umbrella2.PropertyModel.CommonProperties
@@ -20,5 +21,9 @@ namespace Umbrella2.PropertyModel.CommonProperties
 
 		public double S_TR;
 		public double S_TD;
+
+		public LinearRegression.LinearRegressionParameters P_TR;
+		public LinearRegression.LinearRegressionParameters P_TD;
+		public DateTime ZeroTime;
 	}
 }

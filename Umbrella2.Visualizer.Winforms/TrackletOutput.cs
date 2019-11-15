@@ -27,6 +27,8 @@ namespace Umbrella2.Visualizer.Winforms
 		public int CCDNumber;
 		/// <summary>Name of the processed field.</summary>
 		public string FieldName;
+		/// <summary>Name of the processed field as given to the objects in the report.</summary>
+		public string ReportFieldName;
 		/// <summary>Band of the observations.</summary>
 		public MPCOpticalReportFormat.MagnitudeBand Band;
 		/// <summary>All input images.</summary>
@@ -186,7 +188,9 @@ namespace Umbrella2.Visualizer.Winforms
 			}
 			if(SelectedDetection.TryFetchProperty(out ObjectPhotometry photo))
 			{
-				dataGridView3.Rows.Add("Flux", photo.Flux);
+				dataGridView3.Rows.Add("Flux", photo.Flux.ToString("G6"));
+				if (photo.Magnitude != 0)
+					dataGridView3.Rows.Add("Magnitude", photo.Magnitude.ToString("G6"));
 			}
 			if(SelectedDetection.TryFetchProperty(out ObjectPoints px))
 			{

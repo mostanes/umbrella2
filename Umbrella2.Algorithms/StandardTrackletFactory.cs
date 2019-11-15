@@ -28,11 +28,21 @@ namespace Umbrella2
 				{
 					Pixels.AddRange(ojp.PixelPoints);
 					Values.AddRange(ojp.PixelValues);
-					imd.TryFetchProperty<PairingProperties>(out KeptProp);
+					imd.TryFetchProperty(out PairingProperties Kprop);
+					if (KeptProp == null) KeptProp = Kprop;
+					else KeptProp.Algorithm |= Kprop.Algorithm;
 				}
 			}
-#warning This is not fine.
-			if (Pixels.Count == 0) return Detections[0];
+
+			if (Pixels.Count == 0)
+			{
+				if (Detections.Length != 1)
+				{
+					if (KeptProp == null) KeptProp = new PairingProperties();
+					KeptProp.MultiNoPoints = true;
+				}
+				return Detections[0];
+			}
 			ImageDetection Result = StandardDetectionFactory.CreateDetection(Detections[0].ParentImage, Pixels, Values);
 			if (KeptProp != null) Result.SetResetProperty(KeptProp);
 			return Result;
@@ -68,7 +78,7 @@ namespace Umbrella2
 			double ResDec = LineFit.ComputeResidualSqSum(Decreg, ValidTimes, XDec);
 			EquatorialVelocity ev = new EquatorialVelocity() { RAvel = RAreg.Slope, Decvel = Decreg.Slope };
 			TrackletVelocityRegression tvr = new TrackletVelocityRegression() { R_TR = RAreg.PearsonR, R_TD = Decreg.PearsonR, R_RD = RADecreg.PearsonR,
-				S_TR = ResRA, S_TD = ResDec };
+				S_TR = ResRA, S_TD = ResDec, ZeroTime = ZeroTime, P_TD = Decreg, P_TR = RAreg };
 			TrackletVelocity tvel = new TrackletVelocity()
 			{
 				EquatorialVelocity = ev,

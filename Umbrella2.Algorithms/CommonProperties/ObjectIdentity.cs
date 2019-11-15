@@ -25,7 +25,7 @@ namespace Umbrella2.PropertyModel.CommonProperties
 		public string PackedMPN;
 
 		/// <summary>Scores for each possible object name.</summary>
-		public Dictionary<string, int> NameScore;
+		public Dictionary<string, int> NameScore = new Dictionary<string, int>();
 
 		/// <summary>Distances from object to name.</summary>
 		Dictionary<string, double> Distances = new Dictionary<string, double>();
@@ -49,23 +49,19 @@ namespace Umbrella2.PropertyModel.CommonProperties
 		/// <summary>Computes <see cref="NameScore"/> and attempts to set <see cref="Name"/>.</summary>
 		public void ComputeNamescore(Tracklet t)
 		{
-			NameScore = new Dictionary<string, int>();
 			string XName = null;
 			double CScore = -1;
 			foreach(var kvp in Distances)
 			{
 				double Mean = kvp.Value / Counts[kvp.Key];
 				double XScore = Math.Pow(2, Counts[kvp.Key] * 0.5) / (Arc1Sec + Mean);
-				double MaxScore = Math.Pow(2, t.Detections.Count((x) => x != null)) / Arc1Sec;
+				double MaxScore = Math.Pow(2, 0.5 * t.Detections.Count((x) => x != null)) / Arc1Sec;
 				double Score = 100 * XScore / MaxScore;
 				if (Score > 1)
 					NameScore.Add(kvp.Key, (int)Score);
-				if (Score > CScore)
-				{
-					XName = kvp.Key;
-					CScore = Score;
-				}
 			}
+			foreach (var kvp in NameScore)
+				if (kvp.Value > CScore) { CScore = kvp.Value; XName = kvp.Key; }
 			if (CScore > NScore)
 			{
 				Name = XName;
@@ -77,15 +73,55 @@ namespace Umbrella2.PropertyModel.CommonProperties
 			}
 		}
 
+		/// <summary>
+		/// Computes <see cref="NameScore"/> and attempts to set <see cref="Name"/>.
+		/// Uses the provided <paramref name="Default"/> name as the lowest priority option.
+		/// Can compute <paramref name="Default"/> from <paramref name="FieldName"/>, <paramref name="ObjNum"/> and optionally <paramref name="CCD"/>.
+		/// If no <paramref name="Default"/> is given and it cannot be computed, skips using a default name.
+		/// </summary>
+		/// <remarks>
+		/// If no <paramref name="CCD"/> value is given, generates object names as FieldName + ObjectNumber base 10 (3 digits).
+		/// If <paramref name="CCD"/> is non-null, then generates name as FieldName + CCD base-62 (1 digit) + ObjectNumber (packed).
+		/// </remarks>
+		/// <param name="t">Tracklet to be named.</param>
+		/// <param name="Default">Default name. If null, it is generated from the next parameters. Otherwise, the other parameters can be null.</param>
+		/// <param name="FieldName">Field name. Must be 4 characters long.</param>
+		/// <param name="CCD">CCD Number. If present, uses the MPC 0-9, A-Z, a-z packing for both the CCD and the object number.</param>
+		/// <param name="ObjNum">Object number.</param>
+		public void ComputeNamescoreWithDefault(Tracklet t, string Default = null, string FieldName = null, int? CCD = null, int? ObjNum = null)
+		{
+			if (Default == null & FieldName != null & ObjNum.HasValue && FieldName.Length == 4)
+			{
+				if (CCD.HasValue)
+					try { Default = FieldName + GetB62Char(CCD.Value) + GetObjNumber(ObjNum.Value); }
+					catch { Default = null; }
+				else Default = FieldName + ObjNum.Value.ToString("000");
+			}
+			if (Default != null)
+			{ NameScore.Add(Default, NScore + 1); ObjIDs[Default] = null; }
+
+			ComputeNamescore(t);
+
+			if (Name == Default)
+				PackedPD = Default;
+		}
+
+		private static string GetObjNumber(int ObjNum)
+		{
+			if (ObjNum < 100) return ObjNum.ToString("00");
+			ObjNum += 520;
+			return "" + GetB62Char(ObjNum / 62) + GetB62Char(ObjNum % 62);
+		}
+
 		/// <summary>Packs the minor planet number to MPC packed form.</summary>
 		private void PackMPN()
 		{
-			if (MPN.Value < 100000) { PackedMPN = MPN.Value.ToString(); return; }
+			if (MPN.Value < 100000) { PackedMPN = MPN.Value.ToString("00000"); return; }
 			if (MPN.Value < 620000)
 			{
 				int XC = MPN.Value / 10000;
 				int RM = MPN.Value % 10000;
-				PackedMPN = GetB62Char(XC) + RM.ToString();
+				PackedMPN = GetB62Char(XC) + RM.ToString("0000");
 				return;
 			}
 			if(MPN.Value < 15396336)

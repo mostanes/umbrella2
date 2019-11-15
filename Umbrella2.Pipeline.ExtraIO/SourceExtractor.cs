@@ -22,6 +22,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 			public double? A;
 			public double? B;
 			public double? EllipseTheta;
+			public int? Flags;
 		}
 
 		/// <summary>
@@ -61,8 +62,10 @@ namespace Umbrella2.Pipeline.ExtraIO
 					Entry.Ellipticity = Parse(Columns, Ldata, "ELLIPTICITY");
 					Entry.A = Parse(Columns, Ldata, "A_IMAGE");
 					Entry.B = Parse(Columns, Ldata, "B_IMAGE");
+					Entry.Flags = (int)Parse(Columns, Ldata, "FLAGS");
 
-					Entries.Add(Entry);
+					if (!Entry.Flags.HasValue || Entry.Flags.Value < 4)
+						Entries.Add(Entry);
 				}
 			}
 			List<ImageDetection> Detections = Entries.Select((x) => Transform(x, AssociatedImage)).ToList();
@@ -94,8 +97,8 @@ namespace Umbrella2.Pipeline.ExtraIO
 			{
 				sz.PixelEllipse = new SourceEllipse()
 				{
-					SemiaxisMajor = Entry.FWHM.Value / Math.Sqrt(Entry.Ellipticity.Value),
-					SemiaxisMinor = Entry.FWHM.Value * Math.Sqrt(Entry.Ellipticity.Value)
+					SemiaxisMajor = Entry.FWHM.Value / Math.Sqrt(1 - Entry.Ellipticity.Value),
+					SemiaxisMinor = Entry.FWHM.Value * Math.Sqrt(1 - Entry.Ellipticity.Value),
 				};
 				Ellipse = true;
 			}

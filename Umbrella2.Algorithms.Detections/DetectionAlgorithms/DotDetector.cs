@@ -145,7 +145,7 @@ namespace Umbrella2.Algorithms.Detection
 		/// <param name="OX">X origin delta.</param>
 		/// <param name="OY">Y origin delta.</param>
 		/// <returns></returns>
-		static DotDetection BitmapFill(double[,] Input, IntPoint StartPoint, bool[,] Mask, double LowThreshold, int OX, int OY)
+		internal static DotDetection BitmapFill(double[,] Input, IntPoint StartPoint, bool[,] Mask, double LowThreshold, int OX, int OY)
 		{
 			Queue<IntPoint> PointQ = new Queue<IntPoint>();
 			PointQ.Enqueue(StartPoint);

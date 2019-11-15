@@ -41,8 +41,6 @@ namespace Umbrella2.Visualizer.Winforms
 		/// <param name="Report"><see cref="StringBuilder"/> to collect the report.</param>
 		private void CreateMPCReport(StringBuilder Report)
 		{
-			Report.AppendLine("MPC Report CCD" + CCDNumber.ToString());
-
 			/* For each validated tracklet */
 			foreach (int idx in checkedListBox1.CheckedIndices)
 			{
@@ -55,12 +53,16 @@ namespace Umbrella2.Visualizer.Winforms
 					 * Currently does not compute magnitude.
 					 * There is also no support for providing a PublishingNote
 					 */
+					double? Mg = null;
+					if (md.TryFetchProperty(out ObjectPhotometry oph))
+						if (oph.Magnitude != 0 & !double.IsNaN(oph.Magnitude))
+							Mg = oph.Magnitude;
 					MPCOpticalReportFormat.ObsInstance instance = new MPCOpticalReportFormat.ObsInstance()
 					{
 						Coordinates = md.Barycenter.EP,
 						DetectionAsterisk = false,
 						N2 = MPCOpticalReportFormat.Note2.CCD,
-						Mag = null,
+						Mag = Mg,
 						MagBand = Band,
 						ObservatoryCode = ObservatoryCode,
 						ObsTime = md.Time.Time + new TimeSpan(md.Time.Exposure.Ticks / 2),
@@ -95,10 +97,13 @@ namespace Umbrella2.Visualizer.Winforms
 						skid.TryPair(tk, ArcLengthSec);
 				}
 
-				foreach (Tracklet tk in Tracklets)
+				for (int i = 0; i < Tracklets.Count; i++)
 				{
-					if (tk.TryFetchProperty(out ObjectIdentity objid))
-						objid.ComputeNamescore(tk);
+					Tracklet tk = Tracklets[i];
+					ObjectIdentity objid;
+					if (!tk.TryFetchProperty(out objid)) objid = new ObjectIdentity();
+					objid.ComputeNamescoreWithDefault(tk, null, ReportFieldName, CCDNumber, i);
+					tk.SetResetProperty(objid);
 				}
 			}
 			this.Invoke((Action)RefreshTrackletList);
