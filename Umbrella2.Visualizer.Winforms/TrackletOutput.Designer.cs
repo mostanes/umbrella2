@@ -40,6 +40,7 @@
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.contextMenuStrip3 = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.ImageView = new Umbrella2.Visualizer.Winforms.FitsView();
 			this.dataGridView1 = new System.Windows.Forms.DataGridView();
 			this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -58,6 +59,7 @@
 			// 
 			// checkedListBox1
 			// 
+			this.checkedListBox1.ContextMenuStrip = this.contextMenuStrip3;
 			this.checkedListBox1.Dock = System.Windows.Forms.DockStyle.Left;
 			this.checkedListBox1.FormattingEnabled = true;
 			this.checkedListBox1.Location = new System.Drawing.Point(0, 0);
@@ -166,10 +168,15 @@
 			this.contextMenuStrip1.Name = "contextMenuStrip1";
 			this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
 			// 
-			// contextMenuStrip1
+			// contextMenuStrip2
 			// 
 			this.contextMenuStrip2.Name = "contextMenuStrip2";
 			this.contextMenuStrip2.Size = new System.Drawing.Size(61, 4);
+			// 
+			// contextMenuStrip3
+			// 
+			this.contextMenuStrip3.Name = "contextMenuStrip3";
+			this.contextMenuStrip3.Size = new System.Drawing.Size(61, 4);
 			// 
 			// ImageView
 			// 
@@ -298,6 +305,7 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn Column7;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
+		private System.Windows.Forms.ContextMenuStrip contextMenuStrip3;
 		private FitsView ImageView;
 	}
 }
