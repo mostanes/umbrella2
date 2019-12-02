@@ -17,14 +17,18 @@ namespace Umbrella2.PropertyModel.CommonProperties
 		public string Name;
 
 		/// <summary>Minor planet number.</summary>
+		[PropertyDescription(true)]
 		public int? MPN;
 
 		/// <summary>Packed provisional designation.</summary>
+		[PropertyDescription(true)]
 		public string PackedPD;
 		/// <summary>Packed minor planet number.</summary>
+		[PropertyDescription(true)]
 		public string PackedMPN;
 
 		/// <summary>Scores for each possible object name.</summary>
+		[PropertyDescription(true)]
 		public Dictionary<string, int> NameScore = new Dictionary<string, int>();
 
 		/// <summary>Distances from object to name.</summary>

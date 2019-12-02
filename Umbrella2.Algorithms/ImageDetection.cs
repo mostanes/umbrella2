@@ -6,7 +6,7 @@ using Umbrella2.PropertyModel;
 
 namespace Umbrella2
 {
-	public class ImageDetection
+	public class ImageDetection : IExtendable
 	{
 		/// <summary>Position of the flux barycenter.</summary>
 		[PropertyDescription(true)]
@@ -36,7 +36,7 @@ namespace Umbrella2
 		/// The held values should be reference types; otherwise boxing will make them read-only.
 		/// </remarks>
 		[PropertyList]
-		public readonly Dictionary<Type, IExtensionProperty> ExtendedProperties;
+		public Dictionary<Type, IExtensionProperty> ExtendedProperties { get; }
 
 		/// <summary>
 		/// Fetches a property of the ImageDetection. Not thread-safe when also appending properties concurrently.

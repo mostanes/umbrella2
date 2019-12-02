@@ -26,7 +26,7 @@ namespace Umbrella2.PropertyModel
 	/// <summary>
 	/// Indicates a field is in fact a list of properties (of the original object).
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
 	public sealed class PropertyListAttribute : Attribute
 	{ public PropertyListAttribute() { } }
 
@@ -61,6 +61,57 @@ namespace Umbrella2.PropertyModel
 	/// </summary>
 	public interface IExtensionProperty
 	{ }
+
+	public interface IExtendable
+	{
+		/// <summary>
+		/// List of supplementary properties.
+		/// </summary>
+		/// <remarks>
+		/// The held values should be reference types; otherwise boxing will make them read-only.
+		/// </remarks>
+		[PropertyList]
+		Dictionary<Type, IExtensionProperty> ExtendedProperties { get; }
+
+		/// <summary>
+		/// Fetches a property of the ImageDetection. Not thread-safe when also appending properties concurrently.
+		/// </summary>
+		/// <typeparam name="T">Property type.</typeparam>
+		/// <returns>The property, casted to the appropriate type.</returns>
+		T FetchProperty<T>() where T : IExtensionProperty;
+
+		/// <summary>
+		/// Tries fetching a property of the ImageDetection.
+		/// </summary>
+		/// <typeparam name="T">Property type.</typeparam>
+		/// <param name="Property">Property instance on the object.</param>
+		/// <returns>True if property exists.</returns>
+		bool TryFetchProperty<T>(out T Property) where T : IExtensionProperty, new();
+
+		/// <summary>
+		/// Tries fetching a property of the ImageDetection or creates a new one.
+		/// </summary>
+		/// <typeparam name="T">Property type.</typeparam>
+		/// <returns>Property instance on the object or the default value of the type.</returns>
+		T FetchOrCreate<T>() where T : IExtensionProperty, new();
+
+		/// <summary>
+		/// Appends a property to the object.
+		/// </summary>
+		/// <remarks>
+		/// Note that this function sets the property type according to the generic type parameter.
+		/// </remarks>
+		/// <typeparam name="T">Property type.</typeparam>
+		/// <param name="Property">Property instance.</param>
+		void AppendProperty<T>(T Property) where T : IExtensionProperty;
+
+		/// <summary>
+		/// Appends or overwrites a property.
+		/// </summary>
+		/// <typeparam name="T">Property type.</typeparam>
+		/// <param name="Property">Property instance.</param>
+		void SetResetProperty<T>(T Property) where T : IExtensionProperty;
+	}
 
 	/// <summary>
 	/// Represents a method that can compute an extension property of a given object from its other properties.
