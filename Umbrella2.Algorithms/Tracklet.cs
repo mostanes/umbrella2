@@ -8,7 +8,7 @@ namespace Umbrella2
 	/// <summary>
 	/// An object candidate.
 	/// </summary>
-	public class Tracklet
+	public class Tracklet : IExtendable
 	{
 		/// <summary>
 		/// Object instances that form the tracklet.
@@ -30,7 +30,7 @@ namespace Umbrella2
 		/// The held values should be reference types; otherwise boxing will make them read-only.
 		/// </remarks>
 		[PropertyList]
-		public readonly Dictionary<Type, IExtensionProperty> ExtendedProperties;
+		public Dictionary<Type, IExtensionProperty> ExtendedProperties { get; }
 
 		/// <summary>
 		/// Creates a Tracklet from the given arguments. This constructor is internally called by the Tracklet factories.
@@ -61,13 +61,30 @@ namespace Umbrella2
 		/// <typeparam name="T">Property type.</typeparam>
 		/// <param name="Property">Property instance on the object.</param>
 		/// <returns>True if property exists.</returns>
-		public bool TryFetchProperty<T>(out T Property) where T : IExtensionProperty
+		public bool TryFetchProperty<T>(out T Property) where T : IExtensionProperty, new()
 		{
 			bool b = ExtendedProperties.TryGetValue(typeof(T), out IExtensionProperty PropertyIEP);
 			if (b)
-				Property = (T) PropertyIEP;
+				Property = (T)PropertyIEP;
 			else Property = default(T);
+			if (Property == null) Property = new T();
 			return b;
+		}
+
+		/// <summary>
+		/// Tries fetching a property of the ImageDetection or creates a new one.
+		/// </summary>
+		/// <typeparam name="T">Property type.</typeparam>
+		/// <returns>Property instance on the object or the default value of the type.</returns>
+		public T FetchOrCreate<T>() where T : IExtensionProperty, new()
+		{
+			bool b = ExtendedProperties.TryGetValue(typeof(T), out IExtensionProperty PropertyIEP);
+			if (b)
+				return (T)PropertyIEP;
+			T Value = default(T);
+			if (Value == null) Value = new T();
+			ExtendedProperties.Add(typeof(T), Value);
+			return Value;
 		}
 
 		/// <summary>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 using Umbrella2.Pipeline.EIOAlgorithms;
@@ -14,9 +15,24 @@ namespace Umbrella2.Visualizer.Winforms
 		/// </summary>
 		void RefreshTracklets()
 		{
+			if (contextMenuStrip3.Items.Count == 0)
+			{
+				contextMenuStrip3.Items.Add("View properties", null, (sender, e) => ViewObjectProperties());
+			}
+
 			RefreshTrackletList();
 			System.Threading.Tasks.Task tk = new System.Threading.Tasks.Task(() => SkyBotLookupNames(5.0));
 			tk.Start();
+		}
+
+		void ViewObjectProperties()
+		{
+			Tracklet tk = Tracklets[SelectedTracklet];
+			PropertyViewer pw = new PropertyViewer("Tracklet", tk);
+			pw.AddProperties("Tracklet", tk.VelReg, tk.Velocity);
+			foreach (var det in tk.Detections) pw.AddObject("Detection at " + det.Time.Time, det);
+			pw.ShowProperties();
+			pw.Show();
 		}
 
 		/// <summary>

@@ -38,6 +38,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bitmap.cs" />
@@ -55,9 +56,25 @@
     <Compile Include="TrackletOutput.Designer.cs">
       <DependentUpon>TrackletOutput.cs</DependentUpon>
     </Compile>
-    <Compile Include="TrackletOutput.Navigation.cs" />
-    <Compile Include="TrackletOutput.Filtering.cs" />
-    <Compile Include="TrackletOutput.TrackletUtil.cs" />
+    <Compile Include="TrackletOutput.Navigation.cs">
+      <DependentUpon>TrackletOutput.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TrackletOutput.Filtering.cs">
+          <DependentUpon>TrackletOutput.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TrackletOutput.TrackletUtil.cs">
+          <DependentUpon>TrackletOutput.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PropertyViewer.cs" />
+    <Compile Include="PropertyViewer.Designer.cs">
+      <DependentUpon>PropertyViewer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PropertyViewer.ObjectTree.cs">
+      <DependentUpon>PropertyViewer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PropertyViewer.XMLDoc.cs">
+      <DependentUpon>PropertyViewer.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FitsView.resx">
