@@ -101,7 +101,7 @@ namespace Umbrella2.Algorithms.Misc
 		/// <param name="SquareSemiside">Distance from the center to the edges of the square.</param>
 		/// <returns></returns>
 		public List<T> Query(double X, double Y, double SquareSemiside)
-		{ return Query(X - SquareSemiside, X + SquareSemiside, Y - SquareSemiside, Y + SquareSemiside); }
+		{ return Query(Y - SquareSemiside, Y + SquareSemiside, X - SquareSemiside, X + SquareSemiside); }
 
 		/// <summary>
 		/// Node of the QuadTree

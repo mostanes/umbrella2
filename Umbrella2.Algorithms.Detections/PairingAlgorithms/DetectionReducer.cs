@@ -69,7 +69,7 @@ namespace Umbrella2.Algorithms.Pairing
 			{
 				EquatorialPoint p = imd.Barycenter.EP;
 				double XPR = PR + MaxRadius * imd.ParentImage.Transform.GetEstimatedWCSChainDerivative();
-				var P = DetectionPool.Query(p.Dec, p.RA, XPR);
+				var P = DetectionPool.Query(p.RA, p.Dec, XPR);
 				List<Star> spP = new List<Star>();
 				foreach(Star s in P)
 				{

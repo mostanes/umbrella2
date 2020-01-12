@@ -27,6 +27,8 @@ namespace Umbrella2.Visualizer.Winforms
 		public int CCDNumber;
 		/// <summary>Name of the processed field.</summary>
 		public string FieldName;
+		/// <summary>Name of the processed field as given to the objects in the report.</summary>
+		public string ReportFieldName;
 		/// <summary>Band of the observations.</summary>
 		public MPCOpticalReportFormat.MagnitudeBand Band;
 		/// <summary>All input images.</summary>
@@ -84,8 +86,10 @@ namespace Umbrella2.Visualizer.Winforms
 				{
 					ImageDetection det = t.Detections[i];
 					if (tm == null) tm = det.Time.Time;
-					dataGridView1.Rows.Add(i, det.Barycenter.PP.X.ToString("G6"), det.Barycenter.PP.Y.ToString("G6"), det.Barycenter.EP.FormatToString(Format.MPC_RA),
-						det.Barycenter.EP.FormatToString(Format.MPC_Dec), det.FetchProperty<ObjectSize>().PixelEllipse.ToString(),
+					var PE = det.FetchProperty<ObjectSize>().PixelEllipse;
+					dataGridView1.Rows.Add(i, det.Barycenter.PP.X.ToString("G6"), det.Barycenter.PP.Y.ToString("G6"),
+						det.Barycenter.EP.FormatToString(Format.MPC_RA), det.Barycenter.EP.FormatToString(Format.MPC_Dec),
+						PE.SemiaxisMajor.ToString("G4") + ";" + PE.SemiaxisMinor.ToString("G4"),
 						(det.Time.Time - tm.Value).TotalSeconds);
 				}
 			SuspendObjectsUpdate = false;
@@ -168,8 +172,30 @@ namespace Umbrella2.Visualizer.Winforms
 				}
 			}
 
+			UpdateDetectionProperties();
+
 			ImageView.Image = Image;
 			UpdateImage();
+		}
+
+		private void UpdateDetectionProperties()
+		{
+			dataGridView3.Rows.Clear();
+			if (SelectedDetection.TryFetchProperty(out PairingProperties pp))
+			{
+				dataGridView3.Rows.Add("Star polluted", pp.StarPolluted);
+				dataGridView3.Rows.Add("Detection Algorithm(s)", pp.Algorithm);
+			}
+			if(SelectedDetection.TryFetchProperty(out ObjectPhotometry photo))
+			{
+				dataGridView3.Rows.Add("Flux", photo.Flux.ToString("G6"));
+				if (photo.Magnitude != 0)
+					dataGridView3.Rows.Add("Magnitude", photo.Magnitude.ToString("G6"));
+			}
+			if(SelectedDetection.TryFetchProperty(out ObjectPoints px))
+			{
+				dataGridView3.Rows.Add("Pixel count", px.PixelPoints.Length);
+			}
 		}
 
 		/// <summary>Ensures that the detection <see cref="ContextMenuStrip"/> is populated.</summary>

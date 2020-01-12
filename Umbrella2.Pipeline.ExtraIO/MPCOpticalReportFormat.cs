@@ -124,6 +124,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 
 			if (ObservedObject.PackedMPN == null)
 				ObservedObject.PackedMPN = new string(' ', 5);
+			else ObservedObject.ObjectDesignation = new string(' ', 7);
 			if (ObservedObject.PackedMPN.Length != 5)
 				throw new InvalidFieldException(InvalidFieldException.FieldType.PackedMPN);
 			if (ObservedObject.ObjectDesignation == null)

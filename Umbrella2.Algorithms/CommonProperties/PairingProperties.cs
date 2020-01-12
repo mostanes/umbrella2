@@ -30,6 +30,10 @@ namespace Umbrella2.PropertyModel.CommonProperties
 		/// <summary>Which algorithm(s) produced the detection.</summary>
 		[PropertyDescription(true)]
 		public DetectionAlgorithm Algorithm;
+
+		/// <summary>If <see langword="true"/>, detection has multiple detections with no <see cref="ObjectPoints"/>.</summary>
+		[PropertyDescription(true)]
+		public bool MultiNoPoints;
 	}
 
 	[Flags]

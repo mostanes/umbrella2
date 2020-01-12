@@ -28,7 +28,7 @@ namespace Umbrella2
 	{
 		public double RA;
 		public double Dec;
-		private string MPCForm => Umbrella2.Pipeline.ExtraIO.EquatorialPointStringFormatter.FormatToString(this, Pipeline.ExtraIO.EquatorialPointStringFormatter.Format.RadExplicit);
+		private string MPCForm => Umbrella2.Pipeline.ExtraIO.EquatorialPointStringFormatter.FormatToString(this, Pipeline.ExtraIO.EquatorialPointStringFormatter.Format.MPC);
 
 		/// <summary>
 		/// Computes the distance between 2 equatorial points.

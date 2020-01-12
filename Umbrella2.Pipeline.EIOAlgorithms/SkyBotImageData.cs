@@ -20,29 +20,48 @@ namespace Umbrella2.Pipeline.EIOAlgorithms
 		/// <summary>Interval for which the data is valid.</summary>
 		readonly TimeSpan Exposure;
 		/// <summary>Object search structure.</summary>
-		readonly QuadTree<SkybotObject> ObjTree;
+		QuadTree<SkybotObject> ObjTree;
 		/// <summary>SkyBoT results.</summary>
-		readonly SkybotObject[] ObjList;
+		SkybotObject[] ObjList;
 		/// <summary>Which objects have not been paired yet.</summary>
-		readonly HashSet<SkybotObject> Unpaired;
+		HashSet<SkybotObject> Unpaired;
+		/// <summary>The center of the image.</summary>
+		readonly EquatorialPoint ImageCenter;
+		/// <summary>Image radius.</summary>
+		readonly double Radius;
+		/// <summary>Image associated to this property.</summary>
+		readonly Image AssociatedImage;
 
-		/// <summary>Retrieves SkyBoT objects in a given image.</summary>
+		/// <summary>Creates the property.</summary>
 		public SkyBotImageData(Image Image) : base(Image)
 		{
 			PixelPoint CPP = new PixelPoint() { X = Image.Width / 2, Y = Image.Height / 2 };
 			PixelPoint Corner1 = new PixelPoint() { X = 0, Y = 0 };
 			PixelPoint Corner2 = new PixelPoint() { X = Image.Width, Y = Image.Height };
-			EquatorialPoint CEP = Image.Transform.GetEquatorialPoint(CPP);
-			double Radius = Image.Transform.GetEquatorialPoint(Corner1) ^ Image.Transform.GetEquatorialPoint(Corner2);
+			ImageCenter = Image.Transform.GetEquatorialPoint(CPP);
+			Radius = Image.Transform.GetEquatorialPoint(Corner1) ^ Image.Transform.GetEquatorialPoint(Corner2);
+			Radius *= 0.55;
 
 			ShotTime = Image.GetProperty<ObservationTime>().Time;
 			Exposure = Image.GetProperty<ObservationTime>().Exposure;
-			var Obj = GetObjects(CEP, Radius, ShotTime).ToArray();
+			AssociatedImage = Image;
+		}
+
+		/// <summary>
+		/// Performs the retrieval of objects.
+		/// </summary>
+		/// <param name="ObservatoryCode">Observatory code. If null, uses the SCS interface, without it.</param>
+		public void RetrieveObjects(string ObservatoryCode = null)
+		{
+			DateTime Time = ShotTime + TimeSpan.FromSeconds(Exposure.TotalSeconds * 0.5);
+			var ObjURL = ObservatoryCode != null ? GenerateNSUrl(ImageCenter, Radius, Time, ObservatoryCode) : GenerateSCSUrl(ImageCenter, Radius, Time);
+			if (!GetObjects(ObjURL, Time, out List<SkybotObject> OList)) return;
+
 			List<SkybotObject> Clean = new List<SkybotObject>();
-			foreach (SkybotObject o in Obj)
+			foreach (SkybotObject o in OList)
 			{
-				PixelPoint PixP = Image.Transform.GetPixelPoint(o.Position);
-				if (PixP.X > 0 & PixP.Y > 0 & PixP.X < Image.Width & PixP.Y < Image.Height)
+				PixelPoint PixP = AssociatedImage.Transform.GetPixelPoint(o.Position);
+				if (PixP.X > 0 & PixP.Y > 0 & PixP.X < AssociatedImage.Width & PixP.Y < AssociatedImage.Height)
 					Clean.Add(o);
 			}
 
@@ -59,8 +78,7 @@ namespace Umbrella2.Pipeline.EIOAlgorithms
 		public void TryPair(Tracklet t, double Separation)
 		{
 			Separation *= Math.PI / 180 / 3600;
-			ObjectIdentity obid;
-			if (!t.TryFetchProperty(out obid)) obid = new ObjectIdentity();
+			if (!t.TryFetchProperty(out ObjectIdentity obid)) obid = new ObjectIdentity();
 
 			bool NamesPresent = false;
 

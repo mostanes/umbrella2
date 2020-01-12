@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Umbrella2.WCS
 {
-    public interface IWCSProjection
+#pragma warning disable 1591
+	public interface IWCSProjection
     {
         EquatorialPoint GetEquatorialPoint(PixelPoint Point);
         EquatorialPoint[] GetEquatorialPoints(PixelPoint[] Points);
@@ -18,7 +19,7 @@ namespace Umbrella2.WCS
 		EquatorialVelocity GetEquatorialVelocity(PixelVelocity PV);
 		PixelVelocity GetPixelVelocity(EquatorialVelocity EV);
     }
-#pragma warning disable 1591
+
     /// <summary>
     /// Represents a transform of FITS image coordinates to WCS via a linear map and a spherical projection.
     /// </summary>

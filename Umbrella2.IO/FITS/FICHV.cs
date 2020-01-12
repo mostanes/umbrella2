@@ -8,16 +8,8 @@ namespace Umbrella2.IO.FITS
 	/// <summary>
 	/// FITS Image Core Header Values. A wrapper for the core data in FITS Images' header data.
 	/// </summary>
-	public struct FICHV
+	public class FICHV : ICHV
 	{
-		/// <summary>Image width.</summary>
-		public uint Width;
-		/// <summary>Image height.</summary>
-		public uint Height;
-		/// <summary>Image WCS.</summary>
-		public IWCSProjection WCS;
-		/// <summary>Header table.</summary>
-		public HeaderTable Header;
 		/// <summary>BITPIX value.</summary>
 		public int BitPix;
 

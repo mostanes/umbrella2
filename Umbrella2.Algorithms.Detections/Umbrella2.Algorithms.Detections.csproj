@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DetectionAlgorithms\DotDetector.cs" />
@@ -47,6 +48,8 @@
     <Compile Include="PairingAlgorithms\LinePoolSimple.cs" />
     <Compile Include="PairingAlgorithms\DetectionReducer.cs" />
     <Compile Include="Filtering\Badzone.cs" />
+    <Compile Include="DetectionAlgorithms\ApproxRecover.cs" />
+    <Compile Include="PairingAlgorithms\TrackletsDeduplication.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Umbrella2.Algorithms\Umbrella2.Algorithms.csproj">

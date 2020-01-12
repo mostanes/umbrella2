@@ -57,6 +57,10 @@
       <Project>{9837FA6B-B7B7-49A1-A33F-CFB557652814}</Project>
       <Name>Umbrella2.IO</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Umbrella2.Algorithms.Detections\Umbrella2.Algorithms.Detections.csproj">
+      <Project>{F503CB75-B6C8-4137-B499-72AEABEA9159}</Project>
+      <Name>Umbrella2.Algorithms.Detections</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

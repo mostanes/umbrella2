@@ -9,9 +9,10 @@ namespace Umbrella2.Pipeline.ExtraIO
 {
 	public static class SourceExtractor
 	{
-		public struct ObsEntry
+		struct ObsEntry
 		{
 			public double? Flux;
+			public double? Mag;
 			public double X;
 			public double Y;
 			public double RA;
@@ -21,8 +22,15 @@ namespace Umbrella2.Pipeline.ExtraIO
 			public double? A;
 			public double? B;
 			public double? EllipseTheta;
+			public int? Flags;
 		}
 
+		/// <summary>
+		/// Parses a Source Extractor catalog file.
+		/// </summary>
+		/// <returns>The detections in the catalog.</returns>
+		/// <param name="Lines">Catalog file lines.</param>
+		/// <param name="AssociatedImage">Image to which the catalog is associated to.</param>
 		public static List<ImageDetection> ParseSEFile(IEnumerable<string> Lines, FitsImage AssociatedImage)
 		{
 			List<string> ColList = new List<string>();
@@ -45,6 +53,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 					string[] Ldata = Line.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
 					ObsEntry Entry = new ObsEntry();
 					Entry.Flux = Parse(Columns, Ldata, "FLUX_AUTO");
+					Entry.Mag = Parse(Columns, Ldata, "MAG_AUTO");
 					Entry.X = Parse(Columns, Ldata, "X_IMAGE").Value;
 					Entry.Y = Parse(Columns, Ldata, "Y_IMAGE").Value;
 					Entry.RA = Parse(Columns, Ldata, "ALPHA_J2000").Value;
@@ -53,8 +62,10 @@ namespace Umbrella2.Pipeline.ExtraIO
 					Entry.Ellipticity = Parse(Columns, Ldata, "ELLIPTICITY");
 					Entry.A = Parse(Columns, Ldata, "A_IMAGE");
 					Entry.B = Parse(Columns, Ldata, "B_IMAGE");
+					Entry.Flags = (int)Parse(Columns, Ldata, "FLAGS");
 
-					Entries.Add(Entry);
+					if (!Entry.Flags.HasValue || Entry.Flags.Value < 4)
+						Entries.Add(Entry);
 				}
 			}
 			List<ImageDetection> Detections = Entries.Select((x) => Transform(x, AssociatedImage)).ToList();
@@ -86,8 +97,8 @@ namespace Umbrella2.Pipeline.ExtraIO
 			{
 				sz.PixelEllipse = new SourceEllipse()
 				{
-					SemiaxisMajor = Entry.FWHM.Value / Math.Sqrt(Entry.Ellipticity.Value),
-					SemiaxisMinor = Entry.FWHM.Value * Math.Sqrt(Entry.Ellipticity.Value)
+					SemiaxisMajor = Entry.FWHM.Value / Math.Sqrt(1 - Entry.Ellipticity.Value),
+					SemiaxisMinor = Entry.FWHM.Value * Math.Sqrt(1 - Entry.Ellipticity.Value),
 				};
 				Ellipse = true;
 			}
@@ -109,7 +120,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 			det.AppendProperty(pprop);
 			if (Entry.Flux.HasValue)
 			{
-				ObjectPhotometry oph = new ObjectPhotometry() { Flux = Entry.Flux.Value };
+				ObjectPhotometry oph = new ObjectPhotometry() { Flux = Entry.Flux.Value, Magnitude = Entry.Mag.Value };
 				det.AppendProperty(oph);
 			}
 

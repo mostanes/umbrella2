@@ -78,7 +78,7 @@ namespace Umbrella2.Algorithms.Pairing
 				double RadiusArcSec = tsp.TotalSeconds * MaxLinErrorArcSec / SepSec + SearchExtra;
 				double RadiusRad = RadiusArcSec * Math.PI / 180 / 3600;
 
-				var ImDL = DetectionPool.Query(eqp.Dec, eqp.RA, RadiusRad);
+				var ImDL = DetectionPool.Query(eqp.RA, eqp.Dec, RadiusRad);
 
 				ImDL.RemoveAll((x) => ((x.Barycenter.EP ^ eqp) > RadiusRad) || Math.Abs((x.Time.Time - dt).TotalSeconds) > .1 || !Line3Way(a, b, x));
 				Dects.Add(ImDL.ToArray());
