@@ -36,7 +36,7 @@ namespace Umbrella2.IO.FITS
 		public static MMapFitsFile OpenReadFile(string Path, MEFImageNumberGetter numberGetter = null)
 		{
 			FileInfo info = new FileInfo(Path);
-			MemoryMappedFile mmap = MemoryMappedFile.CreateFromFile(Path, FileMode.Open, Guid.NewGuid().ToString(), 0, MemoryMappedFileAccess.ReadWrite);
+			MemoryMappedFile mmap = MemoryMappedFile.CreateFromFile(Path, FileMode.Open, Guid.NewGuid().ToString(), 0, MemoryMappedFileAccess.Read);
 
 			Stream stream = mmap.CreateViewStream();
 			FitsFileBuilder builder = HeaderIO.ReadFileHeaders(stream, info.Length, numberGetter);
@@ -82,6 +82,8 @@ namespace Umbrella2.IO.FITS
 			lock (OpenViews)
 			{
 				int MP = Position - Position % 65536; /* Working around weird Windows things... */
+				lock (this) /* This handles the case where the handle has been released. */
+					mmap = mmap ?? MemoryMappedFile.CreateFromFile(Path, FileMode.Open, Guid.NewGuid().ToString(), 0, MemoryMappedFileAccess.Read);
 				MemoryMappedViewAccessor va = mmap.CreateViewAccessor(MP, Length + Position % 65536);
 				byte* pr = (byte*)0;
 				va.SafeMemoryMappedViewHandle.AcquirePointer(ref pr);
@@ -106,5 +108,11 @@ namespace Umbrella2.IO.FITS
 				OpenViews.Remove(View);
 			}
 		}
+
+		/// <summary>
+		/// Releases the file handle (memory mapping). Writing may not occur after the release. Reading reopens the handle.
+		/// </summary>
+		internal override void ReleaseHandle()
+		{ lock (this) { mmap.Dispose(); mmap = null; } }
 	}
 }

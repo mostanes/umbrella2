@@ -39,14 +39,15 @@ namespace Umbrella2.Pipeline.ExtraIO
 		/// <returns>A list of StarInfo containing the data of the reference stars.</returns>
 		public static List<StarInfo> GetVizieRObjects(EquatorialPoint Center, double Radius, double LowMagLimit)
 		{
-			WebClient client = new WebClient();
 			double RadiusArcMin = Radius * 180 * 60 / Math.PI;
 			string URL = VizieRURL + Center.FormatToString(EquatorialPointStringFormatter.Format.MPC) + "&-c.r=" + RadiusArcMin.ToString("0.00");
 			string Data = "";
-			try
-			{ Data = client.DownloadString(URL); }
-			catch (WebException)
-			{ return new List<StarInfo>(); }
+			using (WebClient client = new WebClient())
+				try
+				{ client.Proxy = null; Data = client.DownloadString(URL); }
+				catch (WebException)
+				{ return new List<StarInfo>(); }
+
 			string[] lines = Data.Split('\n');
 			int i;
 			List<string[]> objsString = new List<string[]>();

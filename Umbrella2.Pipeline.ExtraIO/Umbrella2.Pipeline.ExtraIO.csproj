@@ -43,6 +43,7 @@
     <Compile Include="SkyBotLookup.cs" />
     <Compile Include="VizieR.cs" />
     <Compile Include="SourceExtractor.cs" />
+    <Compile Include="LocalDigest2.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Umbrella2.SharedBase\Umbrella2.SharedBase.csproj">

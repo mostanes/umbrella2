@@ -78,5 +78,10 @@ namespace Umbrella2.IO.FITS
 		/// </summary>
 		/// <param name="View">Pointer to the memory mapped file view.</param>
 		internal abstract void ReleaseView(IntPtr View);
+
+		/// <summary>
+		/// Releases the file handle. Writing may not occur after the release. Reading reopens the handle.
+		/// </summary>
+		internal abstract void ReleaseHandle();
 	}
 }

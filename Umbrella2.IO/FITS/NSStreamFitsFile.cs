@@ -73,5 +73,10 @@ namespace Umbrella2.IO.FITS
 		/// <summary>Clears in-memory data.</summary>
 		public void Close()
 		{ Data = null; }
+
+		/// <summary>
+		/// No-op, as no handles to release.
+		/// </summary>
+		internal override void ReleaseHandle() { }
 	}
 }
