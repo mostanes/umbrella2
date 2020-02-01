@@ -147,20 +147,20 @@ namespace Umbrella2.PropertyModel.CommonProperties
 		/// <summary>Converts a provisional designation to its packed form.</summary>
 		private static string PackPD(string ObjName)
 		{
-			if (ObjName.Length < 7) return ObjName.PadRight(7);
-			char[] map = new char[7];
-			int N = (ObjName[0] - '0') * 10 + (ObjName[1] - '0');
-			map[0] = (char)('I' + (N - 18));
-			map[1] = ObjName[2];
-			map[2] = ObjName[3];
-			map[3] = ObjName[5];
-			map[6] = ObjName[6];
+				if (ObjName.Length < 7) return ObjName.PadRight(7);
+				char[] map = new char[7];
+				int N = (ObjName[0] - '0') * 10 + (ObjName[1] - '0');
+				map[0] = (char)('I' + (N - 18));
+				map[1] = ObjName[2];
+				map[2] = ObjName[3];
+				map[3] = ObjName[5];
+				map[6] = ObjName[6];
 
-			int ObjId = int.Parse(ObjName.Substring(7));
-			map[4] = GetB62Char(ObjId / 10);
-			map[5] = (char)(ObjId % 10 + '0');
+				int ObjId = string.IsNullOrWhiteSpace(ObjName.Substring(7)) ? 0 : int.Parse(ObjName.Substring(7));
+				map[4] = GetB62Char(ObjId / 10);
+				map[5] = (char)(ObjId % 10 + '0');
 
-			return new string(map);
+				return new string(map);
 		}
 
 		private static char GetB62Char(int V)

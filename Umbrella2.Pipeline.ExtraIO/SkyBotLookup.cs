@@ -100,10 +100,11 @@ namespace Umbrella2.Pipeline.ExtraIO
 		{
 			string result = string.Empty;
 			/* Tries querying the SkyBoT server, returining false if it fails. */
-			try
-			{ result = (new WebClient()).DownloadString(Url); }
-			catch
-			{ Objects = null; return false; }
+			using (WebClient client = new WebClient())
+				try
+				{ client.Proxy = null; result = client.DownloadString(Url); }
+				catch
+				{ Objects = null; return false; }
 
 			XmlNamespaceManager xmgr = new XmlNamespaceManager(new NameTable());
 			xmgr.AddNamespace("vot", VOTxmlns);
