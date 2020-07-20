@@ -25,18 +25,18 @@ namespace Umbrella2.Visualizer.Winforms
 		/// <summary>Changes to the next image to blink.</summary>
 		private void BlinkNext()
 		{
-			var ImageS = (ImageSet)ImageSet[BlinkID].GetProperty<ImageSource>();
+			var ImageS = (ImageSet)OriginalImageCube[CurrentCCD][BlinkID].GetProperty<ImageSource>();
 			Images = ImageS.FetchVariants();
-			BlinkID = (BlinkID + 1) % ImageSet.Count;
+			BlinkID = (BlinkID + 1) % OriginalImageCube[CurrentCCD].Count;
 			UpdateImage();
 		}
 
 		/// <summary>Filters tracklets dependent on a <paramref name="Detection"/> from the list.</summary>
 		private void Filter(ImageDetection Detection)
 		{
-			for (int i = 0; i < Tracklets.Count; i++)
-				if (Tracklets[i].Detections.Contains(Detection) && Tracklets[i].Detections.Length == 3)
-				{ Tracklets.RemoveAt(i); i--; }
+			for (int i = 0; i < CurrentTracklets.Count; i++)
+				if (CurrentTracklets[i].Detections.Contains(Detection) && CurrentTracklets[i].Detections.Length == 3)
+				{ CurrentTracklets.RemoveAt(i); i--; }
 
 			RefreshTrackletList();
 		}
@@ -52,15 +52,15 @@ namespace Umbrella2.Visualizer.Winforms
 		/// <param name="Parameter">Predicate parameter.</param>
 		private void FilterByDetection(ImageDetection Detection, DetectionFilteringCondition Filter, double Parameter)
 		{
-			for (int i = 0; i < Tracklets.Count; i++)
-				if (Tracklets[i].Detections.Any((x) => Filter(Detection, x, Parameter)))
+			for (int i = 0; i < CurrentTracklets.Count; i++)
+				if (CurrentTracklets[i].Detections.Any((x) => Filter(Detection, x, Parameter)))
 				{
-					if (Tracklets[i].Detections.Length == 3)
-					{ Tracklets.RemoveAt(i); i--; }
+					if (CurrentTracklets[i].Detections.Length == 3)
+					{ CurrentTracklets.RemoveAt(i); i--; }
 					else
 					{
-						var r = Tracklets[i].Detections.Where((x) => !Filter(Detection, x, Parameter)).ToArray();
-						if (r.Length < 3) Tracklets.RemoveAt(i);
+						var r = CurrentTracklets[i].Detections.Where((x) => !Filter(Detection, x, Parameter)).ToArray();
+						if (r.Length < 3) CurrentTracklets.RemoveAt(i);
 					}
 				}
 

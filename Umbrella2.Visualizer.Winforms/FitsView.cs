@@ -33,7 +33,8 @@ namespace Umbrella2.Visualizer.Winforms
 			InitializeComponent();
 		}
 
-		void ResizeBitmap() { Data = new ByteBitmap(Width - 10, Height - 10); }
+		private static bool OnMono = Type.GetType("Mono.Runtime") != null;
+		void ResizeBitmap() { Data = new ByteBitmap(OnMono ? Width - 10 : Width, OnMono ? Height - 10 : Height); }
 
 		void ReadBitmap()
 		{

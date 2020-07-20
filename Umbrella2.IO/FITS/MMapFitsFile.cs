@@ -11,6 +11,7 @@ namespace Umbrella2.IO.FITS
 	public class MMapFitsFile : FitsFile
 	{
 		MemoryMappedFile mmap;
+		MemoryMappedFileAccess access;
 
 		readonly Dictionary<IntPtr, MemoryMappedViewAccessor> OpenViews;
 
@@ -20,11 +21,12 @@ namespace Umbrella2.IO.FITS
 		/// <param name="Path">Path to where the image is stored.</param>
 		/// <param name="OutputImage">Specifies whether the image is an input or an output one.</param>
 		/// <param name="numberGetter">Delegate that generates the image numbers in a MEF FITS.</param>
-		private MMapFitsFile(string Path, bool OutputImage, MEFImageNumberGetter numberGetter, FitsFileBuilder Headers, MemoryMappedFile Handle) :
+		private MMapFitsFile(string Path, bool OutputImage, MEFImageNumberGetter numberGetter, FitsFileBuilder Headers, MemoryMappedFile Handle, MemoryMappedFileAccess Access) :
 			base(Path, OutputImage, numberGetter, Headers)
 		{
 			OpenViews = new Dictionary<IntPtr, MemoryMappedViewAccessor>();
 			mmap = Handle;
+			access = Access;
 		}
 
 		/// <summary>
@@ -38,11 +40,11 @@ namespace Umbrella2.IO.FITS
 			FileInfo info = new FileInfo(Path);
 			MemoryMappedFile mmap = MemoryMappedFile.CreateFromFile(Path, FileMode.Open, Guid.NewGuid().ToString(), 0, MemoryMappedFileAccess.Read);
 
-			Stream stream = mmap.CreateViewStream();
+			Stream stream = mmap.CreateViewStream(0, 0, MemoryMappedFileAccess.Read);
 			FitsFileBuilder builder = HeaderIO.ReadFileHeaders(stream, info.Length, numberGetter);
 			stream.Dispose();
 
-			return new MMapFitsFile(Path, false, numberGetter, builder, mmap);
+			return new MMapFitsFile(Path, false, numberGetter, builder, mmap, MemoryMappedFileAccess.Read);
 		}
 
 		/// <summary>
@@ -68,7 +70,7 @@ namespace Umbrella2.IO.FITS
 			builder.PrimaryDataPointer = HLength;
 			s.Dispose();
 
-			return new MMapFitsFile(Path, true, null, builder, mmap);
+			return new MMapFitsFile(Path, true, null, builder, mmap, MemoryMappedFileAccess.ReadWrite);
 		}
 
 		/// <summary>
@@ -82,9 +84,13 @@ namespace Umbrella2.IO.FITS
 			lock (OpenViews)
 			{
 				int MP = Position - Position % 65536; /* Working around weird Windows things... */
-				lock (this) /* This handles the case where the handle has been released. */
-					mmap = mmap ?? MemoryMappedFile.CreateFromFile(Path, FileMode.Open, Guid.NewGuid().ToString(), 0, MemoryMappedFileAccess.Read);
-				MemoryMappedViewAccessor va = mmap.CreateViewAccessor(MP, Length + Position % 65536);
+				lock (this)
+					if (mmap == null) /* This handles the case where the handle has been released. */
+					{
+						mmap = MemoryMappedFile.CreateFromFile(Path, FileMode.Open, Guid.NewGuid().ToString(), 0, MemoryMappedFileAccess.Read);
+						access = MemoryMappedFileAccess.Read;
+					}
+				MemoryMappedViewAccessor va = mmap.CreateViewAccessor(MP, Length + Position % 65536, access);
 				byte* pr = (byte*)0;
 				va.SafeMemoryMappedViewHandle.AcquirePointer(ref pr);
 				pr += (Position % 65536); /* Working around weird Windows things... */

@@ -15,7 +15,8 @@ namespace Umbrella2.Visualizer.Winforms
 	/// </summary>
 	public partial class TrackletOutput : Form
 	{
-		List<Tracklet> m_tracklets;
+		List<List<Tracklet>> m_tracklets;
+		int CurrentCCD;
 		int SelectedTracklet;
 		ImageDetection SelectedDetection;
 
@@ -24,15 +25,15 @@ namespace Umbrella2.Visualizer.Winforms
 		/// <summary>Name of the file to which the report is written.</summary>
 		public string ReportName;
 		/// <summary>Number of the processed CCD.</summary>
-		public int CCDNumber;
+		List<int> CCDNumbers;
 		/// <summary>Name of the processed field.</summary>
 		public string FieldName;
 		/// <summary>Name of the processed field as given to the objects in the report.</summary>
 		public string ReportFieldName;
 		/// <summary>Band of the observations.</summary>
 		public MPCOpticalReportFormat.MagnitudeBand Band;
-		/// <summary>All input images.</summary>
-		public IList<IO.Image> ImageSet;
+		/// <summary>All original input images.</summary>
+		List<IList<IO.Image>> OriginalImageCube;
 
 		/// <summary>Name of the list of tracklets.</summary>
 		readonly string ListName;
@@ -48,11 +49,14 @@ namespace Umbrella2.Visualizer.Winforms
 
 		/// <summary>Disable the object number update callback. Used when updating tracklets to prevent the callback from firing while the list mutates.</summary>
 		bool SuspendObjectsUpdate = false;
+		
+		/// <summary>Currently selected list of tracklets.</summary>
+		CheckedListBox checkedListBox1;
 
 		/// <summary>
 		/// Displayed tracklets.
 		/// </summary>
-		public List<Tracklet> Tracklets { get { return m_tracklets; } set { m_tracklets = value; RefreshTracklets(); } }
+		protected List<Tracklet> CurrentTracklets { get { return m_tracklets[CurrentCCD]; } }
 
 		/// <param name="Name">Shown name of the current list.</param>
 		public TrackletOutput(string Name)
@@ -60,9 +64,32 @@ namespace Umbrella2.Visualizer.Winforms
 			ListName = Name;
 			InitializeComponent();
 			Text = "Tracklet Viewer for " + ListName;
+			CCDNumbers = new List<int>();
+			m_tracklets = new List<List<Tracklet>>();
+			OriginalImageCube = new List<IList<IO.Image>>();
 		}
 
-		private void TrackletOutput_Load(object sender, EventArgs e) { RefreshTracklets(); }
+		private void TrackletOutput_Load(object sender, EventArgs e) { /*RefreshTracklets();*/ }
+
+		/// <summary>
+		/// Adds a CCD to the tracklet output.
+		/// </summary>
+		/// <param name="CCDNum">CCD Number.</param>
+		/// <param name="Tracklets">Tracklets detected.</param>
+		/// <param name="Images">Original pipeline images.</param>
+		public void AddCCD(int CCDNum, List<Tracklet> Tracklets, IList<IO.Image> Images)
+		{
+			CCDNumbers.Add(CCDNum);
+			m_tracklets.Add(Tracklets);
+			OriginalImageCube.Add(Images);
+			tabControl1.TabPages.Add(CCDNum.ToString(), "CCD " + CCDNum.ToString());
+			CheckedListBox clb = new CheckedListBox() { Dock = DockStyle.Fill, CheckOnClick = false };
+			clb.SelectedIndexChanged += checkedListBox1_SelectedIndexChanged;
+			clb.ContextMenuStrip = contextMenuStrip3;
+			tabControl1.TabPages[CCDNum.ToString()].Controls.Add(clb);
+			RefreshTabTrackletsList(tabControl1.TabPages.Count - 1);
+			tabControl1_SelectedIndexChanged(null, null);
+		}
 
 		private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e)
 		{
@@ -77,7 +104,7 @@ namespace Umbrella2.Visualizer.Winforms
 		/// </summary>
 		private void SelectedTrackletChanged()
 		{
-			Tracklet t = m_tracklets[SelectedTracklet];
+			Tracklet t = CurrentTracklets[SelectedTracklet];
 			dataGridView1.Rows.Clear();
 			SuspendObjectsUpdate = true;
 			DateTime? tm = null;
@@ -105,7 +132,7 @@ namespace Umbrella2.Visualizer.Winforms
 			double mpi = Math.Pow((3600 * 180 / Math.PI), 2);
 
 			dataGridView2.Rows.Clear();
-			Tracklet t = m_tracklets[SelectedTracklet];
+			Tracklet t = CurrentTracklets[SelectedTracklet];
 			TrackletVelocityRegression tvr = t.VelReg;
 			{
 				List<object[]> PropertySet = new List<object[]>() { new object[] { "RA-Dec R", tvr.R_RD.ToString("G6") },
@@ -154,7 +181,7 @@ namespace Umbrella2.Visualizer.Winforms
 		private void SelectObject(int Index)
 		{
 			int ImageNumber = (int)dataGridView1.Rows[Index].Cells[0].Value;
-			SelectedDetection = m_tracklets[SelectedTracklet].Detections[ImageNumber];
+			SelectedDetection = CurrentTracklets[SelectedTracklet].Detections[ImageNumber];
 			/* Prepare view */
 			IO.Image Image = SelectedDetection.ParentImage;
 			EnsureDetectionCMS();
@@ -221,5 +248,11 @@ namespace Umbrella2.Visualizer.Winforms
 			System.IO.File.AppendAllText(ReportName, Report.ToString());
 		}
 
-	}
+		private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (tabControl1.TabPages.Count == 0) return;
+			checkedListBox1 = (CheckedListBox)tabControl1.SelectedTab.Controls[0];
+			CurrentCCD = tabControl1.SelectedIndex;
+		}
+    }
 }
