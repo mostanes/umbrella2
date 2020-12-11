@@ -16,8 +16,8 @@ namespace Umbrella2.Visualizer.Winforms
 		/// Image to be displayed on the control.
 		/// </summary>
 		public IO.Image Image { get; set; }
-		Point TopLeft;
-		Rectangle Display;
+		protected Point TopLeft;
+		protected Rectangle Display;
 		/// <summary>
 		/// The coordinates of the central point.
 		/// </summary>
@@ -26,7 +26,7 @@ namespace Umbrella2.Visualizer.Winforms
 		/// <summary>Image scaling algorithm.</summary>
 		public IFitsViewScaler Scaler;
 
-		ByteBitmap Data;
+		protected ByteBitmap Data;
 
 		public FitsView()
 		{
@@ -34,7 +34,9 @@ namespace Umbrella2.Visualizer.Winforms
 		}
 
 		private static bool OnMono = Type.GetType("Mono.Runtime") != null;
-		void ResizeBitmap() { Data = new ByteBitmap(OnMono ? Width - 10 : Width, OnMono ? Height - 10 : Height); }
+
+		/// <summary>Resizes the <see cref="Data"/> bitmap to match the screen size.</summary>
+		protected void ResizeBitmap() { Data = new ByteBitmap(OnMono ? Width - 10 : Width, OnMono ? Height - 10 : Height); }
 
 		void ReadBitmap()
 		{
@@ -51,7 +53,8 @@ namespace Umbrella2.Visualizer.Winforms
 			Image.ExitLock(ImageData);
 		}
 
-		void ShowBitmap() { try { pictureBox1.Image = Data.GetWindowsBitmap(); pictureBox1.Refresh(); } catch { } }
+		/// <summary>Shows the <see cref="Data"/> bitmap through <see cref="pictureBox1"/>.</summary>
+		protected void ShowBitmap() { try { pictureBox1.Image = Data.GetWindowsBitmap(); pictureBox1.Refresh(); } catch { } }
 
 		public override void Refresh()
 		{ base.Refresh(); Reload(); }
@@ -68,6 +71,7 @@ namespace Umbrella2.Visualizer.Winforms
 			ShowBitmap();
 		}
 
+		/// <summary>Reloads image data and shows it.</summary>
 		public void Reload() { if (Image != null) { ReadBitmap(); ShowBitmap(); } }
 	}
 }

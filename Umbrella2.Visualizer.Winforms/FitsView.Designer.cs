@@ -59,6 +59,9 @@
 
 		#endregion
 
-		private System.Windows.Forms.PictureBox pictureBox1;
+		/// <summary>
+		/// FITS displayer control.
+		/// </summary>
+		protected System.Windows.Forms.PictureBox pictureBox1;
 	}
 }
