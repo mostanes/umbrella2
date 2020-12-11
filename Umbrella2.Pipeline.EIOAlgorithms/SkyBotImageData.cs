@@ -96,12 +96,12 @@ namespace Umbrella2.Pipeline.EIOAlgorithms
 		}
 
 		/// <summary>Fetch objects that should be in the image but have not been detected.</summary>
-		/// <returns>The estimated positions of the objects not found.</returns>
-		public List<EquatorialPoint> GetUnpaired()
+		/// <returns>The SkyBoT objects not found among the tracklets so far.</returns>
+		public List<SkybotObject> GetUnpaired()
 		{
-			List<EquatorialPoint> NP = new List<EquatorialPoint>();
+			List<SkybotObject> NP = new List<SkybotObject>();
 			foreach (SkybotObject so in Unpaired)
-				NP.Add(so.Position);
+				NP.Add(so);
 			return NP;
 		}
 

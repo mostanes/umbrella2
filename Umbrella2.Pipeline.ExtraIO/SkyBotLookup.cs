@@ -43,14 +43,24 @@ namespace Umbrella2.Pipeline.ExtraIO
 			/// The object's asteroid class.
 			/// </summary>
 			public readonly string Class;
+			/// <summary>
+			/// The object's visual magnitude.
+			/// </summary>
+			public readonly double VisualMagnitude;
+			/// <summary>
+			/// The object's position uncertainty.
+			/// </summary>
+			public readonly double PositionUncertainty;
 
-			public SkybotObject(string Name, string Position, DateTime Time, int? PermDesignation, string Class)
+			public SkybotObject(string Name, string Position, DateTime Time, int? PermDesignation, string Class, double magV, double ErrPos)
 			{
 				this.Name = Name;
 				this.Position = EquatorialPointStringFormatter.ParseFromMPCString(Position);
 				this.TimeCoordinate = Time;
 				this.PermanentDesignation = PermDesignation;
 				this.Class = Class;
+				this.VisualMagnitude = magV;
+				this.PositionUncertainty = ErrPos;
 			}
 		}
 
@@ -127,7 +137,9 @@ namespace Umbrella2.Pipeline.ExtraIO
 				try
 				{
 					int? pd = int.TryParse(Values[Cset["Num"]], out int pdi) ? (int?)pdi : null;
-					SkybotObject sko = new SkybotObject(Values[Cset["Name"]], Values[Cset["RA"]] + " " + Values[Cset["DEC"]], Time, pd, Values[Cset["Class"]]);
+					double.TryParse(Values[Cset["Mv"]], out double magV);
+					double.TryParse(Values[Cset["ErrPos"]], out double ErrPos);
+					SkybotObject sko = new SkybotObject(Values[Cset["Name"]], Values[Cset["RA"]] + " " + Values[Cset["DEC"]], Time, pd, Values[Cset["Class"]], magV, ErrPos);
 					Objects.Add(sko);
 				}
 				catch (KeyNotFoundException) { return false; }
@@ -177,7 +189,7 @@ namespace Umbrella2.Pipeline.ExtraIO
 				string dec = z[3].Value;
 				string cls = z[4].Value;
 				int? pd = int.TryParse(permdes, out int pdi) ? (int?)pdi : null;
-				SkybotObject oj = new SkybotObject(name, ra + " " + dec, Time, pd, cls);
+				SkybotObject oj = new SkybotObject(name, ra + " " + dec, Time, pd, cls, 0, 0);
 				objs.Add(oj);
 			}
 			return objs;

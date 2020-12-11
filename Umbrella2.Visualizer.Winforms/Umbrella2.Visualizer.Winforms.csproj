@@ -58,22 +58,29 @@
     </Compile>
     <Compile Include="TrackletOutput.Navigation.cs">
       <DependentUpon>TrackletOutput.cs</DependentUpon>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="TrackletOutput.Filtering.cs">
-          <DependentUpon>TrackletOutput.cs</DependentUpon>
+      <DependentUpon>TrackletOutput.cs</DependentUpon>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="TrackletOutput.TrackletUtil.cs">
-          <DependentUpon>TrackletOutput.cs</DependentUpon>
+      <DependentUpon>TrackletOutput.cs</DependentUpon>
+      <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PropertyViewer.cs" />
+    <Compile Include="PropertyViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="PropertyViewer.Designer.cs">
       <DependentUpon>PropertyViewer.cs</DependentUpon>
     </Compile>
     <Compile Include="PropertyViewer.ObjectTree.cs">
       <DependentUpon>PropertyViewer.cs</DependentUpon>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="PropertyViewer.XMLDoc.cs">
       <DependentUpon>PropertyViewer.cs</DependentUpon>
+      <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>

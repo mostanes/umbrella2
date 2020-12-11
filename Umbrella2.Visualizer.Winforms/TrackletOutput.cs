@@ -246,6 +246,11 @@ namespace Umbrella2.Visualizer.Winforms
 			System.Text.StringBuilder Report = new System.Text.StringBuilder();
 			CreateMPCReport(Report);
 			System.IO.File.AppendAllText(ReportName, Report.ToString());
+			System.Text.StringBuilder stats = new System.Text.StringBuilder();
+			stats.Append("CCD "); stats.Append(CurrentCCD); stats.Append(",");
+			stats.Append(checkedListBox1.CheckedItems.Count); stats.Append(",");
+			stats.Append(checkedListBox1.Items.Count); stats.AppendLine();
+			System.IO.File.AppendAllText(ReportName + ".stat.log", stats.ToString());
 		}
 
 		private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
