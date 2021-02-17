@@ -30,25 +30,31 @@ namespace Umbrella2.IO.FITS
 		/// <returns>The value encoded in the DataString.</returns>
 		string GetValueTypedValue()
 		{
-			/* FIXME: Does not handle keywords with single quotes in character strings */
-#warning FIXME
 			if (DataString[0] != ' ') throw new FITSFormatException("Record is not value type.");
 			int i, f;
 			for (i = 0; i < DataString.Length && DataString[i] == ' '; i++) ;
 			if (i == DataString.Length) throw new FITSFormatException("Field is empty");
 			bool q = DataString[i] == '\'';
 			f = i;
-			char sc = q ? '\'' : ' ';
-			if (q) { i++; }
-			for (; i < DataString.Length && DataString[i] != sc; i++) ;
-			if (q) i++;
-			return DataString.Substring(f, i - f);
+			if (q)
+			{
+				i++;
+				if (DataString[i] == '\'') return string.Empty;
+				i++;
+				for (; i < DataString.Length; i++) if (DataString[i] == '\'' && DataString[i - 1] != '\'') break;
+				return DataString.Substring(f, i - f + 1).Replace("''", "'");
+			}
+			else
+			{
+				for (; i < DataString.Length && DataString[i] != '/'; i++) ;
+				return DataString.Substring(f, i - f).TrimEnd();
+			}
 		}
 
 		protected override long GetIntegerValue()
 		{
 			string s = GetValueTypedValue();
-			return long.Parse(s);
+			return long.Parse(s, System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		/// <summary>Parses the value as a <see cref="string"/> from the encoding of a FITS fixed string.</summary>
@@ -77,7 +83,7 @@ namespace Umbrella2.IO.FITS
 
 		/// <summary>Parses the value as a <see cref="double"/>.</summary>
 		public override double FloatingPoint
-		{ get { string s = GetValueTypedValue(); return double.Parse(s); } }
+		{ get { string s = GetValueTypedValue(); return double.Parse(s, System.Globalization.CultureInfo.InvariantCulture); } }
 
 	}
 }

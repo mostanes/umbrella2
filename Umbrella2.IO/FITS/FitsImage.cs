@@ -97,6 +97,18 @@ namespace Umbrella2.IO.FITS
 			throw new FITSFormatException("BITPIX field not conforming to FITS standard");
 		}
 
+        /// <summary>
+        /// Reads a floating point value from the headers if it exists. Otherwise returns the specified default.
+        /// </summary>
+        /// <param name="KeyName">Header name.</param>
+        /// <param name="Default">Default value.</param>
+        /// <param name="Header">Header to read from.</param>
+        static double ReadHeaderFloat(string KeyName, double Default, HeaderTable Header)
+        {
+			if (Header.TryGetValue(KeyName, out MetadataRecord scaleMR)) Default = scaleMR.FloatingPoint;
+			return Default;
+		}
+
 		/// <summary>
 		/// Checks whether the area of interest is within the boundaries of the image.
 		/// </summary>
@@ -121,6 +133,10 @@ namespace Umbrella2.IO.FITS
 			Pointer = File.GetDataView(ImageNumber - 1, ImPos.Item1, ImPos.Item2);
 			Reader(Pointer, imData.Data, rp.Y - imData.Position.Y, rp.Bottom - imData.Position.Y, rp.X - imData.Position.X, rp.Right - imData.Position.X, (int)Width * BytesPerPixel);
 			File.ReleaseView(Pointer);
+
+			double Scale = ReadHeaderFloat("BSCALE", 1, Header);
+			double Zero = ReadHeaderFloat("BZERO", 0, Header);
+			for (int i = 0; i < imData.Data.GetLength(0); i++) for (int j = 0; j < imData.Data.GetLength(1); j++) imData.Data[i, j] = imData.Data[i, j] * Scale + Zero;
 
 			if (PropertiesDictionary.ContainsKey(typeof(KnownKeywords.SWarpScaling)))
 				(PropertiesDictionary[typeof(KnownKeywords.SWarpScaling)] as KnownKeywords.SWarpScaling).ScaleData(imData.Data);
@@ -259,8 +275,12 @@ namespace Umbrella2.IO.FITS
 			double Dec0 = (RAFirst ? Header["CRVAL2"] : Header["CRVAL1"]).FloatingPoint;
 			double X0 = Header["CRPIX1"].FloatingPoint;
 			double Y0 = Header["CRPIX2"].FloatingPoint;
-			if (RAFirst) linpart = new WCSLinPart(Header["CD1_1"].FloatingPoint, Header["CD1_2"].FloatingPoint, Header["CD2_1"].FloatingPoint, Header["CD2_2"].FloatingPoint, X0, Y0);
-			else linpart = new WCSLinPart(Header["CD2_1"].FloatingPoint, Header["CD2_2"].FloatingPoint, Header["CD1_1"].FloatingPoint, Header["CD1_2"].FloatingPoint, X0, Y0);
+			double CD1_1 = ReadHeaderFloat("CD1_1", 0, Header);
+			double CD1_2 = ReadHeaderFloat("CD1_2", 0, Header);
+			double CD2_1 = ReadHeaderFloat("CD2_1", 0, Header);
+			double CD2_2 = ReadHeaderFloat("CD2_2", 0, Header);
+			if (RAFirst) linpart = new WCSLinPart(CD1_1, CD1_2, CD2_1, CD2_2, X0, Y0);
+			else linpart = new WCSLinPart(CD2_1, CD2_2, CD1_1, CD1_2, X0, Y0);
 
 			/* Finds the appropriate projection transform */
 			WCSProjectionTransform ipt;

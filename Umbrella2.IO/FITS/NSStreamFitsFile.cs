@@ -71,7 +71,7 @@ namespace Umbrella2.IO.FITS
 		}
 
 		/// <summary>Clears in-memory data.</summary>
-		public void Close()
+		public override void Close()
 		{ Data = null; }
 
 		/// <summary>

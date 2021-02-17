@@ -12,7 +12,7 @@ namespace Umbrella2.IO.FITS
 	/// </summary>
 	public abstract class FitsFile
 	{
-		internal readonly string Path;
+		public readonly string Path;
 
 		public readonly HeaderTable PrimaryTable;
 		protected int PrimaryDataPointer;
@@ -83,5 +83,13 @@ namespace Umbrella2.IO.FITS
 		/// Releases the file handle. Writing may not occur after the release. Reading reopens the handle.
 		/// </summary>
 		internal abstract void ReleaseHandle();
+
+		/// <summary>
+		/// Disposes of all handles and large in-memory resources.
+		/// </summary>
+		public virtual void Close()
+        {
+			ReleaseHandle();
+        }
 	}
 }
