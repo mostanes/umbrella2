@@ -67,6 +67,7 @@ namespace Umbrella2.IO.FITS
 			FitsFileBuilder builder = new FitsFileBuilder() { PrimaryTable = new HeaderTable() };
 			foreach (var w in Headers) { builder.PrimaryTable.Add(w.Key, w.Value); s.Write(((FITSMetadataRecord)w.Value).ToRawRecord(), 0, 80); }
 			s.Write(Encoding.UTF8.GetBytes("END".PadRight(80)), 0, 80);
+			while (s.Position < HLength) s.Write(Encoding.UTF8.GetBytes(string.Empty.PadRight(80)), 0, 80);
 			builder.PrimaryDataPointer = HLength;
 			s.Dispose();
 

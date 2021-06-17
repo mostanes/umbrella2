@@ -150,8 +150,7 @@ namespace Umbrella2.IO.FITS
 		{
 			IntPtr Pointer;
 			var ImPos = GetPositionInFile(Data.Position);
-			if (ImageNumber == 0) Pointer = File.GetDataView(-1, ImPos.Item1, ImPos.Item2);
-			else Pointer = File.GetDataView(ImageNumber, ImPos.Item1, ImPos.Item2);
+			Pointer = File.GetDataView(ImageNumber - 1, ImPos.Item1, ImPos.Item2);
 			if (!Data.ReadOnly) { Writer(Pointer, Data.Data, (int)Width * BytesPerPixel); }
 			File.ReleaseView(Pointer);
 		}
@@ -208,6 +207,32 @@ namespace Umbrella2.IO.FITS
 			if (!Data.ReadOnly)
 				WriteData(Data);
 			ImageLock.ExitLock(Data.FDGuid);
+		}
+
+		/// <summary>
+		/// Locks and returns the data of an image in raw format.
+		/// </summary>
+		/// <returns>The lock token.</returns>
+		/// <param name="RO">If set to <c>true</c>, the lock is acquired for reading.</param>
+		/// <param name="Pointer">Pointer to raw image data.</param>
+		public Guid RawLockImage(bool RO, out IntPtr Pointer)
+		{
+			Rectangle Area = new Rectangle(0, 0, (int)Width, (int)Height);
+			Guid Token = ImageLock.EnterLock(Area, !RO);
+			var ImPos = GetPositionInFile(Area);
+			Pointer = File.GetDataView(ImageNumber - 1, ImPos.Item1, ImPos.Item2);
+			return Token;
+		}
+
+		/// <summary>
+		/// Exits a raw lock on the image.
+		/// </summary>
+		/// <param name="Token">Lock token.</param>
+		/// <param name="Pointer">Pointer to raw image data.</param>
+		public void ExitRawLock(Guid Token, IntPtr Pointer)
+		{
+			File.ReleaseView(Pointer);
+			ImageLock.ExitLock(Token);
 		}
 
 		/// <summary>

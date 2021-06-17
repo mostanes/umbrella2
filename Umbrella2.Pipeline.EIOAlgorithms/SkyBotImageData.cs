@@ -50,12 +50,13 @@ namespace Umbrella2.Pipeline.EIOAlgorithms
 		/// <summary>
 		/// Performs the retrieval of objects.
 		/// </summary>
+		/// <returns>If the objects were retrieved succesfully, <c>true</c>. If errors ocurred, <c>false</c>.</returns>
 		/// <param name="ObservatoryCode">Observatory code. If null, uses the SCS interface, without it.</param>
-		public void RetrieveObjects(string ObservatoryCode = null)
+		public bool RetrieveObjects(string ObservatoryCode = null)
 		{
 			DateTime Time = ShotTime + TimeSpan.FromSeconds(Exposure.TotalSeconds * 0.5);
 			var ObjURL = ObservatoryCode != null ? GenerateNSUrl(ImageCenter, Radius, Time, ObservatoryCode) : GenerateSCSUrl(ImageCenter, Radius, Time);
-			if (!GetObjects(ObjURL, Time, out List<SkybotObject> OList)) return;
+			if (!GetObjects(ObjURL, Time, out List<SkybotObject> OList)) return false;
 
 			List<SkybotObject> Clean = new List<SkybotObject>();
 			foreach (SkybotObject o in OList)
@@ -68,6 +69,7 @@ namespace Umbrella2.Pipeline.EIOAlgorithms
 			ObjList = Clean.ToArray();
 			Unpaired = new HashSet<SkybotObject>(Clean);
 			ObjTree = SkyBoTPairing.CreateTreeFromList(ObjList);
+			return true;
 		}
 
 		/// <summary>

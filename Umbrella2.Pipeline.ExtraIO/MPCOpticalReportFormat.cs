@@ -69,8 +69,19 @@ namespace Umbrella2.Pipeline.ExtraIO
 		public enum MagnitudeBand : byte
 		{
 			none = (byte) MPCSpace,
+			B = (byte) 'B',
 			R = (byte) 'R',
-			V = (byte) 'V'
+			V = (byte) 'V',
+			I = (byte) 'I',
+			J = (byte) 'J',
+			W = (byte) 'W',
+			U = (byte) 'U',
+			g = (byte) 'g',
+			r = (byte) 'r',
+			i = (byte) 'i',
+			w = (byte) 'w',
+			y = (byte) 'y',
+			z = (byte) 'z'
 		}
 
 		/// <summary>
