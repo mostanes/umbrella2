@@ -16,7 +16,10 @@ namespace Umbrella2.Pipeline.EIOAlgorithms
 	public static class VizieRCalibration
 	{
 		const double Arc1Sec = Math.PI / 180 / 3600;
+		/// <summary>Minimum Pearson R for a valid calibration.</summary>
 		const double CalibMinR = 0.90;
+		/// <summary>Maximum ratio to <see cref="CalibrationArgs.PositionError"/> at which stars are considered double.</summary>
+		const int DoubleStarRatio = 5;
 
 		/// <summary>
 		/// Calibrates an input image using VizieR stars catalogs.
@@ -62,23 +65,36 @@ namespace Umbrella2.Pipeline.EIOAlgorithms
 			return ZPSet[ZPSet.Length / 2];
 		}
 
+		/// <summary>
+		/// Parameters of the calibration algorithm.
+		/// </summary>
 		public struct CalibrationArgs
 		{
+			/// <summary>Maximum distance between a star on VizieR and another on the image that are paired.</summary>
 			public double PositionError;
+			/// <summary>Value for <see cref="DotDetector.HighThresholdMultiplier"/> when detecting stars.</summary>
 			public double StarHighThreshold;
+			/// <summary>Value for <see cref="DotDetector.LowThresholdMultiplier"/> when detecting stars.</summary>
 			public double StarLowThreshold;
+			/// <summary>Value for <see cref="DotDetector.NonrepresentativeThreshold"/> when detecting stars.</summary>
 			public double NonRepThreshold;
+			/// <summary>Minimum flux for stars used in calibration.</summary>
 			public double MinFlux;
+			/// <summary>Maximum flux for stars used in calibration.</summary>
 			public double MaxFlux;
+			/// <summary>Maximum intensity for each pixel for stars used in calibration.</summary>
 			public double ClippingPoint;
+			/// <summary>Maximum magnitude of objects from VizieR used in calibration.</summary>
 			public double MaxVizierMag;
 		}
 
 		/// <summary>
-		/// Calibrate the specified image.
+		/// Calibrate the zero point of the specified image.
 		/// </summary>
 		/// <returns>The Zero Point magnitude.</returns>
 		/// <param name="Img">Image to calibrate.</param>
+		/// <param name="Args">Calibration parameters.</param>
+		/// <returns>The Zero Point magnitude.</returns>
 		public static double CalibrateImage(Image Img, CalibrationArgs Args)
 		{
 			DotDetector StarDetector = new DotDetector()
@@ -100,7 +116,7 @@ namespace Umbrella2.Pipeline.EIOAlgorithms
 			EquatorialPoint EqCenter = Img.Transform.GetEquatorialPoint(PixC);
 			List<StarInfo> RemoteStars = GetVizieRObjects(EqCenter, Diag / 2, Args.MaxVizierMag);
 			for (int i = 0; i < RemoteStars.Count; i++) for (int j = i + 1; j < RemoteStars.Count; j++)
-					if ((RemoteStars[i].Coordinate ^ RemoteStars[j].Coordinate) < Arc1Sec * Args.PositionError * 5)
+					if ((RemoteStars[i].Coordinate ^ RemoteStars[j].Coordinate) < Arc1Sec * Args.PositionError * DoubleStarRatio)
 					{ RemoteStars.RemoveAt(j); RemoteStars.RemoveAt(i); i--; break; }
 
 			return Calibrate(RemoteStars, LocalStars, Args.PositionError);

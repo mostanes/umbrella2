@@ -12,6 +12,11 @@ namespace Umbrella2.Algorithms.Images
 	public class ImageStatistics : ImageProperties
 	{
 		/// <summary>
+		/// Signature of the solver algorithm used by <see cref="ImageStatistics"/> to obtain the background and noise levels.
+		/// </summary>
+		public delegate void StatisticsSolver(Image Image, out double ZeroLevel, out double StDev);
+
+		/// <summary>
 		/// Background level.
 		/// </summary>
 		public readonly double ZeroLevel;
@@ -20,26 +25,13 @@ namespace Umbrella2.Algorithms.Images
 		/// </summary>
 		public readonly double StDev;
 
-		List<double> Means;
-		List<double> Variances;
-
 		/// <summary>
 		/// Computes the ImageStatistics for a given image.
 		/// </summary>
 		/// <param name="Image">Input image.</param>
 		public ImageStatistics(Image Image) : base(Image)
 		{
-			Means = new List<double>();
-			Variances = new List<double>();
-
-			StatAlgorithm.Run(this, Image, new SchedCore.AlgorithmRunParameters() { FillZero = false, InputMargins = 0, Xstep = 0, Ystep = 50 });
-
-			double[] M = Means.ToArray();
-			double[] V = Variances.ToArray();
-			Array.Sort(M);
-			Array.Sort(V);
-			ZeroLevel = M[M.Length / 2];
-			StDev = Sqrt(V[M.Length / 2]);
+			Solver(Image, out ZeroLevel, out StDev);
 		}
 
 		/// <summary>
@@ -51,44 +43,11 @@ namespace Umbrella2.Algorithms.Images
 		public ImageStatistics(Image Image, double ZeroLevel, double StDev) : base(Image) { this.ZeroLevel = ZeroLevel; this.StDev = StDev; }
 
 		/// <summary>
-		/// Accessible form of the computation function.
+		/// The computation function for solving image statistics.
 		/// </summary>
-		static SchedCore.Extractor<ImageStatistics> StatAlgorithm = RunStatistics;
+		static StatisticsSolver Solver = BasicImstatSolver.BasicSolver;
 
-		/// <summary>
-		/// Computation function.
-		/// </summary>
-		/// <param name="Input">Input data.</param>
-		/// <param name="Stats">Result collector.</param>
-		static void RunStatistics(double[,] Input, ImageStatistics Stats)
-		{ 
-			int OW = Input.GetLength(1);
-			int OH = Input.GetLength(0);
-			int i, j, k;
-			
-			double Mean = 0, Var = 0;
-			/* Scan the image on block-by-block basis */
-			for (k = 0; k < OW - OH; k += OH)
-			{
-				/* Scan block */
-				Mean = 0; Var = 0;
-				for (i = 0; i < OH; i++) for (j = 0; j < OH; j++)
-					{ Mean += Input[i, j + k]; Var += Input[i, j + k] * Input[i, j + k]; }
-				
-				/* Compute mean and variance */
-				Mean /= (OH * OH);
-				Var /= (OH * OH);
-				Var -= Mean * Mean;
-
-				/* Update results */
-				lock (Stats.Means)
-				{
-					Stats.Means.Add(Mean);
-					Stats.Variances.Add(Var);
-				}
-			}			
-		}
-
+		/// <inheritdoc/>
 		public override List<MetadataRecord> GetRecords()
 		{
 			throw new NotImplementedException();

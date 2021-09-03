@@ -6,6 +6,9 @@ using Umbrella2.PropertyModel;
 
 namespace Umbrella2
 {
+	/// <summary>
+	/// The detection on an image of an object.
+	/// </summary>
 	public class ImageDetection : IExtendable
 	{
 		/// <summary>Position of the flux barycenter.</summary>

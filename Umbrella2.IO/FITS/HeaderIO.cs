@@ -15,12 +15,13 @@ namespace Umbrella2.IO.FITS
 		/// Reads a FITS header from a stream.
 		/// </summary>
 		/// <param name="s">Input stream.</param>
+		/// <param name="Length">Expected length of input stream.</param>
 		/// <returns>A list with all raw keyword records in the header.</returns>
-		static List<KeywordRecord> ReadHeader(Stream s)
+		static List<KeywordRecord> ReadHeader(Stream s, long Length)
 		{
 			List<KeywordRecord> Kwlist = new List<KeywordRecord>();
 			bool HeaderEnd = false;
-			while (!HeaderEnd)
+			while (!HeaderEnd & s.Position < Length)
 			{
 				int i;
 				byte[] Buffer = new byte[80];
@@ -65,11 +66,12 @@ namespace Umbrella2.IO.FITS
 		/// Reads a FITS header from a stream.
 		/// </summary>
 		/// <param name="stream">Input stream.</param>
+		/// <param name="Length">Expected length of the input stream.</param>
 		/// <returns>A tuple containing a list and a dictionary of the header records.</returns>
-		internal static Tuple<List<MetadataRecord>, HeaderTable> ReadHeaderFromStream(Stream stream)
+		internal static Tuple<List<MetadataRecord>, HeaderTable> ReadHeaderFromStream(Stream stream, long Length)
 		{
 			/* Read the headers and create the ElevatedRecord entries. */
-			List<KeywordRecord> prirec = ReadHeader(stream);
+			List<KeywordRecord> prirec = ReadHeader(stream, Length);
 			List<MetadataRecord> PrimaryHeader = new List<MetadataRecord>();
 			foreach (KeywordRecord kr in prirec) if (kr.HasEqual) PrimaryHeader.Add(KeywordRecord.Elevate(kr));
 
@@ -97,7 +99,7 @@ namespace Umbrella2.IO.FITS
 		internal static FitsFileBuilder ReadFileHeaders(Stream stream, long Length, MEFImageNumberGetter numberGetter)
 		{
 			FitsFileBuilder builder = new FitsFileBuilder();
-			var R1 = ReadHeaderFromStream(stream);
+			var R1 = ReadHeaderFromStream(stream, Length);
 			builder.PrimaryHeader = R1.Item1;
 			builder.PrimaryTable = R1.Item2;
 
@@ -106,7 +108,11 @@ namespace Umbrella2.IO.FITS
 			int ALength = ComputeDataArrayLength(builder.PrimaryTable);
 
 			/* Align to 2880 */
-			stream.Position += (ALength + 2879) / 2880 * 2880;
+			int AALength = (ALength + 2879) / 2880 * 2880;
+			long NewPosition = stream.Position + AALength;
+			if (NewPosition > Length)
+				throw new FITSFormatException("Data array longer than file length.");
+			stream.Position = NewPosition;
 
 			/* Check if file is MEF. */
 			if (stream.Position != Length)
@@ -119,9 +125,9 @@ namespace Umbrella2.IO.FITS
 				builder.MEFHeaderTable = new Dictionary<int, HeaderTable>();
 
 				/* Read extension headers. */
-				for (int exn = 0; stream.Position != Length; exn++)
+				for (int exn = 0; stream.Position < Length; exn++)
 				{
-					var R2 = ReadHeaderFromStream(stream);
+					var R2 = ReadHeaderFromStream(stream, Length);
 					int Loc = (int)stream.Position;
 					ALength = ComputeDataArrayLength(R2.Item2);
 					builder.ExtensionHeaders.Add(R2.Item1);
@@ -137,7 +143,11 @@ namespace Umbrella2.IO.FITS
 						builder.MEFDataPointers.Add(ImNr, Loc);
 					}
 
-					stream.Position += (ALength + 2879) / 2880 * 2880;
+					AALength = (ALength + 2879) / 2880 * 2880;
+					NewPosition = stream.Position + AALength;
+					if (NewPosition > Length)
+						throw new FITSFormatException("Data array longer than file length.");
+					stream.Position = NewPosition;
 				}
 			}
 

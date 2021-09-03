@@ -62,6 +62,8 @@
     <Compile Include="StarData.cs" />
     <Compile Include="Tracklet.cs" />
     <Compile Include="Math\LineFit.cs" />
+    <Compile Include="Images\BasicImstatSolver.cs" />
+    <Compile Include="DataStructures\SphericalQuadTree.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Umbrella2.SharedBase\Umbrella2.SharedBase.csproj">

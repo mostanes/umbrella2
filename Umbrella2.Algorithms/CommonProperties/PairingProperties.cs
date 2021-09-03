@@ -36,12 +36,19 @@ namespace Umbrella2.PropertyModel.CommonProperties
 		public bool MultiNoPoints;
 	}
 
+	/// <summary>
+	/// Detection algorithms used.
+	/// </summary>
 	[Flags]
 	public enum DetectionAlgorithm : uint
 	{
+		/// <summary>Unknown status.</summary>
 		Unknown = 0,
+		/// <summary>Umbrella-builtin blob algorithm.</summary>
 		Blob = 1,
+		/// <summary>Umbrella-builtin long trails algorithm.</summary>
 		Trail = 2,
+		/// <summary>Imported from AstrOmatic Source Extractor.</summary>
 		SourceExtractor = 4
 	}
 }

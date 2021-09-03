@@ -12,6 +12,9 @@ namespace Umbrella2.PropertyModel.CommonProperties
 		private ImageSet Set;
 		private Image CurrentImage;
 
+		/// <summary>
+		/// Automatic constructor; may be used to bound to an <see cref="ImageSet"/>.
+		/// </summary>
 		public ImageSource(Image Image) : base(Image)
 		{ CurrentImage = Image; }
 
@@ -34,6 +37,7 @@ namespace Umbrella2.PropertyModel.CommonProperties
 		/// <summary>Retrieves the image's <see cref="ImageSet"/>.</summary>
 		public static explicit operator ImageSet(ImageSource Source) => Source.Set;
 
+		/// <inheritdoc/>
 		public override List<MetadataRecord> GetRecords() => throw new NotImplementedException();
 	}
 

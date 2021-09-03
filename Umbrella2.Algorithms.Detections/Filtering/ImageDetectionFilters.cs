@@ -33,9 +33,12 @@ namespace Umbrella2.Algorithms.Filtering
 	/// </summary>
 	public class BrightnessThicknessFilter : IImageDetectionFilter
 	{
+		/// <summary>Brightness threshold in image flux.</summary>
 		public double BrightnessThreshold;
+		/// <summary>Thickness threshold in pixels.</summary>
 		public double ThicknessThreshold;
 
+		/// <inheritdoc/>
 		public bool Filter(ImageDetection Input) =>
 			!(Input.FetchProperty<ObjectPhotometry>().Flux > BrightnessThreshold * Input.FetchProperty<ObjectPoints>().PixelPoints.Length &&
 			Input.FetchProperty<ObjectSize>().PixelEllipse.SemiaxisMinor < ThicknessThreshold);
@@ -44,10 +47,15 @@ namespace Umbrella2.Algorithms.Filtering
 		public static implicit operator Predicate<ImageDetection>(BrightnessThicknessFilter f) => f.Filter;
 	}
 
+	/// <summary>
+	/// Checks that the detection is thin enough on the semiminor axis.
+	/// </summary>
 	public class LinearityThresholdFilter : IImageDetectionFilter
 	{
+		/// <summary>Maximum average thickness of the detection.</summary>
 		public double MaxLineThickness;
 
+		/// <inheritdoc/>
 		public bool Filter(ImageDetection Input) { double Width = ComputeWidth(Input); return (Width <= MaxLineThickness); }
 
 		double ComputeWidth(ImageDetection Input)

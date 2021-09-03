@@ -54,6 +54,7 @@ namespace Umbrella2.PropertyModel.CommonProperties
 			else { SemiaxisMajorAngle = A2; SemiaxisMajor = 2 * Sqrt(L2); SemiaxisMinor = 2 * Sqrt(L1); }
 		}
 
+		/// <inheritdoc/>
 		public override string ToString()
 		{
 			return "a = " + SemiaxisMajor.ToString("G6") + "; b = " + SemiaxisMinor.ToString("G6");

@@ -123,12 +123,18 @@ namespace Umbrella2.Algorithms.Detection
 		/// </summary>
 		public struct DotDetection
 		{
+			/// <summary>Flux-weighted mean of the detected pixels.</summary>
 			public PixelPoint Barycenter;
+			/// <summary>Coordinates of the pixels detected.</summary>
 			public List<PixelPoint> Pixels;
+			/// <summary>Flux values for the pixels in <see cref="Pixels"/> as recorded in the image.</summary>
 			public List<double> PixelValues;
+			/// <summary>Direct mean of pixel positions.</summary>
 			public PixelPoint PixelCenter;
+			/// <summary>Total flux, the sum of all <see cref="PixelValues"/>.</summary>
 			public double Flux;
 
+			/// <inheritdoc/>
 			public override string ToString()
 			{
 				return "[DD]{" + Barycenter.ToString() + "}";
